@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id   String @id @default(cuid())
+    name String @unique
+
+    expectedChallenge String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    password       Password?
+    authenticators Authenticator[]
+}
+
+model Password {
+    hash String
+
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String @unique
+}
+
+model Authenticator {
+    credentialID         String   @id
+    name                 String?
+    user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId               String
+    credentialPublicKey  String
+    counter              Int
+    credentialDeviceType String
+    // 0: false, 1: true
+    // Dont use Boolean because remix-auth-webauthn uses 0 and 1
+    credentialBackedUp   Int
+    transports           String
+    createdAt            DateTime @default(now())
+    updatedAt            DateTime @updatedAt
+}

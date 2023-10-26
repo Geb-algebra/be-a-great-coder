@@ -1,0 +1,13 @@
+node_modules
+
+/.cache
+/build
+/server-build
+/public/build
+.env
+
+data.db
+data.db-journal
+/test-results/
+/playwright-report/
+/playwright/.cache/

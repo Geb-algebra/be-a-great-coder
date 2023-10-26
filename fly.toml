@@ -1,0 +1,21 @@
+# fly.toml app configuration file generated for remix-8bit-stack on 2023-10-22T10:48:07+09:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "remix-8bit-stack"
+primary_region = "nrt"
+
+[[mounts]]
+  source = "data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[env]
+  APP_DOMAIN = "remix-8bit-stack.fly.dev"
