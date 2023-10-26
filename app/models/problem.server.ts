@@ -1,5 +1,7 @@
+import type { Problem } from '@prisma/client';
+
 import { prisma } from '~/db.server.ts';
-import { fetchIfAllowed } from '~/models/fetchLog.server.ts';
+import { getLatestFetchLog, createFetchLog, fetchIfAllowed } from '~/models/fetchLog.server.ts';
 
 export type { Problem } from '@prisma/client';
 

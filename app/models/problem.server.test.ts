@@ -10,7 +10,7 @@
 // } from '~/models/problem.server.ts';
 // import { createFetchLog, getLatestFetchLog } from './fetchLog.server.ts';
 
-// import { server } from 'mocks/mock-server.ts';
+// import { server } from 'mocks/server.ts';
 
 // // we must mock fetch imported from @remix-run/node, not global.fetch,
 // // because we heve to use the former in .server.ts files to enable msw
@@ -175,5 +175,3 @@
 //     }
 //   });
 // });
-
-test.todo('queryRandomProblemByDifficulty');

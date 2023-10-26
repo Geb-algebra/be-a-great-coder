@@ -9,7 +9,7 @@
 //   await prisma.atCoderAPIFetchLog.deleteMany();
 // });
 
-// describe.todo('createFetchLog', () => {
+// describe('createFetchLog', () => {
 //   it('should create a right record', async () => {
 //     const endpoint = 'https://example.com';
 //     const status = 401;
@@ -31,7 +31,7 @@
 //   });
 // });
 
-// describe.todo('fetchLatest', async () => {
+// describe('fetchLatest', async () => {
 //   it('should get the latest record', async () => {
 //     await createFetchLog('https://example.com/1');
 //     await createFetchLog('https://example.com/2');
@@ -55,5 +55,3 @@
 //     expect(fetchedLatest.id).toEqual(right.id);
 //   });
 // });
-
-test.todo('fetchIfAllowed');

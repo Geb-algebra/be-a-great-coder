@@ -11,7 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   await updateProblemsIfAllowed();
   const problems = await queryAllProblemsByDifficulty(100);
 
-  const submissions = await fetchNewSubmissions(1560170952, 'some user');
+  const submissions = await fetchNewSubmissions(1667096213, 'GeB');
   return json({ problems, submissions });
 }
 
@@ -23,7 +23,7 @@ export default function Index() {
   const { problems, submissions } = useLoaderData<typeof loader>();
   return (
     <ul>
-      {submissions.map((submission: any) => (
+      {submissions.map((submission) => (
         <li key={submission.id}>
           <span>{submission.id}</span>
         </li>
