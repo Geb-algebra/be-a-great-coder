@@ -1,57 +1,45 @@
-// import { prisma } from '~/db.server';
+import { prisma } from '~/db.server.ts';
+import { createFetchLog, fetchIfAllowed } from './fetchLog.server.ts';
+import { PROBLEM_UPDATE_INTERVAL } from './problem.server.ts';
+import type { SpyInstance } from 'vitest';
 
-// import { createFetchLog, getLatestFetchLog } from '~/models/fetchLog.server';
-
-// beforeAll(async () => {
-//   await prisma.atCoderAPIFetchLog.deleteMany();
-// });
-// afterEach(async () => {
-//   await prisma.atCoderAPIFetchLog.deleteMany();
-// });
-
-// describe('createFetchLog', () => {
-//   it('should create a right record', async () => {
-//     const endpoint = 'https://example.com';
-//     const status = 401;
-//     const now = Date.now();
-//     await createFetchLog(endpoint, status);
-//     const created = await prisma.atCoderAPIFetchLog.findFirst();
-//     expect(created?.endpoint).toEqual(endpoint);
-//     expect(created?.status).toEqual(status);
-//     expect((created?.timestamp.getTime() as number) / 10000).toBeCloseTo(now / 10000, 1);
-//   });
-//   it('should set status 200 by default', async () => {
-//     const endpoint = 'https://example.com';
-//     const now = new Date();
-//     await createFetchLog(endpoint);
-//     const created = await prisma.atCoderAPIFetchLog.findFirst();
-//     expect(created?.endpoint).toEqual(endpoint);
-//     expect(created?.status).toEqual(200);
-//     expect((created?.timestamp.getTime() as number) / 10000).toBeCloseTo(now.getTime() / 10000, 1);
-//   });
-// });
-
-// describe('fetchLatest', async () => {
-//   it('should get the latest record', async () => {
-//     await createFetchLog('https://example.com/1');
-//     await createFetchLog('https://example.com/2');
-//     await createFetchLog('https://example.com/1');
-//     await createFetchLog('https://example.com/2');
-//     const latest = await createFetchLog('https://example.com/1');
-//     const latest2 = await createFetchLog('https://example.com/2');
-
-//     const fetchedLatest = await getLatestFetchLog('https://example.com/1');
-//     expect(fetchedLatest.id).toEqual(latest.id);
-//     const fetchedLatest2 = await getLatestFetchLog('https://example.com/2');
-//     expect(fetchedLatest2.id).toEqual(latest2.id);
-//   });
-//   it('should get logs with specified status only', async () => {
-//     await createFetchLog('https://example.com/1', 200);
-//     const right = await createFetchLog('https://example.com/1', 200);
-//     await createFetchLog('https://example.com/1', 201);
-//     await createFetchLog('https://example.com/1', 500);
-
-//     const fetchedLatest = await getLatestFetchLog('https://example.com/1');
-//     expect(fetchedLatest.id).toEqual(right.id);
-//   });
-// });
+describe('fetchIfAllowed', () => {
+  let mockedFetch: SpyInstance;
+  beforeEach(async () => {
+    mockedFetch = vi.spyOn(global, 'fetch');
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+  it.each([
+    PROBLEM_UPDATE_INTERVAL,
+    PROBLEM_UPDATE_INTERVAL * 1.00001,
+    PROBLEM_UPDATE_INTERVAL * 10,
+  ])('should fetch when the specified interval elapsed', async (elapsed) => {
+    const lastFetchedTime = new Date(Date.now() - elapsed);
+    const endpoint = 'https://example.com';
+    await createFetchLog(endpoint, 200, lastFetchedTime);
+    expect(mockedFetch).not.toHaveBeenCalled();
+    const fetchLogs = await prisma.atCoderAPIFetchLog.findMany();
+    expect(fetchLogs).toHaveLength(1);
+    await fetchIfAllowed(endpoint, PROBLEM_UPDATE_INTERVAL);
+    const fetchLogs2 = await prisma.atCoderAPIFetchLog.findMany();
+    expect(fetchLogs2).toHaveLength(2);
+    expect(mockedFetch).toHaveBeenCalled();
+  });
+  it.each([PROBLEM_UPDATE_INTERVAL * 0.9999999, PROBLEM_UPDATE_INTERVAL * 0.1])(
+    'should not fetch when the specified interval doesnt elapsed',
+    async (elapsed) => {
+      const lastFetchedTime = new Date(Date.now() - elapsed);
+      const endpoint = 'https://example.com';
+      await createFetchLog(endpoint, 200, lastFetchedTime);
+      expect(mockedFetch).not.toHaveBeenCalled();
+      const fetchLogs = await prisma.atCoderAPIFetchLog.findMany();
+      expect(fetchLogs).toHaveLength(1);
+      await fetchIfAllowed(endpoint, PROBLEM_UPDATE_INTERVAL);
+      const fetchLogs2 = await prisma.atCoderAPIFetchLog.findMany();
+      expect(fetchLogs2).toHaveLength(1);
+      expect(mockedFetch).not.toHaveBeenCalled();
+    },
+  );
+});

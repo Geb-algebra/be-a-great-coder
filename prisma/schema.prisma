@@ -22,6 +22,9 @@ model User {
     updatedAt DateTime @updatedAt
 
     authenticators Authenticator[]
+    projects       Project[]
+    employees      Employee[]
+    gameStatus     GameStatus?
 
     @@index([googleProfileId], name: "user_google_profile_id")
     @@index([name], name: "user_name")
@@ -54,36 +57,52 @@ model AtCoderAPIFetchLog {
 }
 
 model Problem {
-    id         String @id
+    id         String    @id
     title      String
     difficulty Int
-
-    orders Order[]
+    projects   Project[]
 }
 
-model Order {
-    id        String   @id @default(cuid())
-    problem   Problem? @relation(fields: [problemId], references: [id])
-    problemId String?
+model Project {
+    id String @id @default(cuid())
+
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String
+
+    offeredReward            BigInt
+    contractReward           BigInt?
+    startContractUnixSeconds BigInt?
+    numStoryPoints           Int
+    storyPointsHistory       String // comma separated numbers
+    problem                  Problem @relation(fields: [problemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    problemId                String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
-model AtCoderAPIFetchLog {
-    id        String   @id @default(cuid())
-    endpoint  String
-    timestamp DateTime @default(now())
-    status    Int
+model Employee {
+    id String @id @default(cuid())
+
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String
+
+    name                   String
+    salary                 BigInt
+    codingSkill            Int
+    communicationSkill     Int
+    projectManagementSkill Int
+    isAssigned             Boolean @default(false)
+    isFired                Boolean @default(false)
 }
 
-model Problem {
-    id         String @id
-    title      String
-    difficulty Int
+model GameStatus {
+    id String @id @default(cuid())
 
-    orders Order[]
-}
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String @unique
 
-model Order {
-    id        String   @id @default(cuid())
-    problem   Problem? @relation(fields: [problemId], references: [id])
-    problemId String?
+    money BigInt
+    year  Int
+    month Int
 }
