@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { useLoaderData, useActionData, Form } from '@remix-run/react';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
-import type { RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
+import type { RegistrationResponseJSON } from '@simplewebauthn/types';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';

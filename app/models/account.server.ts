@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2';
-import { type User, type Password } from '@prisma/client';
+import { type User } from '@prisma/client';
 
 import { prisma } from '~/db.server.ts';
 import type { Authenticator } from '~/models/authenticator.server.ts';
@@ -8,7 +8,6 @@ import { isUsernameAvailable } from '~/services/auth.server.ts';
 export type { User } from '@prisma/client';
 
 export type Account = User & {
-  passwordHash: Password['hash'] | null;
   authenticators: Authenticator[];
 };
 
@@ -27,12 +26,12 @@ export class AccountFactory {
   static async create({
     name,
     id,
-    passwordHash,
+    googleProfileId,
     authenticators = [],
   }: {
     name: User['name'];
     id?: User['id'];
-    passwordHash?: string;
+    googleProfileId?: User['googleProfileId'];
     authenticators?: Authenticator[];
   }): Promise<Account> {
     if (!(await isUsernameAvailable(name))) {
@@ -42,20 +41,9 @@ export class AccountFactory {
       data: {
         id: id ?? (await this.generateId()),
         name,
+        googleProfileId,
       },
     });
-    if (passwordHash) {
-      await prisma.password.create({
-        data: {
-          hash: passwordHash,
-          user: {
-            connect: {
-              id: user.id,
-            },
-          },
-        },
-      });
-    }
     for (const authenticator of authenticators) {
       await prisma.authenticator.create({
         data: {
@@ -74,15 +62,13 @@ export class AccountRepository {
     const accountRecord = await prisma.user.findUnique({
       where,
       include: {
-        password: true,
         authenticators: true,
       },
     });
     if (!accountRecord) throw new Error('User not found');
-    const { password, authenticators, ...user } = accountRecord;
+    const { authenticators, ...user } = accountRecord;
     const account: Account = {
       ...user,
-      passwordHash: password?.hash ?? null,
       authenticators: authenticators.map((authenticator) => ({
         ...authenticator,
         transports: authenticator.transports.split(','),
@@ -99,17 +85,25 @@ export class AccountRepository {
     return await this._get({ name });
   }
 
-  protected static async _upsertOrDeletePassword(passwordHash: string | null, userId: User['id']) {
-    if (!passwordHash) {
-      // deleteMany can be used as deleteIfExists
-      await prisma.password.deleteMany({ where: { userId } });
-    } else {
-      await prisma.password.upsert({
-        where: { userId },
-        update: { hash: passwordHash },
-        create: { hash: passwordHash, user: { connect: { id: userId } } },
-      });
-    }
+  static async getByGoogleProfileId(googleProfileId: Account['googleProfileId']) {
+    const accountRecord = await prisma.user.findFirst({
+      where: {
+        googleProfileId,
+      },
+      include: {
+        authenticators: true,
+      },
+    });
+    if (!accountRecord) throw new Error('User not found');
+    const { authenticators, ...user } = accountRecord;
+    const account: Account = {
+      ...user,
+      authenticators: authenticators.map((authenticator) => ({
+        ...authenticator,
+        transports: authenticator.transports.split(','),
+      })),
+    };
+    return account;
   }
 
   protected static async _upsertOrDeleteAuthenticators(
@@ -170,8 +164,7 @@ export class AccountRepository {
   }
 
   static async save(account: Account) {
-    const { passwordHash, authenticators, ...user } = account;
-    await this._upsertOrDeletePassword(passwordHash, account.id);
+    const { authenticators, ...user } = account;
     await this._upsertOrDeleteAuthenticators(authenticators, account.id);
     return await prisma.user.update({
       where: { id: account.id },

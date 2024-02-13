@@ -6,13 +6,12 @@ import AuthFormInput from '~/components/AuthFormInput.tsx';
 import Icon from '~/components/Icon.tsx';
 import Overlay from '~/components/Overlay.tsx';
 import type { Authenticator } from '~/models/authenticator.server.ts';
-import { AccountRepository, type User } from '~/models/account.server.ts';
+import { AccountRepository } from '~/models/account.server.ts';
 import { authenticator } from '~/services/auth.server.ts';
 import AuthButton from '~/components/AuthButton.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 
 import type { action as passkeyAction } from '~/routes/_main.settings.passkey.tsx';
-import type { action as passwordAction } from '~/routes/_main.settings.password.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
@@ -20,7 +19,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     user,
     authenticators: account.authenticators,
-    hasPassword: account.passwordHash !== null,
   });
 }
 
@@ -104,47 +102,6 @@ function Passkey(props: { authenticator: SerializeFrom<Authenticator> }) {
   );
 }
 
-function PasswordForm(props: { user: SerializeFrom<User>; hasPassword: boolean }) {
-  const fetcher = useFetcher<typeof passwordAction>();
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  return (
-    <fetcher.Form
-      method={props.hasPassword ? 'put' : 'post'}
-      action="/settings/password"
-      className="flex flex-col gap-6"
-      onSubmit={(e) => {
-        setShowConfirmation(false);
-      }}
-    >
-      <p className="text-red-500 ">{fetcher.data?.errorMessage}</p>
-      {props.hasPassword ? (
-        <AuthFormInput name="old-password" label="Old password" id="old-password" type="password" />
-      ) : null}
-      <AuthFormInput name="new-password" label="New password" id="new-password" type="password" />
-      <AuthFormInput
-        name="confirm-new-password"
-        label="Confirm new password"
-        id="confirm-new-password"
-        type="password"
-      />
-      <AuthButton type="button" onClick={() => setShowConfirmation(true)}>
-        {(props.hasPassword ? 'Update' : 'Create') + ' Password'}
-      </AuthButton>
-      <Overlay isShown={showConfirmation} setIsShown={setShowConfirmation}>
-        <div className="w-96 rounded-lg border border-gray-300 bg-white px-6 py-6">
-          <p className="text-2xl font-bold">Update password</p>
-          <p className="my-6">{`Are you sure you want to ${
-            props.hasPassword ? 'update your' : 'create new'
-          } password?`}</p>
-          <AuthButton type="submit">
-            {`${props.hasPassword ? 'Update my' : 'create new'} password`}
-          </AuthButton>
-        </div>
-      </Overlay>
-    </fetcher.Form>
-  );
-}
-
 export default function Page() {
   const loaderData = useLoaderData<typeof loader>();
 
@@ -165,12 +122,6 @@ export default function Page() {
             Add Passkey
           </Link>
           <PasskeyHero />
-        </div>
-        <div className="flex flex-col gap-6 pt-6">
-          <p className="text-2xl font-bold">{`${
-            loaderData.hasPassword ? 'Update' : 'Create'
-          } Password`}</p>
-          <PasswordForm user={loaderData.user} hasPassword={loaderData.hasPassword} />
         </div>
       </div>
     </div>

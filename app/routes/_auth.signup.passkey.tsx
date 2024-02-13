@@ -91,23 +91,14 @@ export default function LoginPage() {
       </AuthContainer>
       <AuthErrorMessage message={actionData?.error.message} />
       <AuthContainer>
-        <Form method="post" onSubmit={handleFormSubmit(options)}>
+        <Form id="passkey-form" method="post" onSubmit={handleFormSubmit(options)}>
           <input type="hidden" name="user-id" id="user-id" value={options.user.id} />
           <input type="hidden" name="username" id="username" value={options.user.name} />
           <input type="hidden" name="auth-method" id="auth-method" value="webauthn" />
           <AuthButton type="submit" value="registration">
-            Sign Up with Passkey
+            Create Passkey
           </AuthButton>
           <PasskeyHero className="mt-6" />
-        </Form>
-        <p className="h-6 text-center">or</p>
-        <Form method="post" className="flex flex-col gap-6">
-          <input type="hidden" name="user-id" id="user-id" value={options.user.id} />
-          <input type="hidden" name="username" id="username" value={options.user.name} />
-          <input type="hidden" name="auth-method" id="auth-method" value="user-pass" />
-          <input type="hidden" name="type" id="type" value="registration" />
-          <AuthFormInput name="password" label="Password" id="password" type="password" />
-          <AuthButton type="submit">Sign Up with Password</AuthButton>
         </Form>
       </AuthContainer>
     </div>

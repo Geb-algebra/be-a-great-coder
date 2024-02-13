@@ -8,10 +8,14 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
-    include: ['./app/**/*.test.{ts,tsx}'],
+    include: ['./app/**/*.test.{ts,tsx}', './test/integration/**/*.test.{ts,tsx}'],
     globals: true,
-    environment: 'node',
+    environment: 'happy-dom',
     setupFiles: ['./test/unit/setup-test-env.ts'],
-    singleThread: true, // set this to avoid multiple tests trying to interact DB at the same time.
+    poolOptions: {
+      threads: {
+        singleThread: true, // set this to avoid multiple tests trying to interact DB at the same time.
+      },
+    },
   },
 });

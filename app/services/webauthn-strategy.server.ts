@@ -7,7 +7,7 @@ import type {
   AuthenticatorTransportFuture,
   PublicKeyCredentialDescriptorJSON,
   RegistrationResponseJSON,
-} from '@simplewebauthn/typescript-types';
+} from '@simplewebauthn/types';
 import { verifyNewAuthenticator } from './auth.server.ts';
 import invariant from 'tiny-invariant';
 

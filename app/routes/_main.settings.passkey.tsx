@@ -28,11 +28,9 @@ export async function action({ request }: ActionFunctionArgs) {
     passkey.name = name;
     await AccountRepository.save(account);
   } else if (method === 'delete') {
-    if (account.passwordHash === null && account.authenticators.length === 1) {
-      return json(
-        { errorMessage: 'You must have at least one passkey or password' },
-        { status: 400 },
-      );
+    if (account.authenticators.length === 1) {
+      // TODO: consider google auth
+      return json({ errorMessage: 'You must have at least one passkey' }, { status: 400 });
     }
     account.authenticators = account.authenticators.filter((a) => a.credentialID !== passkeyId);
     await AccountRepository.save(account);

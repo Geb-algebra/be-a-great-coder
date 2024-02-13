@@ -1,16 +1,14 @@
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
-import type { RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
+import type { RegistrationResponseJSON } from '@simplewebauthn/types';
 import { Authenticator } from 'remix-auth';
-import { FormStrategy } from 'remix-auth-form';
 import invariant from 'tiny-invariant';
-import bcrypt from 'bcryptjs';
 import { type User, AccountFactory, AccountRepository } from '~/models/account.server.ts';
 import { UserRepository } from '~/models/user.server.ts';
 
 import { WebAuthnStrategy } from '~/services/webauthn-strategy.server.ts';
 import { getSession, sessionStorage } from '~/services/session.server.ts';
-import { getRequiredStringFromFormData } from '~/utils.ts';
 import { getAuthenticatorById } from '~/models/authenticator.server.ts';
+import { GoogleStrategy } from 'remix-auth-google';
 
 export let authenticator = new Authenticator<User>(sessionStorage);
 
@@ -23,30 +21,11 @@ export async function isUsernameAvailable(username: string) {
   }
 }
 
-export async function getHashedPassword(password: string): Promise<string> {
-  return await bcrypt.hash(password, 10);
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return await bcrypt.compare(password, hash);
-}
-
-export function validatePassword(password: string) {
-  if (password.length < 8) throw new Error('password must be at least 8 characters');
-  if (password.length > 128) throw new Error('password must be less than 128 characters');
-  if (!/[a-z]/.test(password)) throw new Error('password must contain a lowercase letter');
-  if (!/[A-Z]/.test(password)) throw new Error('password must contain an uppercase letter');
-  if (!/[0-9]/.test(password)) throw new Error('password must contain a number');
-}
-
 // we reuse them to add new passkeys to authenticated users
-export const WEBAUTHN_RP_NAME = '8bit Stack';
-export const WEBAUTHN_RP_ID =
-  process.env.NODE_ENV === 'development' ? 'localhost' : process.env.APP_DOMAIN!;
-export const WEBAUTHN_ORIGIN =
-  process.env.NODE_ENV === 'development'
-    ? `http://localhost:${process.env.PORT ?? 3000}`
-    : `https://${process.env.APP_DOMAIN!}`;
+export const WEBAUTHN_RP_NAME = 'Be a great coder';
+// http://localhost:3000 -> localhost, https://8bitstack.com -> 8bitstack.com
+export const WEBAUTHN_RP_ID = process.env.APP_URL!.split('://')[1].split(':')[0];
+export const WEBAUTHN_ORIGIN = process.env.APP_URL!;
 
 authenticator.use(
   new WebAuthnStrategy(
@@ -87,7 +66,7 @@ authenticator.use(
         }
         invariant(userId, 'User id is required.');
         invariant(username, 'Username is required.');
-        const { passwordHash, authenticators, ...user } = await AccountFactory.create({
+        const { authenticators, ...user } = await AccountFactory.create({
           name: username,
           id: userId,
           authenticators: [{ ...authenticator, name: null }],
@@ -95,7 +74,7 @@ authenticator.use(
         return user;
       } else if (type === 'authentication') {
         if (!savedAuthenticator) throw new Error('Authenticator not found');
-        const { passwordHash, authenticators, ...user } = await AccountRepository.getById(
+        const { authenticators, ...user } = await AccountRepository.getById(
           savedAuthenticator.userId,
         );
         return user;
@@ -107,35 +86,29 @@ authenticator.use(
   'webauthn',
 );
 
-authenticator.use(
-  new FormStrategy(async ({ form }) => {
-    const username = getRequiredStringFromFormData(form, 'username');
-    const password = getRequiredStringFromFormData(form, 'password');
-    const type = form.get('type');
-    if (type === 'registration') {
-      const userId = getRequiredStringFromFormData(form, 'user-id');
-      validatePassword(password);
-      const {
-        passwordHash: _passwordHash,
-        authenticators,
-        ...user
-      } = await AccountFactory.create({
-        name: username,
-        id: userId,
-        passwordHash: await getHashedPassword(password),
+let googleStrategy = new GoogleStrategy(
+  {
+    clientID: process.env.GOOGLE_AUTH_CLIENT_ID!,
+    clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET!,
+    callbackURL: `${process.env.APP_URL}/google/callback`,
+  },
+  async ({ accessToken, refreshToken, extraParams, profile }) => {
+    // Get the user data from your DB or API using the tokens and profile
+    let account;
+    try {
+      account = await AccountRepository.getByGoogleProfileId(profile.id);
+    } catch (error) {
+      account = await AccountFactory.create({
+        name: profile.displayName,
+        googleProfileId: profile.id,
       });
-      return user;
-    } else if (type === 'authentication') {
-      const { passwordHash, authenticators, ...user } = await AccountRepository.getByName(username);
-      if (!(await verifyPassword(password, passwordHash ?? '')))
-        throw new Error('Invalid password');
-      return user;
-    } else {
-      throw new Error('Invalid type');
     }
-  }),
-  'user-pass',
+    const { authenticators, ...user } = account;
+    return user;
+  },
 );
+
+authenticator.use(googleStrategy, 'google');
 
 export async function getAuthErrorMessage(request: Request) {
   const session = await getSession(request);

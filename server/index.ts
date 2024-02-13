@@ -18,6 +18,9 @@ let devBuild = build as unknown as _ServerBuild;
 let devToolsConfig = null;
 // Make sure you guard this with NODE_ENV check
 if (process.env.NODE_ENV === 'development') {
+  if (process.env.MOCKS === 'true') {
+    await import('../mocks/index.ts');
+  }
   const { withServerDevTools, defineServerConfig } = await import('remix-development-tools/server');
   // Allows you to define the configuration for the dev tools
   devToolsConfig = defineServerConfig({

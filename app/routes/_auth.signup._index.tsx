@@ -10,6 +10,8 @@ import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
 import { getRequiredStringFromFormData } from '~/utils.ts';
+import GoogleAuthButton from '~/components/GoogleAuthButton.tsx';
+import PasskeyHero from '~/components/PasskeyHero.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {
@@ -25,7 +27,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!(await isUsernameAvailable(username))) throw new Error('username already taken');
     const session = await getSession(request);
     session.set('username', username);
-    return redirect('/signup/pass', {
+    return redirect('/signup/passkey', {
       headers: {
         'Set-Cookie': await sessionStorage.commitSession(session),
       },
@@ -64,7 +66,13 @@ export default function LoginPage() {
               autofocus={true}
             />
           </div>
-          <AuthButton type="submit">Next</AuthButton>
+          <AuthButton type="submit">Signup with Passkey</AuthButton>
+          <PasskeyHero className="mt-6" />
+        </Form>
+      </AuthContainer>
+      <AuthContainer>
+        <Form method="post" action="/google">
+          <GoogleAuthButton>Signup with Google</GoogleAuthButton>
         </Form>
       </AuthContainer>
     </div>

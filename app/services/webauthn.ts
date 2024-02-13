@@ -2,7 +2,7 @@ import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
-} from '@simplewebauthn/typescript-types';
+} from '@simplewebauthn/types';
 
 export function handleFormSubmit(
   options: PublicKeyCredentialCreationOptionsJSON | PublicKeyCredentialRequestOptionsJSON,

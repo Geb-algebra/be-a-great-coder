@@ -1,33 +1,30 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+datasource db {
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+
 generator client {
     provider = "prisma-client-js"
 }
 
-datasource db {
-    provider = "sqlite"
-    url      = env("DATABASE_URL")
-}
-
 model User {
-    id   String @id @default(cuid())
-    name String @unique
+    id              String  @id @default(cuid())
+    name            String  @unique
+    googleProfileId String? @unique
 
     expectedChallenge String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    password       Password?
     authenticators Authenticator[]
-}
 
-model Password {
-    hash String
-
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId String @unique
+    @@index([googleProfileId], name: "user_google_profile_id")
+    @@index([name], name: "user_name")
 }
 
 model Authenticator {
@@ -44,4 +41,28 @@ model Authenticator {
     transports           String
     createdAt            DateTime @default(now())
     updatedAt            DateTime @updatedAt
+
+    @@index([credentialID], name: "authenticator_credential_id")
+    @@index(fields: [userId], name: "authenticator_user_id")
+}
+
+model AtCoderAPIFetchLog {
+    id        String   @id @default(cuid())
+    endpoint  String
+    timestamp DateTime @default(now())
+    status    Int
+}
+
+model Problem {
+    id         String @id
+    title      String
+    difficulty Int
+
+    orders Order[]
+}
+
+model Order {
+    id        String   @id @default(cuid())
+    problem   Problem? @relation(fields: [problemId], references: [id])
+    problemId String?
 }

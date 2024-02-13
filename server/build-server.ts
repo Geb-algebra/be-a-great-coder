@@ -7,7 +7,7 @@ esbuild
   .build({
     entryPoints: ['./server/index.ts'],
     outdir: './server-build',
-    target: ['node18'],
+    target: ['node20'],
     platform: 'node',
     sourcemap: true,
     format: 'esm',
