@@ -1,7 +1,11 @@
 import { prisma } from '~/db.server.ts';
 
-import { PROBLEM_UPDATE_INTERVAL, ENDPOINT, updateProblems } from '~/models/problem.server.ts';
-import { createFetchLog } from './fetchLog.server.ts';
+import {
+  PROBLEM_UPDATE_INTERVAL,
+  ENDPOINT,
+  updateProblems,
+} from '~/atcoder-info/models/problem.server.ts';
+import { createFetchLog } from './fetcher.server.ts';
 
 describe('updateProblems', () => {
   const PROBLEMS = [

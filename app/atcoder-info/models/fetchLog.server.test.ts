@@ -1,10 +1,10 @@
 import { prisma } from '~/db.server.ts';
-import { createFetchLog, fetchIfAllowed } from './fetchLog.server.ts';
+import { createFetchLog, fetchIfAllowed } from './fetcher.server.ts';
 import { PROBLEM_UPDATE_INTERVAL } from './problem.server.ts';
-import type { SpyInstance } from 'vitest';
+import type { MockInstance } from 'vitest';
 
 describe('fetchIfAllowed', () => {
-  let mockedFetch: SpyInstance;
+  let mockedFetch: MockInstance;
   beforeEach(async () => {
     mockedFetch = vi.spyOn(global, 'fetch');
   });

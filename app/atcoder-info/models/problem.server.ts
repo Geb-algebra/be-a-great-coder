@@ -1,5 +1,5 @@
 import { prisma } from '~/db.server.ts';
-import { fetchIfAllowed } from '~/models/fetchLog.server.ts';
+import { fetchIfAllowed } from '~/atcoder-info/models/fetcher.server.ts';
 
 export type { Problem } from '@prisma/client';
 

@@ -1,4 +1,4 @@
-import { isUsernameAvailable } from '~/services/auth.server.ts';
+import { isUsernameAvailable } from '~/accounts/services/auth.server.ts';
 import { AccountFactory, AccountRepository } from './account.server.ts';
 import { prisma } from '~/db.server.ts';
 

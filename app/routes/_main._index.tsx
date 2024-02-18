@@ -1,8 +1,11 @@
 import { type MetaFunction, json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import { queryAllProblemsByDifficulty, updateProblemsIfAllowed } from '~/models/problem.server.ts';
-import { fetchNewSubmissions } from '~/services/atcoder.server.ts';
-import { authenticator } from '~/services/auth.server.ts';
+import {
+  queryAllProblemsByDifficulty,
+  updateProblemsIfAllowed,
+} from '~/atcoder-info/models/problem.server.ts';
+import { fetchNewSubmissions } from '~/atcoder-info/services/atcoder.server.ts';
+import { authenticator } from '~/accounts/services/auth.server.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {

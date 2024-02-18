@@ -7,14 +7,14 @@ import AuthButton from '~/components/AuthButton.tsx';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
-import { AccountRepository } from '~/models/account.server.ts';
+import { AccountRepository } from '~/accounts/models/account.server.ts';
 import {
   WEBAUTHN_RP_ID,
   WEBAUTHN_RP_NAME,
   authenticator,
   verifyNewAuthenticator,
-} from '~/services/auth.server.ts';
-import { handleFormSubmit } from '~/services/webauthn.ts';
+} from '~/accounts/services/auth.server.ts';
+import { handleFormSubmit } from '~/accounts/services/webauthn.ts';
 import { getRequiredStringFromFormData } from '~/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {

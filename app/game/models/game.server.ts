@@ -6,7 +6,7 @@ import {
   calcContractedReward,
   calcNumStoryPoints,
   calcOfferedReward,
-} from '~/services/game-config.ts';
+} from '~/game/services/game-config.ts';
 import { UserRepository } from './user.server.ts';
 
 export class Project {

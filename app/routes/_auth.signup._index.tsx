@@ -4,8 +4,8 @@ import { json, redirect } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import AuthFormInput from '~/components/AuthFormInput.tsx';
 
-import { authenticator, isUsernameAvailable } from '~/services/auth.server.ts';
-import { getSession, sessionStorage } from '~/services/session.server.ts';
+import { authenticator, isUsernameAvailable } from '~/accounts/services/auth.server.ts';
+import { getSession, sessionStorage } from '~/accounts/services/session.server.ts';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';

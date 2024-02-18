@@ -1,5 +1,5 @@
 import { prisma } from '~/db.server.ts';
-import { AccountFactory } from './account.server.ts';
+import { AccountFactory } from '~/accounts/models/account.server.ts';
 import {
   ProjectFactory,
   ProjectRepository,
