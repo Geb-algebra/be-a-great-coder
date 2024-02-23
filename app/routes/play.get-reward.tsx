@@ -10,7 +10,7 @@ import {
   TurnRepository,
 } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
-import { getRequiredStringFromFormData } from '~/utils.ts';
+import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });

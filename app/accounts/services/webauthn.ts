@@ -26,8 +26,13 @@ export function handleFormSubmit(
 
     const responseValue =
       type === 'authentication'
-        ? JSON.stringify(await startAuthentication(options))
-        : JSON.stringify(await startRegistration(options));
+        ? // TODO: check types of options more carefully
+          JSON.stringify(
+            await startAuthentication(options as PublicKeyCredentialRequestOptionsJSON),
+          )
+        : JSON.stringify(
+            await startRegistration(options as PublicKeyCredentialCreationOptionsJSON),
+          );
     let responseEl = target.querySelector('input[name="response"]') as HTMLInputElement;
     if (!responseEl) {
       responseEl = Object.assign(document.createElement('input'), {

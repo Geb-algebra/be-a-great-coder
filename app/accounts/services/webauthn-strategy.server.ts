@@ -1,7 +1,7 @@
 import type { SessionStorage, SessionData } from '@remix-run/server-runtime';
 import type { AuthenticateOptions, StrategyVerifyCallback } from 'remix-auth';
 import { Strategy } from 'remix-auth';
-import { verifyAuthenticationResponse } from '@simplewebauthn/server';
+import { verifyAuthenticationResponse } from '~/utils/simplewebauthn.server.ts';
 import type {
   AuthenticationResponseJSON,
   AuthenticatorTransportFuture,

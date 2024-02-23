@@ -3,7 +3,7 @@ import { json, redirect } from '@remix-run/node';
 import invariant from 'tiny-invariant';
 import { AccountRepository } from '~/accounts/models/account.server.ts';
 import { authenticator } from '~/accounts/services/auth.server.ts';
-import { getRequiredStringFromFormData } from '~/utils.ts';
+import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {

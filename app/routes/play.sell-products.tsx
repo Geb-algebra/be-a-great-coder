@@ -4,7 +4,7 @@ import { useActionData, Form } from '@remix-run/react';
 import { authenticator } from '~/accounts/services/auth.server.ts';
 import { GameStatusRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
-import { getRequiredStringFromFormData } from '~/utils.ts';
+import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });

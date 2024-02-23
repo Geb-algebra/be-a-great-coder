@@ -9,7 +9,7 @@ import { getSession, sessionStorage } from '~/accounts/services/session.server.t
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
-import { getRequiredStringFromFormData } from '~/utils.ts';
+import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 import GoogleAuthButton from '~/components/GoogleAuthButton.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 

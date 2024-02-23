@@ -11,7 +11,7 @@ import { authenticator } from '~/accounts/services/auth.server.ts';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
-import { generateAuthenticationOptions } from '@simplewebauthn/server';
+import { generateAuthenticationOptions } from '~/utils/simplewebauthn.server.ts';
 import { getSession, sessionStorage } from '~/accounts/services/session.server.ts';
 import GoogleAuthButton from '~/components/GoogleAuthButton.tsx';
 

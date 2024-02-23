@@ -17,11 +17,11 @@ import {
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
-import { generateRegistrationOptions } from '@simplewebauthn/server';
+import { generateRegistrationOptions } from '~/utils/simplewebauthn.server.ts';
 import { handleFormSubmit } from '~/accounts/services/webauthn.ts';
 import { getSession, sessionStorage } from '~/accounts/services/session.server.ts';
 import { createId } from '@paralleldrive/cuid2';
-import { getRequiredStringFromFormData } from '~/utils.ts';
+import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
