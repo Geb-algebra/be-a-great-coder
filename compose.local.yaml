@@ -24,6 +24,7 @@ services:
       - 3000:3000
       - 5555:5555
       - 8080:8080 # remix DevTools websocket server
+      - 24678:24678 # hot reload
     volumes:
       - .:/8bit-stack
       - node_modules:/8bit-stack/node_modules
@@ -47,6 +48,7 @@ services:
       - 5555:5555
       - 8080:8080 # remix DevTools websocket server
       - 9323:9323 # playwright reporter
+      - 24678:24678 # hot reload
     working_dir: /8bit-stack
     command: npm run validate
     depends_on:

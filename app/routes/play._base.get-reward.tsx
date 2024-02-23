@@ -10,7 +10,7 @@ import {
   TurnRepository,
 } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
-import { getRequiredStringFromFormData } from '~/utils.ts';
+import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -30,15 +30,18 @@ export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
   try {
     const currentGameStatus = await GameStatusRepository.getOrThrow(user.id);
-    let newStatus = GameStatusUpdateService.applyRobotUpgrades(currentGameStatus, 2);
+    const proposedProblem = await ProposedProblemRepository.getRewardUnreceived(user.id);
+    if (!proposedProblem) {
+      throw new ObjectNotFoundError('unfinished proposedProblem not found');
+    }
+    let newStatus = currentGameStatus;
+    if (!proposedProblem.solvedAt) {
+      newStatus = GameStatusUpdateService.applyRobotUpgrades(currentGameStatus, 2);
+    }
     const formData = await request.formData();
     const answerShown = getRequiredStringFromFormData(formData, 'answer-shown') === 'true';
     if (answerShown) {
       newStatus = GameStatusUpdateService.applyRobotData(newStatus, 2);
-    }
-    const proposedProblem = await ProposedProblemRepository.getRewardUnreceived(user.id);
-    if (!proposedProblem) {
-      throw new ObjectNotFoundError('unfinished proposedProblem not found');
     }
     proposedProblem.rewardReceivedAt = new Date();
     await GameStatusRepository.save(user.id, newStatus);
