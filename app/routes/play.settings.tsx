@@ -5,16 +5,16 @@ import { useState } from 'react';
 import AuthFormInput from '~/components/AuthFormInput.tsx';
 import Icon from '~/components/Icon.tsx';
 import Overlay from '~/components/Overlay.tsx';
-import type { Authenticator } from '~/models/authenticator.server.ts';
-import { AccountRepository } from '~/models/account.server.ts';
-import { authenticator } from '~/services/auth.server.ts';
+import type { Authenticator } from '~/accounts/models/authenticator.server.ts';
+import { AccountRepository } from '~/accounts/models/account.server.ts';
+import { authenticator } from '~/accounts/services/auth.server.ts';
 import AuthButton from '~/components/AuthButton.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 
-import type { action as passkeyAction } from '~/routes/_main.settings.passkey.tsx';
+import type { action as passkeyAction } from '~/routes/play.settings.passkey.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
   return json({
     user,

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "run-s build:*",
-    "build:remix": "remix build",
+    "build:remix": "remix build --sourcemap",
     "build:server": "tsx ./server/build-server.ts",
     "deploy": "fly deploy --remote-only",
     "dev": "MOCKS=true remix dev -c \"tsx ./server/index.ts\"",

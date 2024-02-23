@@ -1,12 +1,12 @@
 import { prisma } from '~/db.server.ts';
-import { fetchIfAllowed } from '~/models/fetchLog.server.ts';
+import { fetchIfAllowed } from '~/atcoder-info/models/fetcher.server.ts';
 
 export type { Problem } from '@prisma/client';
 
 export const PROBLEM_UPDATE_INTERVAL = 7 * 24 * 60 * 60 * 1000; // one week in milliseconds
 export const ENDPOINT = 'https://kenkoooo.com/atcoder/resources/merged-problems.json';
 
-export const fetchProblemsIfAllowed = async () => {
+const fetchProblemsIfAllowed = async () => {
   return fetchIfAllowed(ENDPOINT, PROBLEM_UPDATE_INTERVAL);
 };
 
@@ -31,23 +31,27 @@ type problemDatum = {
   solver_count: number;
 };
 
+export async function updateProblems(problems: problemDatum[]) {
+  await prisma.problem.deleteMany();
+  for (const datum of problems) {
+    // some problems have no point in AtCoder
+    if (datum.point !== null && !datum.id.includes('ahc')) {
+      await prisma.problem.create({
+        data: {
+          id: datum.id,
+          title: datum.title,
+          difficulty: datum.point,
+        },
+      });
+    }
+  }
+}
+
 export const updateProblemsIfAllowed = async () => {
   const res = await fetchProblemsIfAllowed();
   if (res) {
     const data: problemDatum[] = await res.json();
-    await prisma.problem.deleteMany();
-    for (const datum of data) {
-      // some problems have no point in AtCoder
-      if (datum.point !== null && !datum.id.includes('ahc')) {
-        await prisma.problem.create({
-          data: {
-            id: datum.id,
-            title: datum.title,
-            difficulty: datum.point,
-          },
-        });
-      }
-    }
+    await updateProblems(data);
   }
 };
 

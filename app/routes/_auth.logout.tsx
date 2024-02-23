@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from '@remix-run/node';
 
-import { authenticator } from '~/services/auth.server.ts';
+import { authenticator } from '~/accounts/services/auth.server.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  return authenticator.logout(request, { redirectTo: '/welcome' });
+  return authenticator.logout(request, { redirectTo: '/' });
 }

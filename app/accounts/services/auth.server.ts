@@ -2,12 +2,12 @@ import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import type { RegistrationResponseJSON } from '@simplewebauthn/types';
 import { Authenticator } from 'remix-auth';
 import invariant from 'tiny-invariant';
-import { type User, AccountFactory, AccountRepository } from '~/models/account.server.ts';
-import { UserRepository } from '~/models/user.server.ts';
+import { type User, AccountFactory, AccountRepository } from '~/accounts/models/account.server.ts';
+import { UserRepository } from '~/accounts/models/user.server.ts';
 
-import { WebAuthnStrategy } from '~/services/webauthn-strategy.server.ts';
-import { getSession, sessionStorage } from '~/services/session.server.ts';
-import { getAuthenticatorById } from '~/models/authenticator.server.ts';
+import { WebAuthnStrategy } from '~/accounts/services/webauthn-strategy.server.ts';
+import { getSession, sessionStorage } from '~/accounts/services/session.server.ts';
+import { getAuthenticatorById } from '~/accounts/models/authenticator.server.ts';
 import { GoogleStrategy } from 'remix-auth-google';
 
 export let authenticator = new Authenticator<User>(sessionStorage);

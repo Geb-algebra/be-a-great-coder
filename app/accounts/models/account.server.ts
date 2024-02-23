@@ -2,8 +2,8 @@ import { createId } from '@paralleldrive/cuid2';
 import { type User } from '@prisma/client';
 
 import { prisma } from '~/db.server.ts';
-import type { Authenticator } from '~/models/authenticator.server.ts';
-import { isUsernameAvailable } from '~/services/auth.server.ts';
+import type { Authenticator } from '~/accounts/models/authenticator.server.ts';
+import { isUsernameAvailable } from '~/accounts/services/auth.server.ts';
 
 export type { User } from '@prisma/client';
 

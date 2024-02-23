@@ -1,19 +1,19 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import invariant from 'tiny-invariant';
-import { AccountRepository } from '~/models/account.server.ts';
-import { authenticator } from '~/services/auth.server.ts';
+import { AccountRepository } from '~/accounts/models/account.server.ts';
+import { authenticator } from '~/accounts/services/auth.server.ts';
 import { getRequiredStringFromFormData } from '~/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {
     successRedirect: '/settings',
-    failureRedirect: '/welcome',
+    failureRedirect: '/',
   });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
   const formData = await request.formData();
   const method = request.method.toLowerCase();

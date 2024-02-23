@@ -1,6 +1,6 @@
 import {
   json,
-  type DataFunctionArgs,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
@@ -9,19 +9,23 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import AuthFormInput from '~/components/AuthFormInput.tsx';
 import invariant from 'tiny-invariant';
 
-import { WEBAUTHN_RP_ID, WEBAUTHN_RP_NAME, authenticator } from '~/services/auth.server.ts';
+import {
+  WEBAUTHN_RP_ID,
+  WEBAUTHN_RP_NAME,
+  authenticator,
+} from '~/accounts/services/auth.server.ts';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
-import { handleFormSubmit } from '~/services/webauthn.ts';
-import { getSession, sessionStorage } from '~/services/session.server.ts';
+import { handleFormSubmit } from '~/accounts/services/webauthn.ts';
+import { getSession, sessionStorage } from '~/accounts/services/session.server.ts';
 import { createId } from '@paralleldrive/cuid2';
 import { getRequiredStringFromFormData } from '~/utils.ts';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, { successRedirect: '/' });
+  await authenticator.isAuthenticated(request, { successRedirect: '/play' });
 
   const session = await getSession(request);
   const username = session.get('username');
@@ -52,13 +56,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const cloneData = await request.clone().formData();
   const authMethod = getRequiredStringFromFormData(cloneData, 'auth-method');
 
   try {
     await authenticator.authenticate(authMethod, request, {
-      successRedirect: '/',
+      successRedirect: '/play',
     });
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {

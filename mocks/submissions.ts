@@ -19,11 +19,11 @@ export const submissionsMock = http.get(
     return new Response(
       JSON.stringify([
         {
-          id: 678,
+          id: 5870139,
           epoch_second: 1560170952,
           problem_id: 'abc121_c',
           contest_id: 'abc121',
-          user_id: 'some user',
+          user_id: 'chokudai',
           language: 'C# (Mono 4.6.2.0)',
           point: 0.0,
           length: 754,

@@ -7,18 +7,18 @@ import AuthButton from '~/components/AuthButton.tsx';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
-import { AccountRepository } from '~/models/account.server.ts';
+import { AccountRepository } from '~/accounts/models/account.server.ts';
 import {
   WEBAUTHN_RP_ID,
   WEBAUTHN_RP_NAME,
   authenticator,
   verifyNewAuthenticator,
-} from '~/services/auth.server.ts';
-import { handleFormSubmit } from '~/services/webauthn.ts';
+} from '~/accounts/services/auth.server.ts';
+import { handleFormSubmit } from '~/accounts/services/webauthn.ts';
 import { getRequiredStringFromFormData } from '~/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
   // When we pass a GET request to the authenticator, it will
   // throw a response that includes the WebAuthn options and
@@ -44,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
   const expectedChallenge = account.expectedChallenge;
   if (!expectedChallenge) {

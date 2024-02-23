@@ -1,22 +1,22 @@
 import {
-  type DataFunctionArgs,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   json,
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import { handleFormSubmit } from '~/services/webauthn.ts';
+import { handleFormSubmit } from '~/accounts/services/webauthn.ts';
 
-import { authenticator } from '~/services/auth.server.ts';
+import { authenticator } from '~/accounts/services/auth.server.ts';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
 import { generateAuthenticationOptions } from '@simplewebauthn/server';
-import { getSession, sessionStorage } from '~/services/session.server.ts';
+import { getSession, sessionStorage } from '~/accounts/services/session.server.ts';
 import GoogleAuthButton from '~/components/GoogleAuthButton.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, { successRedirect: '/' });
+  await authenticator.isAuthenticated(request, { successRedirect: '/play' });
   const options = await generateAuthenticationOptions({ userVerification: 'preferred' });
   const session = await getSession(request);
   session.set('challenge', options.challenge);
@@ -28,10 +28,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   try {
     await authenticator.authenticate('webauthn', request, {
-      successRedirect: '/',
+      successRedirect: '/play',
     });
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {

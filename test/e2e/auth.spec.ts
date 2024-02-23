@@ -15,10 +15,10 @@ test.describe('signup', () => {
 test.describe('login', () => {
   test('redirect to index if already logged in', async ({ loggedInPage }) => {
     await loggedInPage.goto('/login');
-    await expect(loggedInPage).toHaveURL('/');
+    await expect(loggedInPage).toHaveURL('/play');
   });
   test('redirect to landing page if not logged in', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveURL('/welcome');
+    await page.goto('/play');
+    await expect(page).toHaveURL('/');
   });
 });

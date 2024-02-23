@@ -1,8 +1,8 @@
 import { test as base } from '@playwright/test';
 import { username, googleProfileId } from './consts.ts';
-import { AccountFactory } from '~/models/account.server.ts';
-import { getSession, sessionStorage } from '~/services/session.server.ts';
-import { authenticator } from '~/services/auth.server.ts';
+import { AccountFactory } from '~/accounts/models/account.server.ts';
+import { getSession, sessionStorage } from '~/accounts/services/session.server.ts';
+import { authenticator } from '~/accounts/services/auth.server.ts';
 import { parse } from 'cookie';
 
 import { resetDB } from 'test/utils.ts';
