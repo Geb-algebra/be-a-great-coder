@@ -16,7 +16,7 @@ import { getSession, sessionStorage } from '~/accounts/services/session.server.t
 import GoogleAuthButton from '~/components/GoogleAuthButton.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, { successRedirect: '/' });
+  await authenticator.isAuthenticated(request, { successRedirect: '/play' });
   const options = await generateAuthenticationOptions({ userVerification: 'preferred' });
   const session = await getSession(request);
   session.set('challenge', options.challenge);
@@ -31,7 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   try {
     await authenticator.authenticate('webauthn', request, {
-      successRedirect: '/',
+      successRedirect: '/play',
     });
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {

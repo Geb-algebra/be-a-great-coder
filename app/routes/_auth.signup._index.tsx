@@ -15,7 +15,7 @@ import PasskeyHero from '~/components/PasskeyHero.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {
-    successRedirect: '/',
+    successRedirect: '/play',
   });
   return json({});
 }

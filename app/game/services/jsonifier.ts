@@ -1,39 +1,28 @@
-import type { Game, Employee, Project } from '../models/game.server.ts';
+import { GameStatus } from '../models/game.ts';
 
-export function jsonifyEmployee(employee: Employee) {
-  return {
-    id: employee.id,
-    userId: employee.userId,
-    name: employee.name,
-    salary: employee.salary,
-    codingSkill: employee.codingSkill,
-    communicationSkill: employee.communicationSkill,
-    projectManagementSkill: employee.projectManagementSkill,
-    isAssigned: employee.isAssigned,
-    isFired: employee.isFired,
-  };
-}
+export type GameStatusJson = {
+  money: number;
+  ingredientStock: [string, number][];
+  robotEfficiency: number;
+  robotQuality: number;
+};
 
-export function jsonifyProject(project: Project) {
-  return {
-    id: project.id,
-    userId: project.userId,
-    offeredReward: project.offeredReward,
-    contractReward: project.contractReward,
-    numStoryPoints: project.numStoryPoints,
-    problem: project.problem,
-    storyPointsHistory: project.storyPointsHistory,
-    startContractUnixSeconds: project.startContractUnixSeconds,
-  };
-}
+export class GameStatusJsonifier {
+  static toJson(gameStatus: GameStatus): GameStatusJson {
+    return {
+      money: gameStatus.money,
+      ingredientStock: Array.from(gameStatus.ingredientStock.entries()),
+      robotEfficiency: gameStatus.robotEfficiency,
+      robotQuality: gameStatus.robotQuality,
+    };
+  }
 
-export function jsonifyGame(game: Game) {
-  return {
-    userId: game.userId,
-    money: game.money,
-    year: game.year,
-    month: game.month,
-    employees: game.employees.map(jsonifyEmployee),
-    projects: game.projects.map(jsonifyProject),
-  };
+  static fromJson(json: GameStatusJson) {
+    return new GameStatus(
+      json.money,
+      new Map(json.ingredientStock),
+      json.robotEfficiency,
+      json.robotQuality,
+    );
+  }
 }

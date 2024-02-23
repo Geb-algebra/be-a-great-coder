@@ -11,7 +11,7 @@ import { authenticator } from '~/accounts/services/auth.server.ts';
 import AuthButton from '~/components/AuthButton.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 
-import type { action as passkeyAction } from '~/routes/_main.settings.passkey.tsx';
+import type { action as passkeyAction } from '~/routes/play.settings.passkey.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });

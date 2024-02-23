@@ -4,7 +4,7 @@ import { Link } from '@remix-run/react';
 import { authenticator } from '~/accounts/services/auth.server.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, { successRedirect: '/' });
+  await authenticator.isAuthenticated(request, { successRedirect: '/play' });
   return json({});
 }
 

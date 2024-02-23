@@ -2,11 +2,14 @@ import { prisma } from '~/db.server.ts';
 import { createFetchLog, fetchIfAllowed } from './fetcher.server.ts';
 import { PROBLEM_UPDATE_INTERVAL } from './problem.server.ts';
 import type { MockInstance } from 'vitest';
+import { server } from 'mocks/mock-server.ts';
+import { http } from 'msw';
 
 describe('fetchIfAllowed', () => {
   let mockedFetch: MockInstance;
   beforeEach(async () => {
     mockedFetch = vi.spyOn(global, 'fetch');
+    server.use(http.get('https://example.com', () => new Response('')));
   });
   afterEach(() => {
     vi.restoreAllMocks();

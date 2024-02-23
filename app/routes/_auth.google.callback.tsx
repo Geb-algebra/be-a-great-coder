@@ -4,7 +4,7 @@ import { authenticator } from '~/accounts/services/auth.server.ts';
 
 export let loader = ({ request }: LoaderFunctionArgs) => {
   return authenticator.authenticate('google', request, {
-    successRedirect: '/',
+    successRedirect: '/play',
     failureRedirect: '/login',
   });
 };

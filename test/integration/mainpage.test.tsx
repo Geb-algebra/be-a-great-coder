@@ -1,4 +1,4 @@
-import Page from '~/routes/_main.tsx';
+import Page from '~/routes/play.tsx';
 import { createRemixStub } from '@remix-run/testing';
 import { render, screen, waitFor } from '@testing-library/react';
 
@@ -10,7 +10,13 @@ describe('mainpage', () => {
         Component: Page,
         loader: async () => {
           return {
-            name: 'John Doe',
+            user: { name: 'John Doe' },
+            gameStatus: {
+              money: 1000,
+              ingredientStock: new Map([['iron', 5]]),
+              robotEfficiency: 1,
+              robotQuality: 1,
+            },
           };
         },
       },
@@ -26,7 +32,13 @@ describe('mainpage', () => {
         Component: Page,
         loader: async () => {
           return {
-            name: 'John Doe',
+            user: { name: 'John Doe' },
+            gameStatus: {
+              money: 1000,
+              ingredientStock: new Map([['iron', 5]]),
+              robotEfficiency: 1,
+              robotQuality: 1,
+            },
           };
         },
       },
