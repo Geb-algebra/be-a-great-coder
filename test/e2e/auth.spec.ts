@@ -6,7 +6,7 @@ test.describe('signup', () => {
   test('signup with existing username', async ({ pageWithUser }) => {
     await pageWithUser.goto('/signup');
     await pageWithUser.getByLabel(/username/i).fill(username);
-    await pageWithUser.getByRole('button', { name: /signup with passkey/i }).click();
+    await pageWithUser.getByRole('button', { name: /check username/i }).click();
     await expect(pageWithUser).toHaveURL(ignoreQueryRegExp('/signup'));
     await expect(pageWithUser.getByText(/username already taken/i)).toBeVisible();
   });

@@ -55,7 +55,7 @@ function Passkey(props: { authenticator: SerializeFrom<Authenticator> }) {
           <p className="mx-6 my-6 text-2xl font-bold">Edit Passkey</p>
           <fetcher.Form
             method="put"
-            action="/settings/passkey"
+            action="/play/settings/passkey"
             className="mx-6 my-6"
             onSubmit={() => setIsPasskeyEditing(false)}
           >
@@ -81,7 +81,7 @@ function Passkey(props: { authenticator: SerializeFrom<Authenticator> }) {
           <p className="mx-6 my-6 text-2xl font-bold">Delete Passkey</p>
           <fetcher.Form
             method="delete"
-            action="/settings/passkey"
+            action="/play/settings/passkey"
             className="mx-6 my-6"
             onSubmit={() => setIsPasskeyDeleting(false)}
           >
@@ -116,7 +116,7 @@ export default function Page() {
             ))}
           </ul>
           <Link
-            to="/add-passkey"
+            to="/play/add-passkey"
             className="flex justify-center px-6 py-6 rounded-lg border border-dashed border-gray-300"
           >
             Add Passkey

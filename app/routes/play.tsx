@@ -60,7 +60,7 @@ export default function Index() {
         <Overlay isShown={isMenuOpen} setIsShown={setIsMenuOpen}>
           <div className="absolute right-6 top-20 w-64 bg-white border border-gray-300 rounded-lg overflow-hidden z-10">
             <Link
-              to="/settings"
+              to="/play/settings"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
             >

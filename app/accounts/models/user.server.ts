@@ -5,11 +5,11 @@ export type { User };
 
 export class UserRepository {
   static async getById(id: User['id']) {
-    return await prisma.user.findUniqueOrThrow({ where: { id } });
+    return await prisma.user.findUnique({ where: { id } });
   }
 
   static async getByName(name: User['name']) {
-    return await prisma.user.findUniqueOrThrow({ where: { name } });
+    return await prisma.user.findUnique({ where: { name } });
   }
 
   static async save(user: User) {

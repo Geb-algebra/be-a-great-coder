@@ -7,7 +7,7 @@ import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {
-    successRedirect: '/settings',
+    successRedirect: '/play/settings',
     failureRedirect: '/',
   });
 }
@@ -35,5 +35,5 @@ export async function action({ request }: ActionFunctionArgs) {
     account.authenticators = account.authenticators.filter((a) => a.credentialID !== passkeyId);
     await AccountRepository.save(account);
   }
-  return redirect('/settings');
+  return redirect('/play/settings');
 }

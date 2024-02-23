@@ -1,54 +1,33 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 import { useLoaderData, useActionData, Form } from '@remix-run/react';
-import { generateRegistrationOptions } from '~/utils/simplewebauthn.server.ts';
-import type { RegistrationResponseJSON } from '@simplewebauthn/types';
+import type { RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 import { AccountRepository } from '~/accounts/models/account.server.ts';
 import {
-  WEBAUTHN_RP_ID,
-  WEBAUTHN_RP_NAME,
   authenticator,
   verifyNewAuthenticator,
+  webAuthnStrategy,
 } from '~/accounts/services/auth.server.ts';
-import { handleFormSubmit } from '~/accounts/services/webauthn.ts';
+import { handleFormSubmit } from 'remix-auth-webauthn/browser';
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
+import { getSession, sessionStorage } from '~/services/session.server.ts';
+import { ValueError } from '~/errors';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
-  const account = await AccountRepository.getById(user.id);
-  // When we pass a GET request to the authenticator, it will
-  // throw a response that includes the WebAuthn options and
-  // stores the challenge on session storage. To avoid needing
-  // a CatchBoundary, we catch the response here and return it as
-  // loader data.
-  const options = await generateRegistrationOptions({
-    rpName: WEBAUTHN_RP_NAME,
-    rpID: WEBAUTHN_RP_ID,
-    userID: user.id,
-    userName: user.name,
-    timeout: 60000,
-    attestationType: 'none',
-    excludeCredentials: [],
-    authenticatorSelection: {
-      residentKey: 'required',
-      userVerification: 'preferred',
-    },
-  });
-  account.expectedChallenge = options.challenge;
-  await AccountRepository.save(account);
-  return json(options);
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  return webAuthnStrategy.generateOptions(request, sessionStorage, user);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
-  const account = await AccountRepository.getById(user.id);
-  const expectedChallenge = account.expectedChallenge;
+  const session = await getSession(request);
+  const expectedChallenge = session.get('challenge');
   if (!expectedChallenge) {
-    throw new Error('Expected challenge not found.');
+    throw new ValueError('Expected challenge not found.');
   }
   try {
     const formData = await request.formData();
@@ -57,13 +36,13 @@ export async function action({ request }: ActionFunctionArgs) {
       const responseData = getRequiredStringFromFormData(formData, 'response');
       data = JSON.parse(responseData);
     } catch {
-      throw new Error('Invalid passkey response JSON.');
+      throw new ValueError('Invalid passkey response JSON.');
     }
+    const account = await AccountRepository.getById(user.id);
     const newAuthenticator = await verifyNewAuthenticator(data, expectedChallenge);
     account.authenticators.push({ ...newAuthenticator, name: null });
-    account.expectedChallenge = null;
     await AccountRepository.save(account);
-    throw redirect('/settings');
+    throw redirect('/play/settings');
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {
       return { error: (await error.json()) as { message: string } };
@@ -87,6 +66,7 @@ export default function Page() {
           <AuthErrorMessage message={actionData?.error.message} />
           <AuthContainer>
             <Form method="post" onSubmit={handleFormSubmit(options)}>
+              <input type="hidden" name="username" value={options.user?.username} />
               <AuthButton type="submit" value="registration">
                 Create a New Passkey
               </AuthButton>
