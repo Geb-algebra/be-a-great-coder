@@ -6,13 +6,11 @@ import { queryRandomProblemByDifficulty } from '~/atcoder-info/models/problem.se
 import { getProblemSolvedTime } from '~/atcoder-info/services/atcoder.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 import {
-  GameStatusRepository,
   ProposedProblemFactory,
   ProposedProblemRepository,
   TurnRepository,
 } from '~/game/lifecycle/game.server.ts';
-import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
-import { getRequiredStringFromFormData } from '~/utils.ts';
+import { getNextTurn } from '~/game/services/game.server.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });

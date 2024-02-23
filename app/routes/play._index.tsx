@@ -1,17 +1,17 @@
-import { type MetaFunction, json, type LoaderFunctionArgs, redirect } from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+import { json, type LoaderFunctionArgs, redirect, type ActionFunctionArgs } from '@remix-run/node';
+import { Form } from '@remix-run/react';
 import { authenticator } from '~/accounts/services/auth.server.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {
-    failureRedirect: '/welcome',
+    failureRedirect: '/',
   });
   return json({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   await authenticator.isAuthenticated(request, {
-    failureRedirect: '/welcome',
+    failureRedirect: '/',
   });
   return redirect('/play/router');
 }

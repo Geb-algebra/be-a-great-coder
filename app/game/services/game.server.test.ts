@@ -11,18 +11,21 @@ describe('GameStatusUpdateService', () => {
   });
 
   it('should manufacture products', () => {
-    const { gamestatus, quantity } = GameStatusUpdateService.manufactureProducts(
+    const { newStatus, quantity } = GameStatusUpdateService.manufactureProducts(
       initialGameStatus,
       'sword',
       1,
     );
-    expect(gamestatus.money).toEqual(1000);
-    expect(gamestatus.ingredientStock.get('iron')).toEqual(5 - 3);
+    expect(newStatus.money).toEqual(1000);
+    expect(newStatus.ingredientStock.get('iron')).toEqual(5 - 3);
     expect(quantity).toEqual(1);
   });
 
   it('should sell products', () => {
-    const newGameStatus = GameStatusUpdateService.sellProducts(initialGameStatus, 'sword', 1);
+    const newGameStatus = GameStatusUpdateService.sellProducts(
+      initialGameStatus,
+      new Map([['sword', 1]]),
+    );
     expect(newGameStatus.money).toEqual(1000 + 400);
     expect(newGameStatus.ingredientStock.get('iron')).toEqual(5);
   });

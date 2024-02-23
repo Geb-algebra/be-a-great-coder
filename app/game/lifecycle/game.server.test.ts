@@ -34,6 +34,7 @@ describe('ProposedProblemFactory', () => {
       title: 'problem-title',
       difficulty: 100,
     };
+    await prisma.problem.create({ data: problem });
     const proposedProblem = await ProposedProblemFactory.createAndSave(userId, problem);
     expect(proposedProblem.userId).toEqual(userId);
     expect(proposedProblem.problemId).toEqual(problem.id);

@@ -18,7 +18,7 @@ import { handleFormSubmit } from '~/accounts/services/webauthn.ts';
 import { getRequiredStringFromFormData } from '~/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
   // When we pass a GET request to the authenticator, it will
   // throw a response that includes the WebAuthn options and
@@ -44,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
   const expectedChallenge = account.expectedChallenge;
   if (!expectedChallenge) {

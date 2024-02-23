@@ -33,7 +33,7 @@ export class GameStatusUpdateService {
 
   static sellProducts(currentGameStatus: GameStatus, productStock: Map<string, number>) {
     const revenue = Array.from(productStock.entries()).reduce(
-      (total, [productName, quantity]) => total + quantity * 100,
+      (total, [productName, quantity]) => total + quantity * 400,
       0,
     );
     return new GameStatus(currentGameStatus.money + revenue, currentGameStatus.ingredientStock);

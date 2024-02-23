@@ -15,7 +15,7 @@ import type { GameStatus, Turn } from '~/game/models/game.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: '/welcome',
+    failureRedirect: '/',
   });
   let gameStatus: GameStatus;
   let turn: Turn;

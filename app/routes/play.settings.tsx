@@ -14,7 +14,7 @@ import PasskeyHero from '~/components/PasskeyHero.tsx';
 import type { action as passkeyAction } from '~/routes/play.settings.passkey.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
   return json({
     user,
