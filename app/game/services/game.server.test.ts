@@ -34,7 +34,7 @@ describe('GameStatusUpdateService', () => {
     const newGameStatus = GameStatusUpdateService.applyRobotUpgrades(initialGameStatus, 1);
     expect(newGameStatus.money).toEqual(1000);
     expect(newGameStatus.ingredientStock.get('iron')).toEqual(5);
-    expect(newGameStatus.robotEfficiency).toEqual(3 + 2);
-    expect(newGameStatus.robotQuality).toEqual(4);
+    expect(newGameStatus.robotEfficiencyLevel).toEqual(3 + 2);
+    expect(newGameStatus.robotQualityLevel).toEqual(4);
   });
 });

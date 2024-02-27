@@ -1,10 +1,12 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useActionData, Form } from '@remix-run/react';
+import { useActionData, Form, useRouteLoaderData } from '@remix-run/react';
 import { authenticator } from '~/accounts/services/auth.server.ts';
 import { GameStatusRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
+import type { loader as baseLoader } from './play._base.tsx';
+import { GameStatusJsonifier } from '~/game/services/jsonifier.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -47,7 +49,10 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
+  const baseLoaderData = useRouteLoaderData<typeof baseLoader>('routes/play._base');
   const actionData = useActionData<typeof action>();
+  if (!baseLoaderData) return null;
+  const gameStatus = GameStatusJsonifier.fromJson(baseLoaderData.gameStatusJson);
   return (
     <div>
       <h1 className="font-bold text-2xl">Manufacture</h1>
@@ -58,7 +63,7 @@ export default function Page() {
           <option value="sword">Sword</option>
         </select>
         <label htmlFor="quantity">Quantity</label>
-        <input type="number" name="quantity" />
+        <input type="number" name="quantity" min="0" max={gameStatus.robotEfficiencyLevel} />
         <button type="submit">Make Items</button>
       </Form>
     </div>

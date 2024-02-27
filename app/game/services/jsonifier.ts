@@ -3,8 +3,8 @@ import { GameStatus } from '../models/game.ts';
 export type GameStatusJson = {
   money: number;
   ingredientStock: [string, number][];
-  robotEfficiency: number;
-  robotQuality: number;
+  robotEfficiencyLevel: number;
+  robotQualityLevel: number;
 };
 
 export class GameStatusJsonifier {
@@ -12,8 +12,8 @@ export class GameStatusJsonifier {
     return {
       money: gameStatus.money,
       ingredientStock: Array.from(gameStatus.ingredientStock.entries()),
-      robotEfficiency: gameStatus.robotEfficiency,
-      robotQuality: gameStatus.robotQuality,
+      robotEfficiencyLevel: gameStatus.robotEfficiencyLevel,
+      robotQualityLevel: gameStatus.robotQualityLevel,
     };
   }
 
@@ -21,8 +21,8 @@ export class GameStatusJsonifier {
     return new GameStatus(
       json.money,
       new Map(json.ingredientStock),
-      json.robotEfficiency,
-      json.robotQuality,
+      json.robotEfficiencyLevel,
+      json.robotQualityLevel,
     );
   }
 }

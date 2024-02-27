@@ -9,6 +9,7 @@
     "build:server": "tsx ./server/build-server.ts",
     "deploy": "fly deploy --remote-only",
     "dev": "MOCKS=true tsx ./server/index.ts",
+    "dev:unmock": "tsx ./server/index.ts",
     "start": "NODE_ENV=production node ./server-build/index.js",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx .",
     "format": "prettier --write .",

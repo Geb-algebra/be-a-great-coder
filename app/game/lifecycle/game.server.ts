@@ -54,13 +54,13 @@ export class GameStatusRepository {
     await prisma.robot.upsert({
       where: { userId },
       update: {
-        efficiencyLevel: gameStatus.robotEfficiency,
-        qualityLevel: gameStatus.robotQuality,
+        efficiencyLevel: gameStatus.robotEfficiencyLevel,
+        qualityLevel: gameStatus.robotQualityLevel,
       },
       create: {
         userId,
-        efficiencyLevel: gameStatus.robotEfficiency,
-        qualityLevel: gameStatus.robotQuality,
+        efficiencyLevel: gameStatus.robotEfficiencyLevel,
+        qualityLevel: gameStatus.robotQualityLevel,
       },
     });
   }

@@ -35,7 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new ObjectNotFoundError('unfinished proposedProblem not found');
     }
     let newStatus = currentGameStatus;
-    if (!proposedProblem.solvedAt) {
+    if (proposedProblem.solvedAt) {
       newStatus = GameStatusUpdateService.applyRobotUpgrades(currentGameStatus, 2);
     }
     const formData = await request.formData();

@@ -55,7 +55,8 @@ export default function Index() {
     <div className="pt-16">
       <p>
         money: {gameStatus.money} / iron: {gameStatus.ingredientStock.get('iron')} / robot
-        efficiency: {gameStatus.robotEfficiency} / robot quality: {gameStatus.robotQuality}
+        efficiency: {gameStatus.robotEfficiencyLevel} / robot quality:{' '}
+        {gameStatus.robotQualityLevel}
       </p>
       <Outlet />
     </div>

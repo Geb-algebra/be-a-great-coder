@@ -8,8 +8,8 @@ describe('GameStatusJsonifier', () => {
     expect(json).toEqual({
       money: 1000,
       ingredientStock: [['iron', 5]],
-      robotEfficiency: 3,
-      robotQuality: 4,
+      robotEfficiencyLevel: 3,
+      robotQualityLevel: 4,
     });
   });
 
@@ -17,13 +17,13 @@ describe('GameStatusJsonifier', () => {
     const json = {
       money: 1000,
       ingredientStock: [['iron', 5]] as [string, number][],
-      robotEfficiency: 3,
-      robotQuality: 4,
+      robotEfficiencyLevel: 3,
+      robotQualityLevel: 4,
     };
     const gameStatus = GameStatusJsonifier.fromJson(json);
     expect(gameStatus.money).toEqual(1000);
     expect(gameStatus.ingredientStock.get('iron')).toEqual(5);
-    expect(gameStatus.robotEfficiency).toEqual(3);
-    expect(gameStatus.robotQuality).toEqual(4);
+    expect(gameStatus.robotEfficiencyLevel).toEqual(3);
+    expect(gameStatus.robotQualityLevel).toEqual(4);
   });
 });

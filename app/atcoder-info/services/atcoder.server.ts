@@ -32,5 +32,5 @@ export async function getProblemSolvedTime(
   const earliestSubmission = newSubmissions.find(
     (submission: any) => submission.problem_id === problemId,
   );
-  return earliestSubmission ? new Date(earliestSubmission.epoch_second) : null;
+  return earliestSubmission ? new Date(earliestSubmission.epoch_second * 1000) : null;
 }
