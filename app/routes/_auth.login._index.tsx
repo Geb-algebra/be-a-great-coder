@@ -6,7 +6,7 @@ import {
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { handleFormSubmit } from 'remix-auth-webauthn/browser';
 
-import { authenticator, webAuthnStrategy } from '~/accounts/services/auth.server.ts';
+import { authenticator, webAuthnStrategy } from '~/services/auth.server.ts';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';
 import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';

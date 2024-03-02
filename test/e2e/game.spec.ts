@@ -7,7 +7,7 @@ import {
 } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService } from '~/game/services/game.server.ts';
 import { GameStatus } from '~/game/models/game.ts';
-import { UserRepository } from '~/accounts/models/user.server.ts';
+import { UserRepository } from '~/accounts/lifecycle/user.server.ts';
 import invariant from 'tiny-invariant';
 import { prisma } from '~/db.server.ts';
 

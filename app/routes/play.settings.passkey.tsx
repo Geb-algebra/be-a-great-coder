@@ -1,8 +1,9 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import invariant from 'tiny-invariant';
-import { AccountRepository } from '~/accounts/models/account.server.ts';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { AccountRepository } from '~/accounts/lifecycle/account.server';
+import { ObjectNotFoundError } from '~/errors';
+import { authenticator } from '~/services/auth.server.ts';
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -15,6 +16,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
   const account = await AccountRepository.getById(user.id);
+  if (!account) throw new ObjectNotFoundError('Account not found');
   const formData = await request.formData();
   const method = request.method.toLowerCase();
 

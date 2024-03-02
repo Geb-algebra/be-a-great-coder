@@ -1,6 +1,6 @@
 import { type MetaFunction, json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 import {
   GameStatusFactory,
   GameStatusRepository,

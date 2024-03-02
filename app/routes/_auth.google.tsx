@@ -1,6 +1,6 @@
 // app/routes/auth/google.tsx
 import { type ActionFunctionArgs, redirect } from '@remix-run/node';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 
 export let loader = () => redirect('/login');
 

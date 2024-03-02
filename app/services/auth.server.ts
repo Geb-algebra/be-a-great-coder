@@ -2,11 +2,12 @@ import { verifyRegistrationResponse } from '~/utils/simplewebauthn.server.ts';
 import type { RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
 import { Authenticator } from 'remix-auth';
 import invariant from 'tiny-invariant';
-import { type User, UserRepository } from '~/accounts/models/user.server.ts';
-import { AccountFactory, AccountRepository } from '~/accounts/models/account.server.ts';
+import type { User } from '~/accounts/models/account.ts';
+import { UserRepository } from '~/accounts/lifecycle/user.server.ts';
+import { AccountFactory, AccountRepository } from '~/accounts/lifecycle/account.server';
 
 import { getSession, sessionStorage } from '~/services/session.server.ts';
-import { getAuthenticatorById } from '~/accounts/models/authenticator.server.ts';
+import { getAuthenticatorById } from '~/accounts/lifecycle/authenticator.server.ts';
 import { GoogleStrategy } from 'remix-auth-google';
 import { WebAuthnStrategy } from 'remix-auth-webauthn';
 import { IntegrityError, ObjectNotFoundError, ValueError } from '~/errors.ts';
@@ -39,16 +40,9 @@ export const webAuthnStrategy = new WebAuthnStrategy<User>(
     // need to transform a CSV string into a list of strings at this step.
     getUserAuthenticators: async (user) => {
       if (!user) return [];
-      try {
-        const account = await AccountRepository.getById(user.id);
-        return account.authenticators;
-      } catch (error) {
-        if (error instanceof ObjectNotFoundError) {
-          return [];
-        } else {
-          throw error;
-        }
-      }
+      const account = await AccountRepository.getById(user.id);
+      if (!account) return [];
+      return account.authenticators;
     },
     // Transform the user object into the shape expected by the strategy.
     // You can use a regular username, the users email address, or something else.
@@ -74,12 +68,13 @@ export const webAuthnStrategy = new WebAuthnStrategy<User>(
           { ...authenticator, transports: authenticator.transports.split(','), name: null },
         ],
       });
+      await AccountRepository.save({ authenticators, ...user });
       return user;
     } else if (type === 'authentication') {
       if (!savedAuthenticator) throw new ObjectNotFoundError('Authenticator not found');
-      const { authenticators, ...user } = await AccountRepository.getById(
-        savedAuthenticator.userId,
-      );
+      const account = await AccountRepository.getById(savedAuthenticator.userId);
+      if (!account) throw new ObjectNotFoundError('Account not found');
+      const { authenticators, ...user } = account;
       return user;
     } else {
       throw new ValueError('Invalid verification type');
@@ -97,17 +92,19 @@ let googleStrategy = new GoogleStrategy(
   },
   async ({ accessToken, refreshToken, extraParams, profile }) => {
     // Get the user data from your DB or API using the tokens and profile
-    let account;
-    try {
-      account = await AccountRepository.getByGoogleProfileId(profile.id);
-    } catch (error) {
-      account = await AccountFactory.create({
+    const account = await AccountRepository.getByGoogleProfileId(profile.id);
+    if (account) {
+      const { authenticators, ...user } = account;
+      return user;
+    } else {
+      const newAccount = await AccountFactory.create({
         name: profile.displayName,
         googleProfileId: profile.id,
       });
+      await AccountRepository.save(newAccount);
+      const { authenticators, ...user } = newAccount;
+      return user;
     }
-    const { authenticators, ...user } = account;
-    return user;
   },
 );
 

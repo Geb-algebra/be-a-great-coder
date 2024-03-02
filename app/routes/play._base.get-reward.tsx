@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { useActionData, Form, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 import {
   GameStatusRepository,

@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useActionData, Form, useRouteLoaderData } from '@remix-run/react';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 import { GameStatusRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
