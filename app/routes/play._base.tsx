@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     gameStatus = await GameStatusRepository.getOrThrow(user.id);
   } catch (error) {
     if (error instanceof ObjectNotFoundError) {
-      gameStatus = GameStatusFactory.initialize(user.id);
+      gameStatus = GameStatusFactory.initialize();
       await GameStatusRepository.save(user.id, gameStatus);
     } else {
       throw error;
@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     turn = await TurnRepository.getOrThrow(user.id);
   } catch (error) {
     if (error instanceof ObjectNotFoundError) {
-      turn = TurnFactory.initialize(user.id);
+      turn = TurnFactory.initialize();
       await TurnRepository.save(user.id, turn);
     } else {
       throw error;

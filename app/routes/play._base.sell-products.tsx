@@ -7,6 +7,7 @@ import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.serve
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 import type { loader as baseLoader } from './play._base.tsx';
 import { GameStatusJsonifier } from '~/game/services/jsonifier.ts';
+import { GameLogicViolated } from '~/errors.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -37,8 +38,8 @@ export async function action({ request }: ActionFunctionArgs) {
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {
-    if (error instanceof Response && error.status >= 400) {
-      return { error: (await error.json()) as { message: string } };
+    if (error instanceof GameLogicViolated) {
+      return { error: { message: error.message } };
     }
     throw error;
   }
@@ -55,15 +56,21 @@ export default function Page() {
   const gameStatus = GameStatusJsonifier.fromJson(baseLoaderData.gameStatusJson);
   return (
     <div>
-      <h1 className="font-bold text-2xl">Manufacture</h1>
+      <h1 className="font-bold text-2xl">Make and sell products</h1>
       <p>{actionData?.error.message}</p>
       <Form method="post">
         <label htmlFor="product">Product</label>
-        <select name="product">
+        <select id="product" name="product">
           <option value="sword">Sword</option>
         </select>
         <label htmlFor="quantity">Quantity</label>
-        <input type="number" name="quantity" min="0" max={gameStatus.robotEfficiencyLevel} />
+        <input
+          type="number"
+          id="quantity"
+          name="quantity"
+          min="0"
+          max={gameStatus.robotEfficiencyLevel}
+        />
         <button type="submit">Make Items</button>
       </Form>
     </div>
