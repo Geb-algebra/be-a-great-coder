@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useActionData, Form, useLoaderData } from '@remix-run/react';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 import { queryRandomProblemByDifficulty } from '~/atcoder-info/models/problem.server.ts';
 import { getProblemSolvedTime } from '~/atcoder-info/services/atcoder.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
@@ -23,10 +23,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const problemSolvedTime = await getProblemSolvedTime(
       currentProposedProblem.problem.id,
       user.name,
-      currentProposedProblem.createdAt.getTime(),
+      Math.floor(currentProposedProblem.createdAt.getTime() / 1000),
     );
     if (problemSolvedTime) {
-      currentProposedProblem.finishedAt = problemSolvedTime;
+      currentProposedProblem.solvedAt = problemSolvedTime;
       await ProposedProblemRepository.save(currentProposedProblem);
     }
     return json(currentProposedProblem);
@@ -65,7 +65,14 @@ export default function Page() {
   return (
     <div>
       <h1 className="font-bold text-2xl">Solve Problems</h1>
-      <p>{proposedProblem.problem.title}</p>
+      <div className="flex">
+        <p>{proposedProblem.problem.title}</p>
+        <a
+          href={`https://atcoder.jp/contests/${proposedProblem.problem.id.split('_')[0]}/tasks/${proposedProblem.problem.id}`}
+        >
+          Go to Problem Page!
+        </a>
+      </div>
       <p>{proposedProblem.problem.difficulty}</p>
       <p>started at: {proposedProblem.createdAt}</p>
       <p>Cleared at: {proposedProblem.solvedAt ?? null}</p>

@@ -2,7 +2,7 @@ import { type MetaFunction, json, type LoaderFunctionArgs } from '@remix-run/nod
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import Overlay from '~/components/Overlay.tsx';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, {

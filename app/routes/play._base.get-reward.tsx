@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { useActionData, Form, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 import {
   GameStatusRepository,
@@ -35,7 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new ObjectNotFoundError('unfinished proposedProblem not found');
     }
     let newStatus = currentGameStatus;
-    if (!proposedProblem.solvedAt) {
+    if (proposedProblem.solvedAt) {
       newStatus = GameStatusUpdateService.applyRobotUpgrades(currentGameStatus, 2);
     }
     const formData = await request.formData();

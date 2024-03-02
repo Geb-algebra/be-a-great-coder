@@ -7,30 +7,22 @@ export type Turn = (typeof TURNS)[number];
 export class GameStatus {
   readonly money: number;
   private _ingredientStock: Map<string, number>;
-  private _robotEfficiencyLevel: number;
-  private _robotQualityLevel: number;
+  readonly robotEfficiencyLevel: number;
+  readonly robotQualityLevel: number;
 
   constructor(
     money: number = 0,
     ingredientStock: Map<string, number> = new Map(),
-    robotEfficiency = 1,
-    robotQuality = 1,
+    robotEfficiencyLevel = 1,
+    robotQualityLevel = 1,
   ) {
     this.money = money;
     this._ingredientStock = ingredientStock;
-    this._robotEfficiencyLevel = robotEfficiency;
-    this._robotQualityLevel = robotQuality;
+    this.robotEfficiencyLevel = robotEfficiencyLevel;
+    this.robotQualityLevel = robotQualityLevel;
   }
 
   get ingredientStock() {
     return new Map(this._ingredientStock);
-  }
-
-  get robotEfficiency() {
-    return this._robotEfficiencyLevel;
-  }
-
-  get robotQuality() {
-    return this._robotQualityLevel;
   }
 }

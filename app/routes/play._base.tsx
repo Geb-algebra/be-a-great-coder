@@ -1,6 +1,6 @@
 import { type MetaFunction, json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, useLoaderData } from '@remix-run/react';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
 import {
   GameStatusFactory,
   GameStatusRepository,
@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     gameStatus = await GameStatusRepository.getOrThrow(user.id);
   } catch (error) {
     if (error instanceof ObjectNotFoundError) {
-      gameStatus = GameStatusFactory.initialize(user.id);
+      gameStatus = GameStatusFactory.initialize();
       await GameStatusRepository.save(user.id, gameStatus);
     } else {
       throw error;
@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     turn = await TurnRepository.getOrThrow(user.id);
   } catch (error) {
     if (error instanceof ObjectNotFoundError) {
-      turn = TurnFactory.initialize(user.id);
+      turn = TurnFactory.initialize();
       await TurnRepository.save(user.id, turn);
     } else {
       throw error;
@@ -55,7 +55,8 @@ export default function Index() {
     <div className="pt-16">
       <p>
         money: {gameStatus.money} / iron: {gameStatus.ingredientStock.get('iron')} / robot
-        efficiency: {gameStatus.robotEfficiency} / robot quality: {gameStatus.robotQuality}
+        efficiency: {gameStatus.robotEfficiencyLevel} / robot quality:{' '}
+        {gameStatus.robotQualityLevel}
       </p>
       <Outlet />
     </div>

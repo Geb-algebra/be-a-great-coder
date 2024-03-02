@@ -8,8 +8,8 @@ import invariant from 'tiny-invariant';
 import { ObjectNotFoundError } from '~/errors.ts';
 
 export class GameStatusFactory {
-  static initialize(userId: User['id']) {
-    return new GameStatus(1000, new Map(), 1, 1);
+  static initialize() {
+    return new GameStatus(1000, new Map([['iron', 0]]), 1, 1);
   }
 }
 
@@ -54,13 +54,13 @@ export class GameStatusRepository {
     await prisma.robot.upsert({
       where: { userId },
       update: {
-        efficiencyLevel: gameStatus.robotEfficiency,
-        qualityLevel: gameStatus.robotQuality,
+        efficiencyLevel: gameStatus.robotEfficiencyLevel,
+        qualityLevel: gameStatus.robotQualityLevel,
       },
       create: {
         userId,
-        efficiencyLevel: gameStatus.robotEfficiency,
-        qualityLevel: gameStatus.robotQuality,
+        efficiencyLevel: gameStatus.robotEfficiencyLevel,
+        qualityLevel: gameStatus.robotQualityLevel,
       },
     });
   }
@@ -132,7 +132,7 @@ export class ProposedProblemRepository {
 }
 
 export class TurnFactory {
-  static initialize(userId: User['id']): Turn {
+  static initialize(): Turn {
     return 'buy-ingredients';
   }
 }

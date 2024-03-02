@@ -1,3 +1,4 @@
+import { GameLogicViolated } from '~/errors.ts';
 import { GameStatus, type Turn, TURNS } from '../models/game.ts';
 
 export function getNextTurn(currentTurn: Turn): Turn {
@@ -9,7 +10,7 @@ export class GameStatusUpdateService {
   static buyIngredients(currentGameStatus: GameStatus, ingredientName: string, quantity: number) {
     const cost = quantity * 100;
     if (currentGameStatus.money < cost) {
-      throw new Error('Not enough money');
+      throw new GameLogicViolated('Not enough money');
     }
     const newIngredientStock = new Map(currentGameStatus.ingredientStock);
     newIngredientStock.set(
@@ -20,6 +21,9 @@ export class GameStatusUpdateService {
   }
 
   static manufactureProducts(currentGameStatus: GameStatus, productName: string, quantity: number) {
+    if (quantity > currentGameStatus.robotEfficiencyLevel) {
+      throw new GameLogicViolated('Robot is not efficient enough');
+    }
     const consumedAmountOfIngredients = 3 * quantity;
     const newIngredientStock = new Map(currentGameStatus.ingredientStock);
     for (const [ingredientName, amount] of currentGameStatus.ingredientStock) {
@@ -43,8 +47,8 @@ export class GameStatusUpdateService {
     return new GameStatus(
       currentGameStatus.money,
       currentGameStatus.ingredientStock,
-      currentGameStatus.robotEfficiency + 2 * quantity,
-      currentGameStatus.robotQuality,
+      currentGameStatus.robotEfficiencyLevel + 2 * quantity,
+      currentGameStatus.robotQualityLevel,
     );
   }
 
@@ -52,8 +56,8 @@ export class GameStatusUpdateService {
     return new GameStatus(
       currentGameStatus.money,
       currentGameStatus.ingredientStock,
-      currentGameStatus.robotEfficiency,
-      currentGameStatus.robotQuality + 2 * quantity,
+      currentGameStatus.robotEfficiencyLevel,
+      currentGameStatus.robotQualityLevel + 2 * quantity,
     );
   }
 }

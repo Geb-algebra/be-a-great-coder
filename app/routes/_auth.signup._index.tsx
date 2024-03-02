@@ -4,7 +4,7 @@ import { json } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import AuthFormInput from '~/components/AuthFormInput.tsx';
 
-import { authenticator, webAuthnStrategy } from '~/accounts/services/auth.server.ts';
+import { authenticator, webAuthnStrategy } from '~/services/auth.server.ts';
 import { sessionStorage } from '~/services/session.server.ts';
 import AuthContainer from '~/components/AuthContainer.tsx';
 import AuthButton from '~/components/AuthButton.tsx';

@@ -1,7 +1,8 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useActionData, Form } from '@remix-run/react';
-import { authenticator } from '~/accounts/services/auth.server.ts';
+import { authenticator } from '~/services/auth.server.ts';
+import { GameLogicViolated } from '~/errors';
 import { GameStatusRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
@@ -26,8 +27,8 @@ export async function action({ request }: ActionFunctionArgs) {
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {
-    if (error instanceof Response && error.status >= 400) {
-      return { error: (await error.json()) as { message: string } };
+    if (error instanceof GameLogicViolated) {
+      return { error: { message: error.message } };
     }
     throw error;
   }
@@ -45,7 +46,7 @@ export default function Page() {
       <p>{actionData?.error.message}</p>
       <Form method="post">
         <label htmlFor="quantity">Quantity</label>
-        <input type="number" name="quantity" />
+        <input type="number" id="quantity" name="quantity" />
         <button type="submit">Buy</button>
       </Form>
     </div>

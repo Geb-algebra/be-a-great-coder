@@ -49,6 +49,7 @@ services:
       - 8080:8080 # remix DevTools websocket server
       - 9323:9323 # playwright reporter
       - 24678:24678 # hot reload
+      - 8888:8888 # playwright UI
     working_dir: /8bit-stack
     command: npm run validate
     depends_on:
