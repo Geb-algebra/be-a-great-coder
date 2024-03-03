@@ -26,3 +26,21 @@ export class GameStatus {
     return new Map(this._ingredientStock);
   }
 }
+
+export type Problem = {
+  id: string;
+  title: string;
+  difficulty: number;
+};
+
+export type ProposedProblem = {
+  id: string;
+  problem: Problem;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  solvedAt: Date | null;
+  finishedAt: Date | null;
+  explanationDisplayedAt: Date | null;
+  rewardReceivedAt: Date | null;
+};

@@ -11,9 +11,12 @@ import {
 } from '~/game/lifecycle/game.server.ts';
 import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
+import { GameStatusJsonifier } from '~/game/services/jsonifier';
+import GameStatusDashboard from '~/components/GameStatusDashboard';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
+  const gameStatus = await GameStatusRepository.getOrThrow(user.id);
   const turn = await TurnRepository.getOrThrow(user.id);
   if (turn !== 'get-reward') {
     return redirect('/play/router');
@@ -23,7 +26,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   }
-  return json(unrewardedProposedProblem);
+  return json({
+    proposedProblem: unrewardedProposedProblem,
+    gameStatusJson: GameStatusJsonifier.toJson(gameStatus),
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -61,25 +67,29 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const proposedProblem = useLoaderData<typeof loader>();
+  const { proposedProblem, gameStatusJson } = useLoaderData<typeof loader>();
+  const gameStatus = GameStatusJsonifier.fromJson(gameStatusJson);
   const actionData = useActionData<typeof action>();
   const [answerShown, setAnswerShown] = useState(false);
 
   return (
-    <div>
-      <h1 className="font-bold text-2xl">Get Reward</h1>
-      <p>{proposedProblem.problem.title}</p>
-      <p>{proposedProblem.problem.difficulty}</p>
-      <p>started at: {proposedProblem.createdAt}</p>
-      <p>Cleared?: {String(!!proposedProblem.solvedAt)}</p>
-      <p>{actionData?.error.message}</p>
-      <button disabled={answerShown} onClick={() => setAnswerShown(true)}>
-        Show Answer
-      </button>
-      <Form method="post">
-        <input type="hidden" name="answer-shown" value={String(answerShown)} />
-        <button type="submit">Get Reward</button>
-      </Form>
-    </div>
+    <>
+      <GameStatusDashboard gameStatus={gameStatus} />
+      <div>
+        <h1 className="font-bold text-2xl">Get Reward</h1>
+        <p>{proposedProblem.problem.title}</p>
+        <p>{proposedProblem.problem.difficulty}</p>
+        <p>started at: {proposedProblem.createdAt}</p>
+        <p>Cleared?: {String(!!proposedProblem.solvedAt)}</p>
+        <p>{actionData?.error.message}</p>
+        <button disabled={answerShown} onClick={() => setAnswerShown(true)}>
+          Show Answer
+        </button>
+        <Form method="post">
+          <input type="hidden" name="answer-shown" value={String(answerShown)} />
+          <button type="submit">Get Reward</button>
+        </Form>
+      </div>
+    </>
   );
 }

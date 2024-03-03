@@ -1,11 +1,10 @@
 import { test, expect } from './fixtures.ts';
 import {
-  GameStatusFactory,
   GameStatusRepository,
   ProposedProblemFactory,
+  ProposedProblemRepository,
   TurnRepository,
 } from '~/game/lifecycle/game.server.ts';
-import { GameStatusUpdateService } from '~/game/services/game.server.ts';
 import { GameStatus } from '~/game/models/game.ts';
 import { UserRepository } from '~/accounts/lifecycle/user.server.ts';
 import invariant from 'tiny-invariant';
@@ -22,31 +21,26 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByText(/robot quality: 1/i)).toBeVisible();
   });
   test('buy ingredients', async ({ loggedInPage }) => {
+    const gameStatus = new GameStatus(1100, new Map([['iron', 0]]), 3, 3);
+    const user = await UserRepository.getByName('TestUser012');
+    invariant(user, 'user not found');
+    await GameStatusRepository.save(user.id, gameStatus);
     await loggedInPage.goto('/play');
     await loggedInPage.getByRole('button', { name: /start game/i }).click();
     await expect(loggedInPage.getByRole('heading', { name: /buy ingredients/i })).toBeVisible();
-    await loggedInPage.getByLabel(/quantity/i).fill('9');
-    await loggedInPage.getByRole('button', { name: /buy/i }).click();
-    await expect(loggedInPage.getByText(/money: 100/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 9/i)).toBeVisible();
+    await loggedInPage.getByRole('button', { name: /buy 1$/i }).click();
+    await expect(loggedInPage.getByText(/money: 1000/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/iron: 1/i)).toBeVisible();
+    await loggedInPage.getByRole('button', { name: /buy 10$/i }).click();
+    await expect(loggedInPage.getByText(/money: 0/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/iron: 11/i)).toBeVisible();
+    await loggedInPage.getByRole('button', { name: /finish buying/i }).click();
     await expect(
       loggedInPage.getByRole('heading', { name: /make and sell products/i }),
     ).toBeVisible();
   });
-  test('buy ingredients with insufficient money', async ({ loggedInPage }) => {
-    await loggedInPage.goto('/play');
-    await loggedInPage.getByRole('button', { name: /start game/i }).click();
-    await expect(loggedInPage.getByRole('heading', { name: /buy ingredients/i })).toBeVisible();
-    await loggedInPage.getByLabel(/quantity/i).fill('11');
-    await loggedInPage.getByRole('button', { name: /buy/i }).click();
-    await expect(loggedInPage.getByText(/not enough money/i)).toBeVisible();
-  });
   test('make and sell products', async ({ loggedInPage }) => {
-    const gameStatus = GameStatusUpdateService.buyIngredients(
-      GameStatusFactory.initialize(),
-      'iron',
-      9,
-    );
+    const gameStatus = new GameStatus(100, new Map([['iron', 9]]), 3, 3);
     const user = await UserRepository.getByName('TestUser012');
     invariant(user, 'user not found');
     await GameStatusRepository.save(user.id, gameStatus);
@@ -59,11 +53,14 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByText(/money: 100/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 9/i)).toBeVisible();
 
-    await loggedInPage.getByLabel(/quantity/i).fill('1');
-    await loggedInPage.getByRole('button', { name: /make items/i }).click();
-    await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
+    await loggedInPage.getByRole('button', { name: /make sword/i }).click();
     await expect(loggedInPage.getByText(/money: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
+    await loggedInPage.getByRole('button', { name: /make sword/i }).click();
+    await expect(loggedInPage.getByText(/money: 900/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/iron: 3/i)).toBeVisible();
+    await loggedInPage.getByRole('button', { name: /finish making products/i }).click();
+    await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
   });
   test('finish unsolved problems', async ({ loggedInPage }) => {
     // target problem:
@@ -99,15 +96,13 @@ test.describe('game cycle', () => {
         difficulty: 100,
       },
     });
-    const pp = await ProposedProblemFactory.createAndSave(user.id, {
+    const pp = await ProposedProblemFactory.create(user.id, {
       id: 'abc070_a',
       title: 'A. Palindromic Number',
       difficulty: 100,
     });
-    await prisma.proposedProblem.update({
-      where: { id: pp.id },
-      data: { createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24) },
-    });
+    pp.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
+    await ProposedProblemRepository.save(pp);
     await loggedInPage.goto('/play/router');
     await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
     await expect(loggedInPage.getByText(/money: 500/i)).toBeVisible();
@@ -138,15 +133,7 @@ test.describe('game cycle', () => {
   //   //   point: 100.0,
   //   //   solver_count: 9848,
   //   // },
-  //   const manufacturedGameStatus = GameStatusUpdateService.manufactureProducts(
-  //     GameStatusUpdateService.buyIngredients(GameStatusFactory.initialize(), 'iron', 9),
-  //     'sword',
-  //     1,
-  //   );
-  //   const gameStatus = GameStatusUpdateService.sellProducts(
-  //     manufacturedGameStatus.newStatus,
-  //     new Map([['sword', 1]]),
-  //   );
+  //   const gameStatus = new GameStatus(500, new Map([['iron', 6]]), 1, 1);
   //   const user = await UserRepository.getByName('TestUser012');
   //   invariant(user, 'user not found');
   //   await GameStatusRepository.save(user.id, gameStatus);
@@ -158,15 +145,13 @@ test.describe('game cycle', () => {
   //       difficulty: 100,
   //     },
   //   });
-  //   const pp = await ProposedProblemFactory.createAndSave(user.id, {
+  //   const pp = await ProposedProblemFactory.create(user.id, {
   //     id: 'abc070_a',
   //     title: 'A. Palindromic Number',
   //     difficulty: 100,
   //   });
-  //   await prisma.proposedProblem.update({
-  //     where: { id: pp.id },
-  //     data: { createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24) },
-  //   });
+  //   pp.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
+  //   await ProposedProblemRepository.save(pp);
   //   // for some reason we can't override mock here
   //   server.use(
   //     http.get('https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions', () => {
@@ -211,19 +196,15 @@ test.describe('game cycle', () => {
         difficulty: 100,
       },
     });
-    const pp = await ProposedProblemFactory.createAndSave(user.id, {
+    const pp = await ProposedProblemFactory.create(user.id, {
       id: 'abc070_a',
       title: 'A. Palindromic Number',
       difficulty: 100,
     });
-    await prisma.proposedProblem.update({
-      where: { id: pp.id },
-      data: {
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        solvedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
-        finishedAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
-      },
-    });
+    pp.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
+    pp.solvedAt = new Date(Date.now() - 1000 * 60 * 60 * 23);
+    pp.finishedAt = new Date(Date.now() - 1000 * 60 * 60 * 22);
+    await ProposedProblemRepository.save(pp);
     await loggedInPage.goto('/play/router');
     await expect(loggedInPage.getByRole('heading', { name: /get reward/i })).toBeVisible();
     await expect(loggedInPage.getByText(/money: 500/i)).toBeVisible();
