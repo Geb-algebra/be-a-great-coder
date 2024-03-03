@@ -1,11 +1,13 @@
-import type { User, ProposedProblem, Problem } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { prisma } from '~/db.server.ts';
 
-import { GameStatus, TURNS, type Turn } from '../models/game.ts';
+import { GameStatus, TURNS } from '../models/game.ts';
+import type { User } from '~/accounts/models/account.ts';
+import type { Problem, ProposedProblem, Turn } from '~/game/models/game.ts';
 import invariant from 'tiny-invariant';
 import { ObjectNotFoundError } from '~/errors.ts';
+import { createId } from '@paralleldrive/cuid2';
 
 export class GameStatusFactory {
   static initialize() {
@@ -67,33 +69,53 @@ export class GameStatusRepository {
 }
 
 export class ProposedProblemFactory {
-  static async createAndSave(userId: User['id'], problem: Problem) {
-    return await prisma.proposedProblem.create({
-      data: {
-        userId,
-        problemId: problem.id,
-      },
-      include: { problem: true },
-    });
+  static async create(userId: User['id'], problem: Problem): Promise<ProposedProblem> {
+    const existingProblem = await prisma.problem.findUnique({ where: { id: problem.id } });
+    if (!existingProblem) {
+      throw new ObjectNotFoundError('Problem not found');
+    }
+    return {
+      id: createId(),
+      problem,
+      userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      solvedAt: null,
+      finishedAt: null,
+      explanationDisplayedAt: null,
+      rewardReceivedAt: null,
+    };
   }
 }
 
 export class ProposedProblemRepository {
-  static async get(userId: User['id']) {
-    return await prisma.proposedProblem.findMany({
-      where: { userId },
-      include: { problem: true },
-    });
+  static async get(userId: User['id']): Promise<ProposedProblem[]> {
+    return (
+      await prisma.proposedProblem.findMany({
+        where: { userId },
+        include: { problem: true },
+      })
+    ).map((proposedProblem) => ({
+      id: proposedProblem.id,
+      problem: proposedProblem.problem,
+      userId: proposedProblem.userId,
+      createdAt: proposedProblem.createdAt,
+      updatedAt: proposedProblem.updatedAt,
+      solvedAt: proposedProblem.solvedAt,
+      finishedAt: proposedProblem.finishedAt,
+      explanationDisplayedAt: proposedProblem.explanationDisplayedAt,
+      rewardReceivedAt: proposedProblem.rewardReceivedAt,
+    }));
   }
 
-  static async getUnfinished(userId: User['id']) {
+  static async getUnfinished(userId: User['id']): Promise<ProposedProblem | null> {
     return await prisma.proposedProblem.findFirst({
       where: { userId, finishedAt: null },
       include: { problem: true },
     });
   }
 
-  static async getRewardUnreceived(userId: User['id']) {
+  static async getRewardUnreceived(userId: User['id']): Promise<ProposedProblem | null> {
     return await prisma.proposedProblem.findFirst({
       where: { userId, finishedAt: { not: null }, rewardReceivedAt: null },
       include: { problem: true },
@@ -108,9 +130,11 @@ export class ProposedProblemRepository {
   static async save(proposedProblem: ProposedProblem) {
     const current = await prisma.proposedProblem.findUnique({ where: { id: proposedProblem.id } });
     if (!current) {
-      await prisma.proposedProblem.create({ data: proposedProblem });
+      await prisma.proposedProblem.create({
+        data: { ...proposedProblem, problem: undefined, problemId: proposedProblem.problem.id },
+      });
     } else {
-      if (proposedProblem.problemId !== current.problemId) {
+      if (proposedProblem.problem.id !== current.problemId) {
         throw new Error('problemId cannot be changed');
       }
       if (proposedProblem.userId !== current.userId) {
@@ -125,6 +149,7 @@ export class ProposedProblemRepository {
           solvedAt: proposedProblem.solvedAt,
           finishedAt: proposedProblem.finishedAt,
           explanationDisplayedAt: proposedProblem.explanationDisplayedAt,
+          rewardReceivedAt: proposedProblem.rewardReceivedAt,
         },
       });
     }

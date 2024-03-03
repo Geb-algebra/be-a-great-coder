@@ -6,11 +6,15 @@ import { queryRandomProblemByDifficulty } from '~/atcoder-info/models/problem.se
 import { getProblemSolvedTime } from '~/atcoder-info/services/atcoder.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 import {
+  GameStatusRepository,
   ProposedProblemFactory,
   ProposedProblemRepository,
   TurnRepository,
 } from '~/game/lifecycle/game.server.ts';
 import { getNextTurn } from '~/game/services/game.server.ts';
+import { GameStatusJsonifier } from '~/game/services/jsonifier';
+import GameStatusDashboard from '~/components/GameStatusDashboard';
+import type { ProposedProblem } from '~/game/models/game';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -18,7 +22,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (turn !== 'solve-problems') {
     return redirect('/play/router');
   }
+  const gameStatus = await GameStatusRepository.getOrThrow(user.id);
   const currentProposedProblem = await ProposedProblemRepository.getUnfinished(user.id);
+
+  let proposedProblem: ProposedProblem;
   if (currentProposedProblem) {
     const problemSolvedTime = await getProblemSolvedTime(
       currentProposedProblem.problem.id,
@@ -29,11 +36,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentProposedProblem.solvedAt = problemSolvedTime;
       await ProposedProblemRepository.save(currentProposedProblem);
     }
-    return json(currentProposedProblem);
+    proposedProblem = currentProposedProblem;
+  } else {
+    const problem = await queryRandomProblemByDifficulty(100);
+    proposedProblem = await ProposedProblemFactory.create(user.id, problem);
+    await ProposedProblemRepository.save(proposedProblem);
   }
-  const problem = await queryRandomProblemByDifficulty(100);
-  const proposedProblem = await ProposedProblemFactory.createAndSave(user.id, problem);
-  return json(proposedProblem);
+  return json({ proposedProblem, gameStatusJson: GameStatusJsonifier.toJson(gameStatus) });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -60,26 +69,30 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const proposedProblem = useLoaderData<typeof loader>();
+  const { proposedProblem, gameStatusJson } = useLoaderData<typeof loader>();
+  const gameStatus = GameStatusJsonifier.fromJson(gameStatusJson);
   const actionData = useActionData<typeof action>();
   return (
-    <div>
-      <h1 className="font-bold text-2xl">Solve Problems</h1>
-      <div className="flex">
-        <p>{proposedProblem.problem.title}</p>
-        <a
-          href={`https://atcoder.jp/contests/${proposedProblem.problem.id.split('_')[0]}/tasks/${proposedProblem.problem.id}`}
-        >
-          Go to Problem Page!
-        </a>
+    <>
+      <GameStatusDashboard gameStatus={gameStatus} />
+      <div>
+        <h1 className="font-bold text-2xl">Solve Problems</h1>
+        <div className="flex">
+          <p>{proposedProblem.problem.title}</p>
+          <a
+            href={`https://atcoder.jp/contests/${proposedProblem.problem.id.split('_')[0]}/tasks/${proposedProblem.problem.id}`}
+          >
+            Go to Problem Page!
+          </a>
+        </div>
+        <p>{proposedProblem.problem.difficulty}</p>
+        <p>started at: {proposedProblem.createdAt}</p>
+        <p>Cleared at: {proposedProblem.solvedAt ?? null}</p>
+        <p>{actionData?.error.message}</p>
+        <Form method="post">
+          <button type="submit">Finish</button>
+        </Form>
       </div>
-      <p>{proposedProblem.problem.difficulty}</p>
-      <p>started at: {proposedProblem.createdAt}</p>
-      <p>Cleared at: {proposedProblem.solvedAt ?? null}</p>
-      <p>{actionData?.error.message}</p>
-      <Form method="post">
-        <button type="submit">Finish</button>
-      </Form>
-    </div>
+    </>
   );
 }
