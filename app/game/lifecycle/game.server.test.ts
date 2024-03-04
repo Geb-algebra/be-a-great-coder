@@ -1,215 +1,73 @@
 import { prisma } from '~/db.server.ts';
-import { GameStatus } from '../models/game.ts';
-import {
-  GameStatusRepository,
-  ProposedProblemFactory,
-  ProposedProblemRepository,
-} from './game.server.ts';
+import { Laboratory, TotalAssets } from '../models/game.ts';
+import { TotalAssetsRepository, LaboratoryRepository, ResearchFactory } from './game.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 
-describe('GameStatusRepository', () => {
+describe('TotalAssetsRepository', () => {
   const userId = 'test-user-id';
 
-  it('should save and get game status', async () => {
-    const gameStatus = new GameStatus(
-      1000,
-      new Map([
-        ['a', 1],
-        ['b', 2],
-      ]),
-      3,
-      4,
-    );
-    await GameStatusRepository.save(userId, gameStatus);
-    const savedGameStatus = await GameStatusRepository.getOrThrow(userId);
-    expect(savedGameStatus).toEqual(gameStatus);
+  it('should save and get total assets', async () => {
+    const totalAssets = new TotalAssets(1000, 1, new Map([['iron', 0]]));
+    await TotalAssetsRepository.save(userId, totalAssets);
+    const savedTotalAssets = await TotalAssetsRepository.getOrThrow(userId);
+
+    expect(savedTotalAssets).toEqual(totalAssets);
+  });
+
+  it('should throw ObjectNotFoundError when total assets not found', async () => {
+    await expect(TotalAssetsRepository.getOrThrow(userId)).rejects.toThrow(ObjectNotFoundError);
+  });
+
+  it('should update total assets', async () => {
+    const totalAssets = new TotalAssets(1000, 1, new Map([['iron', 0]]));
+    await TotalAssetsRepository.save(userId, totalAssets);
+    const updatedTotalAssets = new TotalAssets(2000, 2, new Map([['iron', 1]]));
+    await TotalAssetsRepository.save(userId, updatedTotalAssets);
+    const savedTotalAssets = await TotalAssetsRepository.getOrThrow(userId);
+    expect(savedTotalAssets).toEqual(updatedTotalAssets);
   });
 });
 
-describe('ProposedProblemFactory', () => {
+describe('LaboratoryRepository', async () => {
   const userId = 'test-user-id';
 
-  it('should create proposed problem', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const proposedProblem = await ProposedProblemFactory.create(userId, problem);
-    expect(proposedProblem.userId).toEqual(userId);
-    expect(proposedProblem.problem.id).toEqual(problem.id);
-    expect(proposedProblem.finishedAt).toBeNull();
-    expect(proposedProblem.explanationDisplayedAt).toBeNull();
+  it('should save and get laboratory', async () => {
+    const problem = await prisma.problem.create({
+      data: { id: 'problem-id', title: 'problem-title', difficulty: 100 },
+    });
+    const laboratory = new Laboratory();
+    const research = await ResearchFactory.create(userId, problem);
+    laboratory.researches.push(research);
+    await LaboratoryRepository.save(userId, laboratory);
+    const savedLaboratory = await LaboratoryRepository.get(userId);
+    expect({ ...savedLaboratory.researches[0], updatedAt: undefined }).toMatchObject({
+      ...research,
+      updatedAt: undefined,
+    });
   });
 
-  it('should throw error if problem does not exist on DB', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const problemId = 'non-existing-problem-id';
-    expect(ProposedProblemFactory.create(userId, { ...problem, id: problemId })).rejects.toThrow(
-      ObjectNotFoundError,
-    );
-  });
-});
+  it('should update laboratory', async () => {
+    const laboratory = new Laboratory();
 
-describe('ProposedProblemRepository', () => {
-  const userId = 'test-user-id';
+    const problem = await prisma.problem.create({
+      data: { id: 'problem-id', title: 'problem-title', difficulty: 100 },
+    });
+    const research = await ResearchFactory.create(userId, problem);
+    laboratory.researches.push(research);
+    await LaboratoryRepository.save(userId, laboratory);
 
-  it('should save proposed problem', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const proposedProblem = await ProposedProblemFactory.create(userId, problem);
-    await ProposedProblemRepository.save(proposedProblem);
-    const savedProposedProblem = await ProposedProblemRepository.get(userId);
-    expect(savedProposedProblem).toEqual([
-      {
-        id: proposedProblem.id,
-        problem: proposedProblem.problem,
-        userId: proposedProblem.userId,
-        createdAt: proposedProblem.createdAt,
-        updatedAt: proposedProblem.updatedAt,
-        solvedAt: null,
-        finishedAt: null,
-        explanationDisplayedAt: null,
-        rewardReceivedAt: null,
-      },
-    ]);
-  });
+    research.solvedAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    research.finishedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 2);
+    research.explanationDisplayedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 3);
+    research.rewardReceivedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 4);
+    research.batteryCapacityIncrement = 1;
+    research.performanceIncrement = 2;
+    await LaboratoryRepository.save(userId, laboratory);
 
-  it('should update solvedAt', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const proposedProblem = await ProposedProblemFactory.create(userId, problem);
-    await ProposedProblemRepository.save(proposedProblem);
-    const before = await ProposedProblemRepository.get(userId);
-    expect(before[0].solvedAt).toBeNull();
-    proposedProblem.solvedAt = new Date();
-    await ProposedProblemRepository.save(proposedProblem);
-    const updatedProposedProblem = await ProposedProblemRepository.get(userId);
-    expect(updatedProposedProblem[0].solvedAt).toEqual(proposedProblem.solvedAt);
-  });
-
-  it('should update finishedAt', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const proposedProblem = await ProposedProblemFactory.create(userId, problem);
-    await ProposedProblemRepository.save(proposedProblem);
-    const before = await ProposedProblemRepository.get(userId);
-    expect(before[0].finishedAt).toBeNull();
-    proposedProblem.finishedAt = new Date();
-    await ProposedProblemRepository.save(proposedProblem);
-    const updatedProposedProblem = await ProposedProblemRepository.get(userId);
-    expect(updatedProposedProblem[0].finishedAt).toEqual(proposedProblem.finishedAt);
-  });
-
-  it('should update explanationDisplayedAt', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const proposedProblem = await ProposedProblemFactory.create(userId, problem);
-    await ProposedProblemRepository.save(proposedProblem);
-    const before = await ProposedProblemRepository.get(userId);
-    expect(before[0].explanationDisplayedAt).toBeNull();
-    proposedProblem.explanationDisplayedAt = new Date();
-    await ProposedProblemRepository.save(proposedProblem);
-    const updatedProposedProblem = await ProposedProblemRepository.get(userId);
-    expect(updatedProposedProblem[0].explanationDisplayedAt).toEqual(
-      proposedProblem.explanationDisplayedAt,
-    );
-  });
-
-  it('should update rewardReceivedAt', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const proposedProblem = await ProposedProblemFactory.create(userId, problem);
-    await ProposedProblemRepository.save(proposedProblem);
-    const before = await ProposedProblemRepository.get(userId);
-    expect(before[0].rewardReceivedAt).toBeNull();
-    proposedProblem.rewardReceivedAt = new Date();
-    await ProposedProblemRepository.save(proposedProblem);
-    const updatedProposedProblem = await ProposedProblemRepository.get(userId);
-    expect(updatedProposedProblem[0].rewardReceivedAt).toEqual(proposedProblem.rewardReceivedAt);
-  });
-
-  it('should get proposed problems', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const proposedProblems_ = await ProposedProblemRepository.get(userId);
-    expect(proposedProblems_).toHaveLength(0);
-    const pp = await ProposedProblemFactory.create(userId, problem);
-    await ProposedProblemRepository.save(pp);
-    const proposedProblems = await ProposedProblemRepository.get(userId);
-    expect(proposedProblems).toHaveLength(1);
-    const proposedProblem = {
-      ...proposedProblems[0],
-      finishedAt: new Date(2024, 12, 31, 12, 34, 56),
-    };
-    await ProposedProblemRepository.save(proposedProblem);
-    const updatedProposedProblems = await ProposedProblemRepository.get(userId);
-    expect(updatedProposedProblems.map((p) => ({ ...p, updatedAt: undefined }))).toEqual([
-      { ...proposedProblem, updatedAt: undefined },
-    ]);
-  });
-
-  it('should get unfinished proposed problem', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const finishedPP = await ProposedProblemFactory.create(userId, problem);
-    finishedPP.finishedAt = new Date();
-    await ProposedProblemRepository.save(finishedPP);
-    const unfinishedPP = await ProposedProblemFactory.create(userId, problem);
-    await ProposedProblemRepository.save(unfinishedPP);
-    const unfinishedProposedProblem = await ProposedProblemRepository.getUnfinished(userId);
-    expect(unfinishedProposedProblem).toMatchObject(unfinishedPP);
-  });
-
-  it('should get reward unreceived proposed problem', async () => {
-    const problem = {
-      id: 'problem-id',
-      title: 'problem-title',
-      difficulty: 100,
-    };
-    await prisma.problem.create({ data: problem });
-    const receivedPP = await ProposedProblemFactory.create(userId, problem);
-    receivedPP.finishedAt = new Date();
-    receivedPP.rewardReceivedAt = new Date();
-    await ProposedProblemRepository.save(receivedPP);
-    const unreceivedPP = await ProposedProblemFactory.create(userId, problem);
-    unreceivedPP.finishedAt = new Date();
-    await ProposedProblemRepository.save(unreceivedPP);
-    const unreceivedProposedProblem = await ProposedProblemRepository.getRewardUnreceived(userId);
-    expect(unreceivedProposedProblem).toMatchObject(unreceivedPP);
+    const savedLaboratory = await LaboratoryRepository.get(userId);
+    expect({ ...savedLaboratory.researches[0], updatedAt: undefined }).toMatchObject({
+      ...research,
+      updatedAt: undefined,
+    });
   });
 });

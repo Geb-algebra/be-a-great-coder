@@ -1,11 +1,11 @@
 import { GameLogicViolated, ObjectNotFoundError } from '~/errors.ts';
-import { GameStatus, type Turn, TURNS } from '../models/game.ts';
+import { TotalAssets, type Turn, TURNS } from '../models/game.ts';
 import type { User } from '~/accounts/models/account.ts';
 import {
-  GameStatusFactory,
-  GameStatusRepository,
   TurnFactory,
   TurnRepository,
+  TotalAssetsFactory,
+  TotalAssetsRepository,
 } from '../lifecycle/game.server.ts';
 
 export function getNextTurn(currentTurn: Turn): Turn {
@@ -26,89 +26,76 @@ export async function getOrInitializeTurn(userId: User['id']) {
   }
 }
 
-export async function getOrInitializeGameStatus(userId: User['id']) {
+export async function getOrInitializeTotalAssets(userId: User['id']) {
   try {
-    return await GameStatusRepository.getOrThrow(userId);
+    return await TotalAssetsRepository.getOrThrow(userId);
   } catch (error) {
     if (error instanceof ObjectNotFoundError) {
-      const gs = GameStatusFactory.initialize();
-      await GameStatusRepository.save(userId, gs);
-      return gs;
+      const totalAssets = TotalAssetsFactory.initialize();
+      await TotalAssetsRepository.save(userId, totalAssets);
+      return totalAssets;
     }
     throw error;
   }
 }
 
-export class GameStatusUpdateService {
-  static buyIngredients(currentGameStatus: GameStatus, ingredientName: string, quantity: number) {
+export class TotalAssetsUpdateService {
+  static buyIngredients(currentTotalAssets: TotalAssets, ingredientName: string, quantity: number) {
     const cost = quantity * 100;
-    if (currentGameStatus.money < cost) {
+    if (currentTotalAssets.cash < cost) {
       throw new GameLogicViolated('Not enough money');
     }
-    const newIngredientStock = new Map(currentGameStatus.ingredientStock);
+    const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
     newIngredientStock.set(
       ingredientName,
       (newIngredientStock.get(ingredientName) || 0) + quantity,
     );
-    return new GameStatus(
-      currentGameStatus.money - cost,
+    return new TotalAssets(
+      currentTotalAssets.cash - cost,
+      currentTotalAssets.battery,
       newIngredientStock,
-      currentGameStatus.robotEfficiencyLevel,
-      currentGameStatus.robotQualityLevel,
     );
   }
 
-  static manufactureProducts(currentGameStatus: GameStatus, productName: string, quantity: number) {
-    if (quantity > currentGameStatus.robotEfficiencyLevel) {
-      throw new GameLogicViolated('Robot is not efficient enough');
+  static manufactureProducts(
+    currentTotalAssets: TotalAssets,
+    productName: string,
+    quantity: number,
+  ) {
+    if (quantity > currentTotalAssets.battery) {
+      throw new GameLogicViolated('Battery is not enough');
     }
     const consumedAmountOfIngredients = 3 * quantity;
-    if ((currentGameStatus.ingredientStock.get('iron') ?? 0) < consumedAmountOfIngredients) {
+    if ((currentTotalAssets.ingredientStock.get('iron') ?? 0) < consumedAmountOfIngredients) {
       throw new GameLogicViolated('Not enough ingredients');
     }
-    const newIngredientStock = new Map(currentGameStatus.ingredientStock);
-    for (const [ingredientName, amount] of currentGameStatus.ingredientStock) {
+    const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
+    for (const [ingredientName, amount] of currentTotalAssets.ingredientStock) {
       newIngredientStock.set(ingredientName, amount - consumedAmountOfIngredients);
     }
     return {
-      newStatus: new GameStatus(
-        currentGameStatus.money,
+      newTotalAssets: new TotalAssets(
+        currentTotalAssets.cash,
+        currentTotalAssets.battery - quantity,
         newIngredientStock,
-        currentGameStatus.robotEfficiencyLevel,
-        currentGameStatus.robotQualityLevel,
       ),
       quantity,
     };
   }
 
-  static sellProducts(currentGameStatus: GameStatus, productStock: Map<string, number>) {
+  static sellProducts(currentTotalAssets: TotalAssets, productStock: Map<string, number>) {
     const revenue = Array.from(productStock.entries()).reduce(
       (total, [productName, quantity]) => total + quantity * 400,
       0,
     );
-    return new GameStatus(
-      currentGameStatus.money + revenue,
-      currentGameStatus.ingredientStock,
-      currentGameStatus.robotEfficiencyLevel,
-      currentGameStatus.robotQualityLevel,
+    return new TotalAssets(
+      currentTotalAssets.cash + revenue,
+      currentTotalAssets.battery,
+      currentTotalAssets.ingredientStock,
     );
   }
 
-  static applyRobotUpgrades(currentGameStatus: GameStatus, quantity: number) {
-    return new GameStatus(
-      currentGameStatus.money,
-      currentGameStatus.ingredientStock,
-      currentGameStatus.robotEfficiencyLevel + 2 * quantity,
-      currentGameStatus.robotQualityLevel,
-    );
-  }
-
-  static applyRobotData(currentGameStatus: GameStatus, quantity: number) {
-    return new GameStatus(
-      currentGameStatus.money,
-      currentGameStatus.ingredientStock,
-      currentGameStatus.robotEfficiencyLevel,
-      currentGameStatus.robotQualityLevel + 2 * quantity,
-    );
+  static chargeBattery(currentTotalAssets: TotalAssets, capacity: number) {
+    return new TotalAssets(currentTotalAssets.cash, capacity, currentTotalAssets.ingredientStock);
   }
 }

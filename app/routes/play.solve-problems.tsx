@@ -6,15 +6,15 @@ import { queryRandomProblemByDifficulty } from '~/atcoder-info/models/problem.se
 import { getProblemSolvedTime } from '~/atcoder-info/services/atcoder.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 import {
-  GameStatusRepository,
-  ProposedProblemFactory,
-  ProposedProblemRepository,
+  LaboratoryRepository,
+  ResearchFactory,
+  TotalAssetsRepository,
   TurnRepository,
 } from '~/game/lifecycle/game.server.ts';
 import { getNextTurn } from '~/game/services/game.server.ts';
-import { GameStatusJsonifier } from '~/game/services/jsonifier';
+import { LaboratoryJsonifier, TotalAssetsJsonifier } from '~/game/services/jsonifier';
 import GameStatusDashboard from '~/components/GameStatusDashboard';
-import type { ProposedProblem } from '~/game/models/game';
+import { type Research } from '~/game/models/game';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -22,38 +22,44 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (turn !== 'solve-problems') {
     return redirect('/play/router');
   }
-  const gameStatus = await GameStatusRepository.getOrThrow(user.id);
-  const currentProposedProblem = await ProposedProblemRepository.getUnfinished(user.id);
+  const laboratory = await LaboratoryRepository.get(user.id);
+  const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
+  const currentResearch = laboratory.getUnfinishedResearch();
 
-  let proposedProblem: ProposedProblem;
-  if (currentProposedProblem) {
+  let research: Research;
+  if (currentResearch) {
     const problemSolvedTime = await getProblemSolvedTime(
-      currentProposedProblem.problem.id,
+      currentResearch.problem.id,
       user.name,
-      Math.floor(currentProposedProblem.createdAt.getTime() / 1000),
+      Math.floor(currentResearch.createdAt.getTime() / 1000),
     );
     if (problemSolvedTime) {
-      currentProposedProblem.solvedAt = problemSolvedTime;
-      await ProposedProblemRepository.save(currentProposedProblem);
+      currentResearch.solvedAt = problemSolvedTime;
+      await LaboratoryRepository.save(user.id, laboratory);
     }
-    proposedProblem = currentProposedProblem;
+    research = currentResearch;
   } else {
     const problem = await queryRandomProblemByDifficulty(100);
-    proposedProblem = await ProposedProblemFactory.create(user.id, problem);
-    await ProposedProblemRepository.save(proposedProblem);
+    research = await ResearchFactory.create(user.id, problem);
+    laboratory.researches.push(research);
+    await LaboratoryRepository.save(user.id, laboratory);
   }
-  return json({ proposedProblem, gameStatusJson: GameStatusJsonifier.toJson(gameStatus) });
+  return json({
+    laboratoryJson: LaboratoryJsonifier.toJson(laboratory),
+    totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
   try {
-    const proposedProblem = await ProposedProblemRepository.getUnfinished(user.id);
-    if (!proposedProblem) {
+    const laboratory = await LaboratoryRepository.get(user.id);
+    const currentResearch = laboratory.getUnfinishedResearch();
+    if (!currentResearch) {
       throw new ObjectNotFoundError('unfinished proposedProblem not found');
     }
-    proposedProblem.finishedAt = new Date();
-    await ProposedProblemRepository.save(proposedProblem);
+    currentResearch.finishedAt = new Date();
+    await LaboratoryRepository.save(user.id, laboratory);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {
@@ -69,25 +75,34 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const { proposedProblem, gameStatusJson } = useLoaderData<typeof loader>();
-  const gameStatus = GameStatusJsonifier.fromJson(gameStatusJson);
+  const { laboratoryJson, totalAssetsJson } = useLoaderData<typeof loader>();
+  const laboratory = LaboratoryJsonifier.fromJson(laboratoryJson);
+  const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
+  const currentResearch = laboratory.getUnfinishedResearch();
+  if (!currentResearch) {
+    throw new ObjectNotFoundError('unfinished research not found');
+  }
   const actionData = useActionData<typeof action>();
   return (
     <>
-      <GameStatusDashboard gameStatus={gameStatus} />
+      <GameStatusDashboard
+        totalAssets={totalAssets}
+        batteryCapacity={laboratory.batteryCapacity}
+        performance={laboratory.performance}
+      />
       <div>
         <h1 className="font-bold text-2xl">Solve Problems</h1>
         <div className="flex">
-          <p>{proposedProblem.problem.title}</p>
+          <p>{currentResearch.problem.title}</p>
           <a
-            href={`https://atcoder.jp/contests/${proposedProblem.problem.id.split('_')[0]}/tasks/${proposedProblem.problem.id}`}
+            href={`https://atcoder.jp/contests/${currentResearch.problem.id.split('_')[0]}/tasks/${currentResearch.problem.id}`}
           >
             Go to Problem Page!
           </a>
         </div>
-        <p>{proposedProblem.problem.difficulty}</p>
-        <p>started at: {proposedProblem.createdAt}</p>
-        <p>Cleared at: {proposedProblem.solvedAt ?? null}</p>
+        <p>{currentResearch.problem.difficulty}</p>
+        <p>started at: {currentResearch.createdAt.toISOString()}</p>
+        <p>Cleared at: {currentResearch.solvedAt?.toISOString() ?? null}</p>
         <p>{actionData?.error.message}</p>
         <Form method="post">
           <button type="submit">Finish</button>

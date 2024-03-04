@@ -51,14 +51,15 @@ CREATE TABLE `Problem` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Money` (
+CREATE TABLE `Assets` (
     `id` VARCHAR(191) NOT NULL,
-    `amount` INTEGER NOT NULL,
+    `cash` INTEGER NOT NULL,
+    `battery` INTEGER NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Money_userId_key`(`userId`),
+    UNIQUE INDEX `Assets_userId_key`(`userId`),
     INDEX `money_user_id`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -77,33 +78,7 @@ CREATE TABLE `IngredientStock` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `ProductStock` (
-    `id` VARCHAR(191) NOT NULL,
-    `productName` VARCHAR(191) NOT NULL,
-    `amount` INTEGER NOT NULL,
-    `userId` VARCHAR(191) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `product_stock_user_id`(`userId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Robot` (
-    `id` VARCHAR(191) NOT NULL,
-    `userId` VARCHAR(191) NOT NULL,
-    `efficiencyLevel` INTEGER NOT NULL,
-    `qualityLevel` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `Robot_userId_key`(`userId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `ProposedProblem` (
+CREATE TABLE `Research` (
     `id` VARCHAR(191) NOT NULL,
     `problemId` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
@@ -113,9 +88,11 @@ CREATE TABLE `ProposedProblem` (
     `finishedAt` DATETIME(3) NULL,
     `explanationDisplayedAt` DATETIME(3) NULL,
     `rewardReceivedAt` DATETIME(3) NULL,
+    `batteryCapacityIncrement` INTEGER NULL,
+    `performanceIncrement` INTEGER NULL,
 
-    INDEX `proposed_problem_user_id`(`userId`),
-    INDEX `ProposedProblem_problemId_idx`(`problemId`),
+    INDEX `research_user_id`(`userId`),
+    INDEX `Research_problemId_idx`(`problemId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

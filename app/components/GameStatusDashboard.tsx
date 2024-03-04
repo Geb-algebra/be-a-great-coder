@@ -1,12 +1,16 @@
-import type { GameStatus } from '~/game/models/game';
+import type { TotalAssets } from '~/game/models/game';
 
-export default function GameStatusDashboard(props: { gameStatus: GameStatus }) {
+export default function GameStatusDashboard(props: {
+  totalAssets: TotalAssets;
+  batteryCapacity: number;
+  performance: number;
+}) {
   return (
     <ul>
-      <li>money: {props.gameStatus.money}</li>
-      <li>iron: {props.gameStatus.ingredientStock.get('iron')}</li>
-      <li>robot efficiency: {props.gameStatus.robotEfficiencyLevel}</li>
-      <li>robot quality: {props.gameStatus.robotQualityLevel}</li>
+      <li>cash: {props.totalAssets.cash}</li>
+      <li>iron: {props.totalAssets.ingredientStock.get('iron')}</li>
+      <li>battery capacity: {props.batteryCapacity}</li>
+      <li>robot performance: {props.performance}</li>
     </ul>
   );
 }

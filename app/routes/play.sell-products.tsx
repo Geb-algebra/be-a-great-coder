@@ -2,9 +2,13 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { useActionData, Form, useLoaderData, useFetcher } from '@remix-run/react';
 import { authenticator } from '~/services/auth.server.ts';
-import { GameStatusRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
+import {
+  TotalAssetsRepository,
+  LaboratoryRepository,
+  TurnRepository,
+} from '~/game/lifecycle/game.server.ts';
 import { getNextTurn } from '~/game/services/game.server.ts';
-import { GameStatusJsonifier } from '~/game/services/jsonifier.ts';
+import { TotalAssetsJsonifier } from '~/game/services/jsonifier.ts';
 import { GameLogicViolated } from '~/errors.ts';
 import GameStatusDashboard from '~/components/GameStatusDashboard.tsx';
 import type { action as makeItemsAction } from './play.sell-products.$name.tsx';
@@ -15,8 +19,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (turn !== 'sell-products') {
     return redirect('/play/router');
   }
-  const gameStatus = await GameStatusRepository.getOrThrow(user.id);
-  return json(GameStatusJsonifier.toJson(gameStatus));
+  const laboratory = await LaboratoryRepository.get(user.id);
+  const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
+  return json({
+    totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
+    batteryCapacity: laboratory.batteryCapacity,
+    performance: laboratory.performance,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -37,15 +46,19 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const gameStatusJson = useLoaderData<typeof loader>();
-  const gameStatus = GameStatusJsonifier.fromJson(gameStatusJson);
+  const { totalAssetsJson, performance, batteryCapacity } = useLoaderData<typeof loader>();
+  const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
   const actionData = useActionData<typeof action>();
   const fetcher = useFetcher<typeof makeItemsAction>();
   const itemNames = ['sword'];
 
   return (
     <>
-      <GameStatusDashboard gameStatus={gameStatus} />
+      <GameStatusDashboard
+        totalAssets={totalAssets}
+        batteryCapacity={batteryCapacity}
+        performance={performance}
+      />
       <div>
         <h1 className="font-bold text-2xl">Make and sell products</h1>
         <p>{actionData?.error.message ?? fetcher.data?.error.message ?? ''}</p>

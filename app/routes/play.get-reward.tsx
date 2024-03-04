@@ -5,53 +5,55 @@ import { useState } from 'react';
 import { authenticator } from '~/services/auth.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 import {
-  GameStatusRepository,
-  ProposedProblemRepository,
+  LaboratoryRepository,
+  TotalAssetsRepository,
   TurnRepository,
 } from '~/game/lifecycle/game.server.ts';
-import { GameStatusUpdateService, getNextTurn } from '~/game/services/game.server.ts';
+import { TotalAssetsUpdateService, getNextTurn } from '~/game/services/game.server.ts';
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
-import { GameStatusJsonifier } from '~/game/services/jsonifier';
+import { TotalAssetsJsonifier, LaboratoryJsonifier } from '~/game/services/jsonifier';
 import GameStatusDashboard from '~/components/GameStatusDashboard';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
-  const gameStatus = await GameStatusRepository.getOrThrow(user.id);
+  const laboratory = await LaboratoryRepository.get(user.id);
+  const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
   const turn = await TurnRepository.getOrThrow(user.id);
   if (turn !== 'get-reward') {
     return redirect('/play/router');
   }
-  const unrewardedProposedProblem = await ProposedProblemRepository.getRewardUnreceived(user.id);
+  const unrewardedProposedProblem = laboratory.getRewardUnreceivedResearch();
   if (!unrewardedProposedProblem) {
     TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   }
   return json({
-    proposedProblem: unrewardedProposedProblem,
-    gameStatusJson: GameStatusJsonifier.toJson(gameStatus),
+    totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
+    laboratoryJson: LaboratoryJsonifier.toJson(laboratory),
   });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
   try {
-    const currentGameStatus = await GameStatusRepository.getOrThrow(user.id);
-    const proposedProblem = await ProposedProblemRepository.getRewardUnreceived(user.id);
-    if (!proposedProblem) {
-      throw new ObjectNotFoundError('unfinished proposedProblem not found');
+    const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
+    const laboratory = await LaboratoryRepository.get(user.id);
+    const currentResearch = laboratory.getRewardUnreceivedResearch();
+    if (!currentResearch) {
+      throw new ObjectNotFoundError('unrewarded proposedProblem not found');
     }
-    let newStatus = currentGameStatus;
-    if (proposedProblem.solvedAt) {
-      newStatus = GameStatusUpdateService.applyRobotUpgrades(currentGameStatus, 2);
+    if (currentResearch.solvedAt) {
+      currentResearch.batteryCapacityIncrement = 2;
     }
     const formData = await request.formData();
     const answerShown = getRequiredStringFromFormData(formData, 'answer-shown') === 'true';
     if (answerShown) {
-      newStatus = GameStatusUpdateService.applyRobotData(newStatus, 2);
+      currentResearch.performanceIncrement = 2;
     }
-    proposedProblem.rewardReceivedAt = new Date();
-    await GameStatusRepository.save(user.id, newStatus);
-    await ProposedProblemRepository.save(proposedProblem);
+    currentResearch.rewardReceivedAt = new Date();
+    await LaboratoryRepository.save(user.id, laboratory);
+    TotalAssetsUpdateService.chargeBattery(totalAssets, laboratory.batteryCapacity);
+    await TotalAssetsRepository.save(user.id, totalAssets);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {
@@ -67,20 +69,27 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const { proposedProblem, gameStatusJson } = useLoaderData<typeof loader>();
-  const gameStatus = GameStatusJsonifier.fromJson(gameStatusJson);
+  const { totalAssetsJson, laboratoryJson } = useLoaderData<typeof loader>();
+  const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
+  const laboratory = LaboratoryJsonifier.fromJson(laboratoryJson);
+  const currentResearch = laboratory.getRewardUnreceivedResearch();
+  if (!currentResearch) throw new ObjectNotFoundError('unfinished proposedProblem not found');
   const actionData = useActionData<typeof action>();
   const [answerShown, setAnswerShown] = useState(false);
 
   return (
     <>
-      <GameStatusDashboard gameStatus={gameStatus} />
+      <GameStatusDashboard
+        totalAssets={totalAssets}
+        batteryCapacity={laboratory.batteryCapacity}
+        performance={laboratory.performance}
+      />
       <div>
         <h1 className="font-bold text-2xl">Get Reward</h1>
-        <p>{proposedProblem.problem.title}</p>
-        <p>{proposedProblem.problem.difficulty}</p>
-        <p>started at: {proposedProblem.createdAt}</p>
-        <p>Cleared?: {String(!!proposedProblem.solvedAt)}</p>
+        <p>{currentResearch.problem.title}</p>
+        <p>{currentResearch.problem.difficulty}</p>
+        <p>started at: {currentResearch.createdAt.toISOString()}</p>
+        <p>Cleared?: {String(!!currentResearch.solvedAt)}</p>
         <p>{actionData?.error.message}</p>
         <button disabled={answerShown} onClick={() => setAnswerShown(true)}>
           Show Answer

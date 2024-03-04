@@ -2,16 +2,22 @@ import { json, type LoaderFunctionArgs, redirect, type ActionFunctionArgs } from
 import { Form, useLoaderData } from '@remix-run/react';
 import { authenticator } from '~/services/auth.server.ts';
 import GameStatusDashboard from '~/components/GameStatusDashboard';
-import { GameStatusJsonifier } from '~/game/services/jsonifier';
-import { getOrInitializeGameStatus, getOrInitializeTurn } from '~/game/services/game.server';
+import { TotalAssetsJsonifier } from '~/game/services/jsonifier';
+import { getOrInitializeTotalAssets, getOrInitializeTurn } from '~/game/services/game.server';
+import { LaboratoryRepository } from '~/game/lifecycle/game.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: '/',
   });
-  const gameStatus = await getOrInitializeGameStatus(user.id);
   await getOrInitializeTurn(user.id);
-  return json(GameStatusJsonifier.toJson(gameStatus));
+  const totalAssets = await getOrInitializeTotalAssets(user.id);
+  const laboratory = await LaboratoryRepository.get(user.id);
+  return json({
+    totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
+    batteryCapacity: laboratory.batteryCapacity,
+    performance: laboratory.performance,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -22,11 +28,15 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Page() {
-  const gameStatusJson = useLoaderData<typeof loader>();
-  const gameStatus = GameStatusJsonifier.fromJson(gameStatusJson);
+  const { totalAssetsJson, batteryCapacity, performance } = useLoaderData<typeof loader>();
+  const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
   return (
     <>
-      <GameStatusDashboard gameStatus={gameStatus} />
+      <GameStatusDashboard
+        totalAssets={totalAssets}
+        batteryCapacity={batteryCapacity}
+        performance={performance}
+      />
       <Form method="post">
         <button type="submit">Start Game</button>
       </Form>

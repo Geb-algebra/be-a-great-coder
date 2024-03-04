@@ -19,13 +19,11 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    authenticators  Authenticator[]
-    Money           Money?
-    IngredientStock IngredientStock[]
-    ProposedProblem ProposedProblem[]
-    Robot           Robot[]
-    CurrentTurn     CurrentTurn?
-    ProductStock    ProductStock[]
+    authenticators   Authenticator[]
+    IngredientStocks IngredientStock[]
+    Researches       Research[]
+    CurrentTurn      CurrentTurn?
+    Assets           Assets?
 
     @@index([googleProfileId], name: "user_google_profile_id")
     @@index([name], name: "user_name")
@@ -58,15 +56,16 @@ model AtCoderAPIFetchLog {
 }
 
 model Problem {
-    id              String            @id
-    title           String
-    difficulty      Int
-    ProposedProblem ProposedProblem[]
+    id         String     @id
+    title      String
+    difficulty Int
+    Researches Research[]
 }
 
-model Money {
+model Assets {
     id        String   @id @default(cuid())
-    amount    Int
+    cash      Int
+    battery   Int
     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId    String   @unique
     createdAt DateTime @default(now())
@@ -87,42 +86,22 @@ model IngredientStock {
     @@index([userId], name: "ingredient_stock_user_id")
 }
 
-model ProductStock {
-    id          String   @id @default(cuid())
-    productName String
-    amount      Int
-    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId      String
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+model Research {
+    id                       String    @id @default(cuid())
+    problem                  Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    problemId                String
+    user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId                   String
+    createdAt                DateTime  @default(now())
+    updatedAt                DateTime  @updatedAt
+    solvedAt                 DateTime?
+    finishedAt               DateTime?
+    explanationDisplayedAt   DateTime?
+    rewardReceivedAt         DateTime?
+    batteryCapacityIncrement Int?
+    performanceIncrement     Int?
 
-    @@index([userId], name: "product_stock_user_id")
-}
-
-model Robot {
-    id              String   @id @default(cuid())
-    user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId          String   @unique
-    efficiencyLevel Int
-    qualityLevel    Int
-    createdAt       DateTime @default(now())
-    updatedAt       DateTime @updatedAt
-}
-
-model ProposedProblem {
-    id                     String    @id @default(cuid())
-    problem                Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    problemId              String
-    user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId                 String
-    createdAt              DateTime  @default(now())
-    updatedAt              DateTime  @updatedAt
-    solvedAt               DateTime?
-    finishedAt             DateTime?
-    explanationDisplayedAt DateTime?
-    rewardReceivedAt       DateTime?
-
-    @@index([userId], name: "proposed_problem_user_id")
+    @@index([userId], name: "research_user_id")
     @@index([problemId])
 }
 

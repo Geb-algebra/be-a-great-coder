@@ -2,74 +2,62 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { prisma } from '~/db.server.ts';
 
-import { GameStatus, TURNS } from '../models/game.ts';
+import { Laboratory, TotalAssets, TURNS } from '../models/game.ts';
 import type { User } from '~/accounts/models/account.ts';
-import type { Problem, ProposedProblem, Turn } from '~/game/models/game.ts';
+import type { Problem, Research, Turn } from '../models/game.ts';
 import invariant from 'tiny-invariant';
 import { ObjectNotFoundError } from '~/errors.ts';
 import { createId } from '@paralleldrive/cuid2';
 
-export class GameStatusFactory {
+export class TotalAssetsFactory {
   static initialize() {
-    return new GameStatus(1000, new Map([['iron', 0]]), 1, 1);
+    return new TotalAssets(1000, 1, new Map([['iron', 0]]));
   }
 }
 
-export class GameStatusRepository {
+export class TotalAssetsRepository {
   static async getOrThrow(userId: User['id']) {
     try {
-      const robot = await prisma.robot.findUniqueOrThrow({ where: { userId } });
-      const money = await prisma.money.findUniqueOrThrow({ where: { userId } });
+      const { cash, battery } = await prisma.assets.findUniqueOrThrow({ where: { userId } });
       const ingredientStock = await prisma.ingredientStock.findMany({ where: { userId } });
-      return new GameStatus(
-        money.amount,
+      return new TotalAssets(
+        cash,
+        battery,
         ingredientStock.reduce(
           (map, stock) => map.set(stock.ingredientName, stock.amount),
           new Map(),
         ),
-        robot.efficiencyLevel,
-        robot.qualityLevel,
       );
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-        throw new ObjectNotFoundError('GameStatus not found');
+        throw new ObjectNotFoundError('TotalAssets not found');
       }
       throw error;
     }
   }
 
-  static async save(userId: User['id'], gameStatus: GameStatus) {
-    await prisma.money.upsert({
-      where: { userId },
-      update: { amount: gameStatus.money },
-      create: { userId, amount: gameStatus.money },
-    });
-    const ingredientStock = Array.from(gameStatus.ingredientStock.entries()).map(
-      ([ingredientName, amount]) => ({
-        userId,
-        ingredientName,
-        amount,
-      }),
-    );
-    await prisma.ingredientStock.deleteMany({ where: { userId } });
-    await prisma.ingredientStock.createMany({ data: ingredientStock });
-    await prisma.robot.upsert({
-      where: { userId },
-      update: {
-        efficiencyLevel: gameStatus.robotEfficiencyLevel,
-        qualityLevel: gameStatus.robotQualityLevel,
-      },
-      create: {
-        userId,
-        efficiencyLevel: gameStatus.robotEfficiencyLevel,
-        qualityLevel: gameStatus.robotQualityLevel,
-      },
+  static async save(userId: User['id'], totalAssets: TotalAssets) {
+    await prisma.$transaction(async (prisma) => {
+      await prisma.assets.upsert({
+        where: { userId },
+        update: { cash: totalAssets.cash, battery: totalAssets.battery },
+        create: { userId, cash: totalAssets.cash, battery: totalAssets.battery },
+      });
+      const ingredientStock = Array.from(totalAssets.ingredientStock.entries()).map(
+        ([ingredientName, amount]) => ({
+          userId,
+          ingredientName,
+          amount,
+        }),
+      );
+      await prisma.ingredientStock.deleteMany({ where: { userId } });
+      await prisma.ingredientStock.createMany({ data: ingredientStock });
     });
   }
 }
 
-export class ProposedProblemFactory {
-  static async create(userId: User['id'], problem: Problem): Promise<ProposedProblem> {
+export class ResearchFactory {
+  static async create(userId: User['id'], problem: Problem): Promise<Research> {
     const existingProblem = await prisma.problem.findUnique({ where: { id: problem.id } });
     if (!existingProblem) {
       throw new ObjectNotFoundError('Problem not found');
@@ -84,75 +72,38 @@ export class ProposedProblemFactory {
       finishedAt: null,
       explanationDisplayedAt: null,
       rewardReceivedAt: null,
+      batteryCapacityIncrement: null,
+      performanceIncrement: null,
     };
   }
 }
 
-export class ProposedProblemRepository {
-  static async get(userId: User['id']): Promise<ProposedProblem[]> {
-    return (
-      await prisma.proposedProblem.findMany({
-        where: { userId },
-        include: { problem: true },
-      })
-    ).map((proposedProblem) => ({
-      id: proposedProblem.id,
-      problem: proposedProblem.problem,
-      userId: proposedProblem.userId,
-      createdAt: proposedProblem.createdAt,
-      updatedAt: proposedProblem.updatedAt,
-      solvedAt: proposedProblem.solvedAt,
-      finishedAt: proposedProblem.finishedAt,
-      explanationDisplayedAt: proposedProblem.explanationDisplayedAt,
-      rewardReceivedAt: proposedProblem.rewardReceivedAt,
-    }));
-  }
-
-  static async getUnfinished(userId: User['id']): Promise<ProposedProblem | null> {
-    return await prisma.proposedProblem.findFirst({
-      where: { userId, finishedAt: null },
+export class LaboratoryRepository {
+  static async get(userId: User['id']): Promise<Laboratory> {
+    const researches = await prisma.research.findMany({
+      where: { userId },
       include: { problem: true },
+      orderBy: { createdAt: 'asc' },
     });
+    return new Laboratory(researches);
   }
 
-  static async getRewardUnreceived(userId: User['id']): Promise<ProposedProblem | null> {
-    return await prisma.proposedProblem.findFirst({
-      where: { userId, finishedAt: { not: null }, rewardReceivedAt: null },
-      include: { problem: true },
+  static async save(userId: User['id'], laboratory: Laboratory) {
+    await prisma.research.deleteMany({ where: { userId } });
+    await prisma.research.createMany({
+      data: laboratory.researches.map((research) => ({
+        id: research.id,
+        problemId: research.problem.id,
+        userId,
+        createdAt: research.createdAt,
+        solvedAt: research.solvedAt,
+        finishedAt: research.finishedAt,
+        explanationDisplayedAt: research.explanationDisplayedAt,
+        rewardReceivedAt: research.rewardReceivedAt,
+        batteryCapacityIncrement: research.batteryCapacityIncrement,
+        performanceIncrement: research.performanceIncrement,
+      })),
     });
-  }
-
-  /**
-   * Save a proposed problem
-   *
-   * only `finishedAt` and `explanationDisplayedAt` can be updated
-   */
-  static async save(proposedProblem: ProposedProblem) {
-    const current = await prisma.proposedProblem.findUnique({ where: { id: proposedProblem.id } });
-    if (!current) {
-      await prisma.proposedProblem.create({
-        data: { ...proposedProblem, problem: undefined, problemId: proposedProblem.problem.id },
-      });
-    } else {
-      if (proposedProblem.problem.id !== current.problemId) {
-        throw new Error('problemId cannot be changed');
-      }
-      if (proposedProblem.userId !== current.userId) {
-        throw new Error('userId cannot be changed');
-      }
-      if (proposedProblem.createdAt.getTime() !== current.createdAt.getTime()) {
-        throw new Error('createdAt cannot be changed');
-      }
-      await prisma.proposedProblem.update({
-        where: { id: proposedProblem.id },
-        data: {
-          solvedAt: proposedProblem.solvedAt,
-          finishedAt: proposedProblem.finishedAt,
-          explanationDisplayedAt: proposedProblem.explanationDisplayedAt,
-          rewardReceivedAt: proposedProblem.rewardReceivedAt,
-        },
-      });
-    }
   }
 }
 
