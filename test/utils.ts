@@ -7,10 +7,9 @@ export async function resetDB() {
   await prisma.user.deleteMany();
   await prisma.atCoderAPIFetchLog.deleteMany();
   await prisma.problem.deleteMany();
-  await prisma.proposedProblem.deleteMany();
+  await prisma.research.deleteMany();
   await prisma.ingredientStock.deleteMany();
-  await prisma.money.deleteMany();
-  await prisma.robot.deleteMany();
+  await prisma.assets.deleteMany();
   // add more deleteMany here if needed
 }
 

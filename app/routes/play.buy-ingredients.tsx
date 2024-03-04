@@ -3,20 +3,29 @@ import { json, redirect } from '@remix-run/node';
 import { useActionData, Form, useLoaderData, useFetcher } from '@remix-run/react';
 import { authenticator } from '~/services/auth.server.ts';
 import { GameLogicViolated } from '~/errors';
-import { GameStatusRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
+import {
+  LaboratoryRepository,
+  TotalAssetsRepository,
+  TurnRepository,
+} from '~/game/lifecycle/game.server.ts';
 import { getNextTurn } from '~/game/services/game.server.ts';
-import { GameStatusJsonifier } from '~/game/services/jsonifier';
+import { TotalAssetsJsonifier } from '~/game/services/jsonifier';
 import GameStatusDashboard from '~/components/GameStatusDashboard';
 import type { action as detailAction } from './play.buy-ingredients.$name.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
-  const gameStatus = await GameStatusRepository.getOrThrow(user.id);
+  const laboratory = await LaboratoryRepository.get(user.id);
+  const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
   const turn = await TurnRepository.getOrThrow(user.id);
   if (turn !== 'buy-ingredients') {
     return redirect('/play/router');
   }
-  return json({ gameStatusJson: GameStatusJsonifier.toJson(gameStatus), turn });
+  return json({
+    totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
+    batteryCapacity: laboratory.batteryCapacity,
+    performance: laboratory.performance,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -37,14 +46,18 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const { gameStatusJson } = useLoaderData<typeof loader>();
-  const gameStatus = GameStatusJsonifier.fromJson(gameStatusJson);
+  const { totalAssetsJson, batteryCapacity, performance } = useLoaderData<typeof loader>();
+  const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
   const actionData = useActionData<typeof action>();
   const fetcher = useFetcher<typeof detailAction>();
   const ingredientNames = ['iron'];
   return (
     <>
-      <GameStatusDashboard gameStatus={gameStatus} />
+      <GameStatusDashboard
+        totalAssets={totalAssets}
+        batteryCapacity={batteryCapacity}
+        performance={performance}
+      />
       <div>
         <h1 className="font-bold text-2xl">Buy Ingredients</h1>
         <p>{actionData?.error.message ?? fetcher.data?.error.message}</p>

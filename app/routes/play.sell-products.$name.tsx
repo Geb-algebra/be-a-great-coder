@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from '@remix-run/node';
 import { GameLogicViolated, ValueError } from '~/errors';
-import { GameStatusRepository } from '~/game/lifecycle/game.server';
-import { GameStatusUpdateService } from '~/game/services/game.server';
+import { TotalAssetsRepository } from '~/game/lifecycle/game.server';
+import { TotalAssetsUpdateService } from '~/game/services/game.server';
 import { authenticator } from '~/services/auth.server';
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -11,17 +11,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
     failureRedirect: '/',
   });
   try {
-    const gameStatus = await GameStatusRepository.getOrThrow(user.id);
-    const { newStatus, quantity } = GameStatusUpdateService.manufactureProducts(
-      gameStatus,
+    const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
+    const { newTotalAssets, quantity } = TotalAssetsUpdateService.manufactureProducts(
+      totalAssets,
       itemName,
       1,
     );
-    const finalStatus = GameStatusUpdateService.sellProducts(
-      newStatus,
+    const finalTotalAssets = TotalAssetsUpdateService.sellProducts(
+      newTotalAssets,
       new Map([[itemName, quantity]]),
     );
-    await GameStatusRepository.save(user.id, finalStatus);
+    await TotalAssetsRepository.save(user.id, finalTotalAssets);
     return null;
   } catch (error) {
     if (error instanceof GameLogicViolated) {

@@ -1,25 +1,15 @@
 export const TURNS = ['buy-ingredients', 'sell-products', 'solve-problems', 'get-reward'] as const;
 export type Turn = (typeof TURNS)[number];
 
-/**
- * Immutable object that stores amount of money, ingredients, products, upgrades, and data
- */
-export class GameStatus {
-  readonly money: number;
+export class TotalAssets {
+  readonly cash: number;
+  readonly battery: number;
   private _ingredientStock: Map<string, number>;
-  readonly robotEfficiencyLevel: number;
-  readonly robotQualityLevel: number;
 
-  constructor(
-    money: number = 0,
-    ingredientStock: Map<string, number> = new Map(),
-    robotEfficiencyLevel = 1,
-    robotQualityLevel = 1,
-  ) {
-    this.money = money;
+  constructor(money: number, battery: number, ingredientStock: Map<string, number>) {
+    this.cash = money;
+    this.battery = battery;
     this._ingredientStock = ingredientStock;
-    this.robotEfficiencyLevel = robotEfficiencyLevel;
-    this.robotQualityLevel = robotQualityLevel;
   }
 
   get ingredientStock() {
@@ -33,7 +23,7 @@ export type Problem = {
   difficulty: number;
 };
 
-export type ProposedProblem = {
+export type Research = {
   id: string;
   problem: Problem;
   userId: string;
@@ -43,4 +33,44 @@ export type ProposedProblem = {
   finishedAt: Date | null;
   explanationDisplayedAt: Date | null;
   rewardReceivedAt: Date | null;
+  batteryCapacityIncrement: number | null;
+  performanceIncrement: number | null;
 };
+
+export class Laboratory {
+  public researches: Research[];
+
+  constructor(researches: Research[] = []) {
+    this.researches = researches;
+  }
+
+  get batteryCapacity() {
+    return this.researches.reduce(
+      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
+      1,
+    );
+  }
+
+  get performance() {
+    return this.researches.reduce((acc, research) => acc + (research.performanceIncrement ?? 0), 1);
+  }
+
+  get researcherRank() {
+    return this.researches
+      .slice(-5)
+      .reduce(
+        (ave, research, index) => (ave * index + research.problem.difficulty) / (index + 1),
+        0,
+      );
+  }
+
+  getUnfinishedResearch() {
+    return this.researches.find((research) => research.finishedAt === null);
+  }
+
+  getRewardUnreceivedResearch() {
+    return this.researches.find(
+      (research) => research.finishedAt !== null && research.rewardReceivedAt === null,
+    );
+  }
+}
