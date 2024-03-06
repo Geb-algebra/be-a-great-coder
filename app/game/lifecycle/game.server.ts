@@ -41,7 +41,11 @@ export class TotalAssetsRepository {
       await prisma.assets.upsert({
         where: { userId },
         update: { cash: totalAssets.cash, battery: totalAssets.battery },
-        create: { userId, cash: totalAssets.cash, battery: totalAssets.battery },
+        create: {
+          user: { connect: { id: userId } },
+          cash: totalAssets.cash,
+          battery: totalAssets.battery,
+        },
       });
       const ingredientStock = Array.from(totalAssets.ingredientStock.entries()).map(
         ([ingredientName, amount]) => ({
@@ -50,8 +54,12 @@ export class TotalAssetsRepository {
           amount,
         }),
       );
-      await prisma.ingredientStock.deleteMany({ where: { userId } });
-      await prisma.ingredientStock.createMany({ data: ingredientStock });
+      if (ingredientStock.length !== 0) {
+        await prisma.ingredientStock.deleteMany({ where: { userId } });
+        for (const ingredient of ingredientStock) {
+          await prisma.ingredientStock.create({ data: ingredient });
+        }
+      }
     });
   }
 }
@@ -90,20 +98,22 @@ export class LaboratoryRepository {
 
   static async save(userId: User['id'], laboratory: Laboratory) {
     await prisma.research.deleteMany({ where: { userId } });
-    await prisma.research.createMany({
-      data: laboratory.researches.map((research) => ({
-        id: research.id,
-        problemId: research.problem.id,
-        userId,
-        createdAt: research.createdAt,
-        solvedAt: research.solvedAt,
-        finishedAt: research.finishedAt,
-        explanationDisplayedAt: research.explanationDisplayedAt,
-        rewardReceivedAt: research.rewardReceivedAt,
-        batteryCapacityIncrement: research.batteryCapacityIncrement,
-        performanceIncrement: research.performanceIncrement,
-      })),
-    });
+    for (const research of laboratory.researches) {
+      await prisma.research.create({
+        data: {
+          id: research.id,
+          problem: { connect: { id: research.problem.id } },
+          user: { connect: { id: userId } },
+          createdAt: research.createdAt,
+          solvedAt: research.solvedAt,
+          finishedAt: research.finishedAt,
+          explanationDisplayedAt: research.explanationDisplayedAt,
+          rewardReceivedAt: research.rewardReceivedAt,
+          batteryCapacityIncrement: research.batteryCapacityIncrement,
+          performanceIncrement: research.performanceIncrement,
+        },
+      });
+    }
   }
 }
 

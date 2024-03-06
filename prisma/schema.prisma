@@ -2,13 +2,13 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-    provider     = "mysql"
-    url          = env("DATABASE_URL")
-    relationMode = "prisma"
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
+    previewFeatures = ["driverAdapters"]
 }
 
 model User {
@@ -32,7 +32,7 @@ model User {
 model Authenticator {
     credentialID         String   @id
     name                 String?
-    user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId               String
     credentialPublicKey  String
     counter              Int
@@ -43,9 +43,6 @@ model Authenticator {
     transports           String
     createdAt            DateTime @default(now())
     updatedAt            DateTime @updatedAt
-
-    @@index([credentialID], name: "authenticator_credential_id")
-    @@index(fields: [userId], name: "authenticator_user_id")
 }
 
 model AtCoderAPIFetchLog {
@@ -66,31 +63,27 @@ model Assets {
     id        String   @id @default(cuid())
     cash      Int
     battery   Int
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId    String   @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-
-    @@index([userId], name: "money_user_id")
 }
 
 model IngredientStock {
     id             String   @id @default(cuid())
     ingredientName String
     amount         Int
-    user           User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId         String
     createdAt      DateTime @default(now())
     updatedAt      DateTime @updatedAt
-
-    @@index([userId], name: "ingredient_stock_user_id")
 }
 
 model Research {
     id                       String    @id @default(cuid())
-    problem                  Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    problem                  Problem   @relation(fields: [problemId], references: [id])
     problemId                String
-    user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId                   String
     createdAt                DateTime  @default(now())
     updatedAt                DateTime  @updatedAt
@@ -100,18 +93,13 @@ model Research {
     rewardReceivedAt         DateTime?
     batteryCapacityIncrement Int?
     performanceIncrement     Int?
-
-    @@index([userId], name: "research_user_id")
-    @@index([problemId])
 }
 
 model CurrentTurn {
     id        String   @id @default(cuid())
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId    String   @unique
     turn      String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-
-    @@index([userId])
 }

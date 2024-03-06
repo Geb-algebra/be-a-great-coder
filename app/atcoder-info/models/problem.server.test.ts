@@ -3,7 +3,7 @@ import { prisma } from '~/db.server.ts';
 import {
   PROBLEM_UPDATE_INTERVAL,
   ENDPOINT,
-  updateProblems,
+  insertNewProblems,
 } from '~/atcoder-info/models/problem.server.ts';
 import { createFetchLog } from './fetcher.server.ts';
 
@@ -53,17 +53,18 @@ describe('updateProblems', () => {
   beforeEach(async () => {
     await prisma.problem.create({ data: { id: 'xxxyyy', title: 'old problem', difficulty: 200 } });
   });
-  it('should delete and insert all problems', async () => {
+  it('should add all new problems without deleting any record', async () => {
     const lastFetchedTime = new Date(Date.now() - PROBLEM_UPDATE_INTERVAL * 1.1);
     await createFetchLog(ENDPOINT, 200, lastFetchedTime);
     const oldProbs = await prisma.problem.findMany();
     expect(oldProbs).toHaveLength(1);
     expect(oldProbs[0].title).toEqual('old problem');
-    await updateProblems(PROBLEMS);
+    await insertNewProblems(PROBLEMS);
     const newProbs = await prisma.problem.findMany();
-    expect(newProbs).toHaveLength(2);
-    expect(newProbs[0].title).toEqual('D. String Formation');
-    expect(newProbs[1].title).toEqual('B. Golden Coins');
+    expect(newProbs).toHaveLength(3);
+    expect(newProbs[0].title).toEqual('old problem');
+    expect(newProbs[1].title).toEqual('D. String Formation');
+    expect(newProbs[2].title).toEqual('B. Golden Coins');
   });
 });
 
