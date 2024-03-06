@@ -6,8 +6,8 @@ node_modules
 /public/build
 .env
 
-data.db
-data.db-journal
+dev.db
+dev.db-journal
 /test-results/
 /playwright-report/
 /playwright/.cache/

@@ -31,11 +31,15 @@ type problemDatum = {
   solver_count: number;
 };
 
-export async function updateProblems(problems: problemDatum[]) {
-  await prisma.problem.deleteMany();
+export async function insertNewProblems(problems: problemDatum[]) {
   for (const datum of problems) {
     // some problems have no point in AtCoder
-    if (datum.point !== null && !datum.id.includes('ahc')) {
+    const exists = await prisma.problem.findUnique({
+      where: {
+        id: datum.id,
+      },
+    });
+    if (!exists && datum.point !== null && !datum.id.includes('ahc')) {
       await prisma.problem.create({
         data: {
           id: datum.id,
@@ -47,16 +51,16 @@ export async function updateProblems(problems: problemDatum[]) {
   }
 }
 
-export const updateProblemsIfAllowed = async () => {
+export const insertNewProblemsIfAllowed = async () => {
   const res = await fetchProblemsIfAllowed();
   if (res) {
     const data: problemDatum[] = await res.json();
-    await updateProblems(data);
+    await insertNewProblems(data);
   }
 };
 
 export const queryAllProblemsByDifficulty = async (difficulty: number) => {
-  await updateProblemsIfAllowed();
+  await insertNewProblemsIfAllowed();
   return await prisma.problem.findMany({
     where: {
       difficulty,

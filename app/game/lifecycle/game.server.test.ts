@@ -3,6 +3,15 @@ import { Laboratory, TotalAssets } from '../models/game.ts';
 import { TotalAssetsRepository, LaboratoryRepository, ResearchFactory } from './game.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 
+beforeEach(async () => {
+  await prisma.user.create({
+    data: {
+      id: 'test-user-id',
+      name: 'test-user-name',
+    },
+  });
+});
+
 describe('TotalAssetsRepository', () => {
   const userId = 'test-user-id';
 
