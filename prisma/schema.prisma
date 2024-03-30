@@ -57,6 +57,8 @@ model Problem {
     title      String
     difficulty Int
     Researches Research[]
+
+    @@index([difficulty], name: "problem_difficulty")
 }
 
 model Assets {

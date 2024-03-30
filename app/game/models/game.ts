@@ -1,4 +1,10 @@
-export const TURNS = ['buy-ingredients', 'sell-products', 'solve-problems', 'get-reward'] as const;
+export const TURNS = [
+  'buy-ingredients',
+  'sell-products',
+  'select-problems',
+  'solve-problems',
+  'get-reward',
+] as const;
 export type Turn = (typeof TURNS)[number];
 
 export class TotalAssets {
@@ -57,6 +63,7 @@ export class Laboratory {
 
   get researcherRank() {
     return this.researches
+      .filter((research) => research.solvedAt !== null)
       .slice(-5)
       .reduce(
         (ave, research, index) => (ave * index + research.problem.difficulty) / (index + 1),

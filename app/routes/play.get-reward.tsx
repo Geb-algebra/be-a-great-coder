@@ -36,7 +36,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
   try {
-    const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const laboratory = await LaboratoryRepository.get(user.id);
     const currentResearch = laboratory.getRewardUnreceivedResearch();
     if (!currentResearch) {
@@ -52,8 +51,12 @@ export async function action({ request }: ActionFunctionArgs) {
     }
     currentResearch.rewardReceivedAt = new Date();
     await LaboratoryRepository.save(user.id, laboratory);
-    TotalAssetsUpdateService.chargeBattery(totalAssets, laboratory.batteryCapacity);
-    await TotalAssetsRepository.save(user.id, totalAssets);
+    const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
+    const newAssets = TotalAssetsUpdateService.chargeBattery(
+      totalAssets,
+      laboratory.batteryCapacity,
+    );
+    await TotalAssetsRepository.save(user.id, newAssets);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {

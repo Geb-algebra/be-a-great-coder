@@ -1,5 +1,24 @@
 import { Laboratory } from './game.ts';
 
+describe('Laboratory with no research', () => {
+  let laboratory: Laboratory;
+  beforeEach(() => {
+    laboratory = new Laboratory();
+  });
+
+  it('should calculate batteryCapacity', () => {
+    expect(laboratory.batteryCapacity).toBe(1);
+  });
+
+  it('should calculate performance', () => {
+    expect(laboratory.performance).toBe(1);
+  });
+
+  it('should calculate researcherRank', () => {
+    expect(laboratory.researcherRank).toBe(0);
+  });
+});
+
 describe('Laboratory', async () => {
   let laboratory: Laboratory;
   beforeEach(() => {

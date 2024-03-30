@@ -45,7 +45,7 @@ describe('LaboratoryRepository', async () => {
       data: { id: 'problem-id', title: 'problem-title', difficulty: 100 },
     });
     const laboratory = new Laboratory();
-    const research = await ResearchFactory.create(userId, problem);
+    const research = await ResearchFactory.create(userId, problem.id);
     laboratory.researches.push(research);
     await LaboratoryRepository.save(userId, laboratory);
     const savedLaboratory = await LaboratoryRepository.get(userId);
@@ -56,15 +56,19 @@ describe('LaboratoryRepository', async () => {
   });
 
   it('should update laboratory', async () => {
-    const laboratory = new Laboratory();
+    await (async () => {
+      const lab = new Laboratory();
 
-    const problem = await prisma.problem.create({
-      data: { id: 'problem-id', title: 'problem-title', difficulty: 100 },
-    });
-    const research = await ResearchFactory.create(userId, problem);
-    laboratory.researches.push(research);
-    await LaboratoryRepository.save(userId, laboratory);
+      const problem = await prisma.problem.create({
+        data: { id: 'problem-id', title: 'problem-title', difficulty: 100 },
+      });
+      const research = await ResearchFactory.create(userId, problem.id);
+      lab.researches.push(research);
+      await LaboratoryRepository.save(userId, lab);
+    })();
 
+    const laboratory = await LaboratoryRepository.get(userId);
+    const research = laboratory.researches[0];
     research.solvedAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
     research.finishedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 2);
     research.explanationDisplayedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 3);

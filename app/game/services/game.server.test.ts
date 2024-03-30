@@ -1,6 +1,6 @@
 import { GameLogicViolated } from '~/errors.ts';
 import { TotalAssets } from '../models/game.ts';
-import { TotalAssetsUpdateService } from './game.server.ts';
+import { TotalAssetsUpdateService, getDifficultiesMatchUserRank } from './game.server.ts';
 
 describe('TotalAssetsUpdateService', () => {
   const initialTotalAssets = new TotalAssets(1000, 10, new Map([['iron', 5]]));
@@ -51,5 +51,25 @@ describe('TotalAssetsUpdateService', () => {
     expect(newTotalAssets.cash).toEqual(1000);
     expect(newTotalAssets.ingredientStock.get('iron')).toEqual(5);
     expect(newTotalAssets.battery).toEqual(20);
+  });
+});
+
+describe('getThreeDifficultiesMatchUserRank', () => {
+  it('should return first three difficulties if the user rank is <= 200', () => {
+    expect(getDifficultiesMatchUserRank(50)).toEqual([100, 200, 300]);
+    expect(getDifficultiesMatchUserRank(200)).toEqual([100, 200, 300]);
+  });
+
+  it('should return one difficulty that match user, one easy and one hard for user', () => {
+    expect(getDifficultiesMatchUserRank(201)).toEqual([200, 300, 400]);
+    expect(getDifficultiesMatchUserRank(299)).toEqual([200, 300, 400]);
+    expect(getDifficultiesMatchUserRank(512)).toEqual([500, 600, 700]);
+    expect(getDifficultiesMatchUserRank(1600)).toEqual([1500, 1600, 1800]);
+  });
+
+  it('should return last three difficulties if the user rank is >= 1600', () => {
+    expect(getDifficultiesMatchUserRank(1601)).toEqual([1600, 1800, 2000]);
+    expect(getDifficultiesMatchUserRank(1801)).toEqual([1600, 1800, 2000]);
+    expect(getDifficultiesMatchUserRank(2000)).toEqual([1600, 1800, 2000]);
   });
 });
