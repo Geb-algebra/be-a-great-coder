@@ -80,9 +80,9 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByRole('heading', { name: /select problems/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
+    await expect(loggedInPage.getByRole('button', { name: /100/i })).toBeVisible();
     await expect(loggedInPage.getByRole('button', { name: /200/i })).toBeVisible();
     await expect(loggedInPage.getByRole('button', { name: /300/i })).toBeVisible();
-    await expect(loggedInPage.getByRole('button', { name: /400/i })).toBeVisible();
     await loggedInPage.getByRole('button', { name: /200/i }).click();
     await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
   });

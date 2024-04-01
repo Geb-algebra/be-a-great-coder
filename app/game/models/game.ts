@@ -50,15 +50,22 @@ export class Laboratory {
     this.researches = researches;
   }
 
+  private get rewardedResearches() {
+    return this.researches.filter((research) => research.rewardReceivedAt !== null);
+  }
+
   get batteryCapacity() {
-    return this.researches.reduce(
-      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
+    return this.rewardedResearches.reduce(
+      (acc, research) => acc + (research.performanceIncrement ?? 0),
       1,
     );
   }
 
   get performance() {
-    return this.researches.reduce((acc, research) => acc + (research.performanceIncrement ?? 0), 1);
+    return this.rewardedResearches.reduce(
+      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
+      1,
+    );
   }
 
   get researcherRank() {

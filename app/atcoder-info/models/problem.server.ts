@@ -62,27 +62,27 @@ export const insertNewProblemsIfAllowed = async () => {
 };
 
 export const queryAllProblemsByDifficulty = async (
-  difficultyGt: number,
-  difficultyLte: number,
+  difficultyGte: number,
+  difficultyLt: number,
   skipFetch = false,
 ) => {
   if (!skipFetch) await insertNewProblemsIfAllowed();
   return await prisma.problem.findMany({
     where: {
       difficulty: {
-        lte: difficultyLte,
-        gt: difficultyGt,
+        lt: difficultyLt,
+        gte: difficultyGte,
       },
     },
   });
 };
 
 export const queryRandomProblemByDifficulty = async (
-  difficultyGt: number,
-  difficultyLte: number,
+  difficultyGte: number,
+  difficultyLt: number,
   skipFetch = false,
 ) => {
-  const problems = await queryAllProblemsByDifficulty(difficultyGt, difficultyLte, skipFetch);
+  const problems = await queryAllProblemsByDifficulty(difficultyGte, difficultyLt, skipFetch);
   const index = Math.floor(Math.random() * problems.length);
   return problems[index];
 };

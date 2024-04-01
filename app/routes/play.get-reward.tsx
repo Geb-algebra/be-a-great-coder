@@ -13,6 +13,7 @@ import { TotalAssetsUpdateService, getNextTurn } from '~/game/services/game.serv
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 import { TotalAssetsJsonifier, LaboratoryJsonifier } from '~/game/services/jsonifier';
 import GameStatusDashboard from '~/components/GameStatusDashboard';
+import { calcRobotGrowthRate } from '~/game/services/config';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -42,12 +43,16 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new ObjectNotFoundError('unrewarded proposedProblem not found');
     }
     if (currentResearch.solvedAt) {
-      currentResearch.batteryCapacityIncrement = 2;
+      currentResearch.batteryCapacityIncrement = calcRobotGrowthRate(
+        currentResearch.problem.difficulty,
+      );
     }
     const formData = await request.formData();
     const answerShown = getRequiredStringFromFormData(formData, 'answer-shown') === 'true';
     if (answerShown) {
-      currentResearch.performanceIncrement = 2;
+      currentResearch.performanceIncrement = calcRobotGrowthRate(
+        currentResearch.problem.difficulty,
+      );
     }
     currentResearch.rewardReceivedAt = new Date();
     await LaboratoryRepository.save(user.id, laboratory);
