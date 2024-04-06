@@ -13,6 +13,7 @@ import { TotalAssetsUpdateService, getNextTurn } from '~/game/services/game.serv
 import { getRequiredStringFromFormData } from '~/utils/utils.ts';
 import { TotalAssetsJsonifier, LaboratoryJsonifier } from '~/game/services/jsonifier';
 import GameStatusDashboard from '~/components/GameStatusDashboard';
+import { calcRobotGrowthRate } from '~/game/services/config';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -36,24 +37,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
   try {
-    const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const laboratory = await LaboratoryRepository.get(user.id);
     const currentResearch = laboratory.getRewardUnreceivedResearch();
     if (!currentResearch) {
       throw new ObjectNotFoundError('unrewarded proposedProblem not found');
     }
     if (currentResearch.solvedAt) {
-      currentResearch.batteryCapacityIncrement = 2;
+      currentResearch.batteryCapacityIncrement = calcRobotGrowthRate(
+        currentResearch.problem.difficulty,
+      );
     }
     const formData = await request.formData();
     const answerShown = getRequiredStringFromFormData(formData, 'answer-shown') === 'true';
     if (answerShown) {
-      currentResearch.performanceIncrement = 2;
+      currentResearch.performanceIncrement = calcRobotGrowthRate(
+        currentResearch.problem.difficulty,
+      );
     }
     currentResearch.rewardReceivedAt = new Date();
     await LaboratoryRepository.save(user.id, laboratory);
-    TotalAssetsUpdateService.chargeBattery(totalAssets, laboratory.batteryCapacity);
-    await TotalAssetsRepository.save(user.id, totalAssets);
+    const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
+    const newAssets = TotalAssetsUpdateService.chargeBattery(
+      totalAssets,
+      laboratory.batteryCapacity,
+    );
+    await TotalAssetsRepository.save(user.id, newAssets);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {
@@ -79,11 +87,7 @@ export default function Page() {
 
   return (
     <>
-      <GameStatusDashboard
-        totalAssets={totalAssets}
-        batteryCapacity={laboratory.batteryCapacity}
-        performance={laboratory.performance}
-      />
+      <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratory.laboratoryValue} />
       <div>
         <h1 className="font-bold text-2xl">Get Reward</h1>
         <p>{currentResearch.problem.title}</p>

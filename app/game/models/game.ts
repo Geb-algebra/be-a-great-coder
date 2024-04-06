@@ -1,4 +1,10 @@
-export const TURNS = ['buy-ingredients', 'sell-products', 'solve-problems', 'get-reward'] as const;
+export const TURNS = [
+  'buy-ingredients',
+  'sell-products',
+  'select-problems',
+  'solve-problems',
+  'get-reward',
+] as const;
 export type Turn = (typeof TURNS)[number];
 
 export class TotalAssets {
@@ -37,6 +43,12 @@ export type Research = {
   performanceIncrement: number | null;
 };
 
+export type LaboratoryValue = {
+  batteryCapacity: number;
+  performance: number;
+  researcherRank: number;
+};
+
 export class Laboratory {
   public researches: Research[];
 
@@ -44,24 +56,40 @@ export class Laboratory {
     this.researches = researches;
   }
 
+  private get rewardedResearches() {
+    return this.researches.filter((research) => research.rewardReceivedAt !== null);
+  }
+
   get batteryCapacity() {
-    return this.researches.reduce(
-      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
+    return this.rewardedResearches.reduce(
+      (acc, research) => acc + (research.performanceIncrement ?? 0),
       1,
     );
   }
 
   get performance() {
-    return this.researches.reduce((acc, research) => acc + (research.performanceIncrement ?? 0), 1);
+    return this.rewardedResearches.reduce(
+      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
+      1,
+    );
   }
 
   get researcherRank() {
     return this.researches
+      .filter((research) => research.solvedAt !== null)
       .slice(-5)
       .reduce(
         (ave, research, index) => (ave * index + research.problem.difficulty) / (index + 1),
         0,
       );
+  }
+
+  get laboratoryValue(): LaboratoryValue {
+    return {
+      batteryCapacity: this.batteryCapacity,
+      performance: this.performance,
+      researcherRank: this.researcherRank,
+    };
   }
 
   getUnfinishedResearch() {

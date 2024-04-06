@@ -32,23 +32,25 @@ type problemDatum = {
 };
 
 export async function insertNewProblems(problems: problemDatum[]) {
-  for (const datum of problems) {
-    // some problems have no point in AtCoder
-    const exists = await prisma.problem.findUnique({
-      where: {
-        id: datum.id,
-      },
-    });
-    if (!exists && datum.point !== null && !datum.id.includes('ahc')) {
-      await prisma.problem.create({
-        data: {
+  await prisma.$transaction(async (prisma) => {
+    for (const datum of problems) {
+      // some problems have no point in AtCoder
+      const exists = await prisma.problem.findUnique({
+        where: {
           id: datum.id,
-          title: datum.title,
-          difficulty: datum.point,
         },
       });
+      if (!exists && datum.point !== null && !datum.id.includes('ahc')) {
+        await prisma.problem.create({
+          data: {
+            id: datum.id,
+            title: datum.title,
+            difficulty: datum.point,
+          },
+        });
+      }
     }
-  }
+  });
 }
 
 export const insertNewProblemsIfAllowed = async () => {
@@ -59,21 +61,28 @@ export const insertNewProblemsIfAllowed = async () => {
   }
 };
 
-export const queryAllProblemsByDifficulty = async (difficulty: number) => {
-  await insertNewProblemsIfAllowed();
+export const queryAllProblemsByDifficulty = async (
+  difficultyGte: number,
+  difficultyLt: number,
+  skipFetch = false,
+) => {
+  if (!skipFetch) await insertNewProblemsIfAllowed();
   return await prisma.problem.findMany({
     where: {
-      difficulty,
+      difficulty: {
+        lt: difficultyLt,
+        gte: difficultyGte,
+      },
     },
   });
 };
 
-/**
- * fetch all problems and choose one from them randomlu
- * @param difficulty: 100, 200, 300, 400, 500, 600
- */
-export const queryRandomProblemByDifficulty = async (difficulty: number) => {
-  const problems = await queryAllProblemsByDifficulty(difficulty);
+export const queryRandomProblemByDifficulty = async (
+  difficultyGte: number,
+  difficultyLt: number,
+  skipFetch = false,
+) => {
+  const problems = await queryAllProblemsByDifficulty(difficultyGte, difficultyLt, skipFetch);
   const index = Math.floor(Math.random() * problems.length);
   return problems[index];
 };

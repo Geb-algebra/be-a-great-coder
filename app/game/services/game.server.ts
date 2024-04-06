@@ -7,6 +7,11 @@ import {
   TotalAssetsFactory,
   TotalAssetsRepository,
 } from '../lifecycle/game.server.ts';
+import { PROBLEM_DIFFICULTIES } from './config.ts';
+import {
+  insertNewProblemsIfAllowed,
+  queryRandomProblemByDifficulty,
+} from '~/atcoder-info/models/problem.server.ts';
 
 export function getNextTurn(currentTurn: Turn): Turn {
   const currentIndex = TURNS.indexOf(currentTurn);
@@ -98,4 +103,23 @@ export class TotalAssetsUpdateService {
   static chargeBattery(currentTotalAssets: TotalAssets, capacity: number) {
     return new TotalAssets(currentTotalAssets.cash, capacity, currentTotalAssets.ingredientStock);
   }
+}
+
+export function getDifficultiesMatchUserRank(rank: number) {
+  const closestRankIndex = PROBLEM_DIFFICULTIES.findIndex((difficulty) => difficulty >= rank);
+  if (closestRankIndex === -1 || closestRankIndex >= PROBLEM_DIFFICULTIES.length - 2) {
+    return PROBLEM_DIFFICULTIES.slice(-3);
+  }
+  const firstIndex = Math.max(0, closestRankIndex - 1);
+  return PROBLEM_DIFFICULTIES.slice(firstIndex, firstIndex + 3);
+}
+
+export async function getProblemsMatchUserRank(rank: number) {
+  const difficulties = getDifficultiesMatchUserRank(rank);
+  await insertNewProblemsIfAllowed();
+  return Promise.all(
+    difficulties.map(async (difficulty) => {
+      return await queryRandomProblemByDifficulty(difficulty, difficulty + 100, true);
+    }),
+  );
 }

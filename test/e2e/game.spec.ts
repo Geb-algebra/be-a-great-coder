@@ -67,6 +67,23 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByText(/cash: 900/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 3/i)).toBeVisible();
     await loggedInPage.getByRole('button', { name: /finish making products/i }).click();
+    await expect(loggedInPage.getByRole('heading', { name: /select problems/i })).toBeVisible();
+  });
+  test('select problems', async ({ loggedInPage }) => {
+    const totalAssets = new TotalAssets(500, 6, new Map([['iron', 6]]));
+    const user = await UserRepository.getByName('TestUser012');
+    invariant(user, 'user not found');
+    await TotalAssetsRepository.save(user.id, totalAssets);
+    await TurnRepository.save(user.id, 'select-problems');
+
+    await loggedInPage.goto('/play/router');
+    await expect(loggedInPage.getByRole('heading', { name: /select problems/i })).toBeVisible();
+    await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
+    await expect(loggedInPage.getByRole('button', { name: /100/i })).toBeVisible();
+    await expect(loggedInPage.getByRole('button', { name: /200/i })).toBeVisible();
+    await expect(loggedInPage.getByRole('button', { name: /300/i })).toBeVisible();
+    await loggedInPage.getByRole('button', { name: /200/i }).click();
     await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
   });
   test('finish unsolved problems', async ({ loggedInPage }) => {
@@ -103,11 +120,7 @@ test.describe('game cycle', () => {
         difficulty: 100,
       },
     });
-    const research = await ResearchFactory.create(user.id, {
-      id: 'abc070_a',
-      title: 'A. Palindromic Number',
-      difficulty: 100,
-    });
+    const research = await ResearchFactory.create(user.id, 'abc070_a');
     research.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
     const lab = await LaboratoryRepository.get(user.id);
     lab.researches.push(research);
@@ -194,7 +207,7 @@ test.describe('game cycle', () => {
   //   await expect(loggedInPage.getByText(/cleared\?: true/i)).toBeVisible();
   // });
   test('get reward', async ({ loggedInPage }) => {
-    const totalAssets = new TotalAssets(500, 6, new Map([['iron', 6]]));
+    const totalAssets = new TotalAssets(500, 1, new Map([['iron', 6]]));
     const user = await UserRepository.getByName('TestUser012');
     invariant(user, 'user not found');
     await TotalAssetsRepository.save(user.id, totalAssets);
@@ -206,11 +219,7 @@ test.describe('game cycle', () => {
         difficulty: 100,
       },
     });
-    const research = await ResearchFactory.create(user.id, {
-      id: 'abc070_a',
-      title: 'A. Palindromic Number',
-      difficulty: 100,
-    });
+    const research = await ResearchFactory.create(user.id, 'abc070_a');
     research.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
     research.solvedAt = new Date(Date.now() - 1000 * 60 * 60 * 23);
     research.finishedAt = new Date(Date.now() - 1000 * 60 * 60 * 22);
@@ -229,7 +238,7 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByRole('heading', { name: /buy ingredients/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/battery capacity: 3/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/robot performance: 3/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/battery capacity: 2/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/robot performance: 2/i)).toBeVisible();
   });
 });

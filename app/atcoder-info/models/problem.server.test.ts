@@ -66,6 +66,27 @@ describe('updateProblems', () => {
     expect(newProbs[1].title).toEqual('D. String Formation');
     expect(newProbs[2].title).toEqual('B. Golden Coins');
   });
+  it('should not overwrite existing problems', async () => {
+    const lastFetchedTime = new Date(Date.now() - PROBLEM_UPDATE_INTERVAL * 1.1);
+    await createFetchLog(ENDPOINT, 200, lastFetchedTime);
+    for (const data of PROBLEMS) {
+      await prisma.problem.create({
+        data: {
+          id: data.id,
+          title: 'old problem',
+          difficulty: 200,
+        },
+      });
+    }
+    const newProbs = await prisma.problem.findMany();
+    expect(newProbs).toHaveLength(3);
+    await insertNewProblems(PROBLEMS);
+    const newProbs2 = await prisma.problem.findMany();
+    expect(newProbs2).toHaveLength(3);
+    for (const p of newProbs2) {
+      expect(p.title).toEqual('old problem');
+    }
+  });
 });
 
 // describe('queryAllProblemsByDifficulty', () => {

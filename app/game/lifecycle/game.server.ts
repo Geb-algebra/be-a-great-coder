@@ -65,14 +65,14 @@ export class TotalAssetsRepository {
 }
 
 export class ResearchFactory {
-  static async create(userId: User['id'], problem: Problem): Promise<Research> {
-    const existingProblem = await prisma.problem.findUnique({ where: { id: problem.id } });
+  static async create(userId: User['id'], problemId: Problem['id']): Promise<Research> {
+    const existingProblem = await prisma.problem.findUnique({ where: { id: problemId } });
     if (!existingProblem) {
       throw new ObjectNotFoundError('Problem not found');
     }
     return {
       id: createId(),
-      problem,
+      problem: existingProblem,
       userId,
       createdAt: new Date(),
       updatedAt: new Date(),

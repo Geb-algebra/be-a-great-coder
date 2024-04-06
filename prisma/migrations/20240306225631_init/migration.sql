@@ -99,6 +99,9 @@ CREATE INDEX "user_google_profile_id" ON "User"("googleProfileId");
 CREATE INDEX "user_name" ON "User"("name");
 
 -- CreateIndex
+CREATE INDEX "problem_difficulty" ON "Problem"("difficulty");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Assets_userId_key" ON "Assets"("userId");
 
 -- CreateIndex
