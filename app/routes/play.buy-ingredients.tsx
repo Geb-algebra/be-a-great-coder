@@ -23,8 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
   return json({
     totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
-    batteryCapacity: laboratory.batteryCapacity,
-    performance: laboratory.performance,
+    laboratoryValue: laboratory.laboratoryValue,
   });
 }
 
@@ -46,18 +45,14 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const { totalAssetsJson, batteryCapacity, performance } = useLoaderData<typeof loader>();
+  const { totalAssetsJson, laboratoryValue } = useLoaderData<typeof loader>();
   const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
   const actionData = useActionData<typeof action>();
   const fetcher = useFetcher<typeof detailAction>();
   const ingredientNames = ['iron'];
   return (
     <>
-      <GameStatusDashboard
-        totalAssets={totalAssets}
-        batteryCapacity={batteryCapacity}
-        performance={performance}
-      />
+      <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratoryValue} />
       <div>
         <h1 className="font-bold text-2xl">Buy Ingredients</h1>
         <p>{actionData?.error.message ?? fetcher.data?.error.message}</p>

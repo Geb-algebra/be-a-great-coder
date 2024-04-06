@@ -43,6 +43,12 @@ export type Research = {
   performanceIncrement: number | null;
 };
 
+export type LaboratoryValue = {
+  batteryCapacity: number;
+  performance: number;
+  researcherRank: number;
+};
+
 export class Laboratory {
   public researches: Research[];
 
@@ -76,6 +82,14 @@ export class Laboratory {
         (ave, research, index) => (ave * index + research.problem.difficulty) / (index + 1),
         0,
       );
+  }
+
+  get laboratoryValue(): LaboratoryValue {
+    return {
+      batteryCapacity: this.batteryCapacity,
+      performance: this.performance,
+      researcherRank: this.researcherRank,
+    };
   }
 
   getUnfinishedResearch() {

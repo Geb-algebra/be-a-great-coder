@@ -8,7 +8,6 @@ import type { Problem, Research, Turn } from '../models/game.ts';
 import invariant from 'tiny-invariant';
 import { ObjectNotFoundError } from '~/errors.ts';
 import { createId } from '@paralleldrive/cuid2';
-import { calcRobotGrowthRate } from '../services/config.ts';
 
 export class TotalAssetsFactory {
   static initialize() {

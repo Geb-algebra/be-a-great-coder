@@ -15,8 +15,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const laboratory = await LaboratoryRepository.get(user.id);
   return json({
     totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
-    batteryCapacity: laboratory.batteryCapacity,
-    performance: laboratory.performance,
+    laboratoryValue: laboratory.laboratoryValue,
   });
 }
 
@@ -28,15 +27,11 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Page() {
-  const { totalAssetsJson, batteryCapacity, performance } = useLoaderData<typeof loader>();
+  const { totalAssetsJson, laboratoryValue } = useLoaderData<typeof loader>();
   const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
   return (
     <>
-      <GameStatusDashboard
-        totalAssets={totalAssets}
-        batteryCapacity={batteryCapacity}
-        performance={performance}
-      />
+      <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratoryValue} />
       <Form method="post">
         <button type="submit">Start Game</button>
       </Form>

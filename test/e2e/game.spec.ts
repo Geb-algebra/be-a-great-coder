@@ -207,7 +207,7 @@ test.describe('game cycle', () => {
   //   await expect(loggedInPage.getByText(/cleared\?: true/i)).toBeVisible();
   // });
   test('get reward', async ({ loggedInPage }) => {
-    const totalAssets = new TotalAssets(500, 6, new Map([['iron', 6]]));
+    const totalAssets = new TotalAssets(500, 1, new Map([['iron', 6]]));
     const user = await UserRepository.getByName('TestUser012');
     invariant(user, 'user not found');
     await TotalAssetsRepository.save(user.id, totalAssets);
@@ -238,7 +238,7 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByRole('heading', { name: /buy ingredients/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/battery capacity: 3/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/robot performance: 3/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/battery capacity: 2/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/robot performance: 2/i)).toBeVisible();
   });
 });

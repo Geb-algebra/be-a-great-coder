@@ -87,11 +87,7 @@ export default function Page() {
 
   return (
     <>
-      <GameStatusDashboard
-        totalAssets={totalAssets}
-        batteryCapacity={laboratory.batteryCapacity}
-        performance={laboratory.performance}
-      />
+      <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratory.laboratoryValue} />
       <div>
         <h1 className="font-bold text-2xl">Get Reward</h1>
         <p>{currentResearch.problem.title}</p>

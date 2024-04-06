@@ -77,11 +77,7 @@ export default function Page() {
   const actionData = useActionData<typeof action>();
   return (
     <>
-      <GameStatusDashboard
-        totalAssets={totalAssets}
-        batteryCapacity={laboratory.batteryCapacity}
-        performance={laboratory.performance}
-      />
+      <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratory.laboratoryValue} />
       <div>
         <h1 className="font-bold text-2xl">Select Problems to solve</h1>
         <Form method="post" className="flex">
