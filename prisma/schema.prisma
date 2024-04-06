@@ -91,7 +91,7 @@ model Research {
     updatedAt                DateTime  @updatedAt
     solvedAt                 DateTime?
     finishedAt               DateTime?
-    explanationDisplayedAt   DateTime?
+    answerShownAt            DateTime?
     rewardReceivedAt         DateTime?
     batteryCapacityIncrement Int?
     performanceIncrement     Int?

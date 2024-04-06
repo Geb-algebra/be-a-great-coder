@@ -1,4 +1,4 @@
-import { loader } from './buy-ingredients';
+import { loader } from './_layout';
 import { TurnRepository } from '~/game/lifecycle/game.server';
 import {
   setBeginnersStatus,
@@ -12,9 +12,7 @@ describe('loader', () => {
   let account: Account;
   let request: Request;
   beforeEach(async () => {
-    const d = await setupAccountAndAuthenticatedRequest(
-      'http://localhost:3000/play/buy-ingredients',
-    );
+    const d = await setupAccountAndAuthenticatedRequest('http://localhost:3000/play');
     account = d.account;
     request = d.request;
     await TurnRepository.save(account.id, 'buy-ingredients');

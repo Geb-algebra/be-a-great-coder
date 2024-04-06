@@ -37,7 +37,7 @@ export type Research = {
   updatedAt: Date;
   solvedAt: Date | null;
   finishedAt: Date | null;
-  explanationDisplayedAt: Date | null;
+  answerShownAt: Date | null;
   rewardReceivedAt: Date | null;
   batteryCapacityIncrement: number | null;
   performanceIncrement: number | null;

@@ -68,7 +68,7 @@ CREATE TABLE "Research" (
     "updatedAt" DATETIME NOT NULL,
     "solvedAt" DATETIME,
     "finishedAt" DATETIME,
-    "explanationDisplayedAt" DATETIME,
+    "answerShownAt" DATETIME,
     "rewardReceivedAt" DATETIME,
     "batteryCapacityIncrement" INTEGER,
     "performanceIncrement" INTEGER,

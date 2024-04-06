@@ -1,4 +1,4 @@
-import { Laboratory, type Problem, TotalAssets } from '../models/game';
+import { Laboratory, type Problem, TotalAssets, type Research } from '../models/game';
 
 export type TotalAssetsJson = {
   cash: number;
@@ -28,11 +28,41 @@ export type ResearchJson = {
   updatedAt: string;
   solvedAt: string | null;
   finishedAt: string | null;
-  explanationDisplayedAt: string | null;
+  answerShownAt: string | null;
   rewardReceivedAt: string | null;
   batteryCapacityIncrement: number | null;
   performanceIncrement: number | null;
 };
+
+export class ResearchJsonifier {
+  static toJson(research: Research): ResearchJson {
+    return {
+      id: research.id,
+      problem: research.problem,
+      userId: research.userId,
+      createdAt: research.createdAt.toISOString(),
+      updatedAt: research.updatedAt.toISOString(),
+      solvedAt: research.solvedAt?.toISOString() ?? null,
+      finishedAt: research.finishedAt?.toISOString() ?? null,
+      answerShownAt: research.answerShownAt?.toISOString() ?? null,
+      rewardReceivedAt: research.rewardReceivedAt?.toISOString() ?? null,
+      batteryCapacityIncrement: research.batteryCapacityIncrement,
+      performanceIncrement: research.performanceIncrement,
+    };
+  }
+
+  static fromJson(json: ResearchJson) {
+    return {
+      ...json,
+      createdAt: new Date(json.createdAt),
+      updatedAt: new Date(json.updatedAt),
+      solvedAt: json.solvedAt ? new Date(json.solvedAt) : null,
+      finishedAt: json.finishedAt ? new Date(json.finishedAt) : null,
+      answerShownAt: json.answerShownAt ? new Date(json.answerShownAt) : null,
+      rewardReceivedAt: json.rewardReceivedAt ? new Date(json.rewardReceivedAt) : null,
+    };
+  }
+}
 
 export type LaboratoryJson = {
   researches: ResearchJson[];
@@ -41,35 +71,11 @@ export type LaboratoryJson = {
 export class LaboratoryJsonifier {
   static toJson(laboratory: Laboratory): LaboratoryJson {
     return {
-      researches: laboratory.researches.map((research) => ({
-        id: research.id,
-        problem: research.problem,
-        userId: research.userId,
-        createdAt: research.createdAt.toISOString(),
-        updatedAt: research.updatedAt.toISOString(),
-        solvedAt: research.solvedAt?.toISOString() ?? null,
-        finishedAt: research.finishedAt?.toISOString() ?? null,
-        explanationDisplayedAt: research.explanationDisplayedAt?.toISOString() ?? null,
-        rewardReceivedAt: research.rewardReceivedAt?.toISOString() ?? null,
-        batteryCapacityIncrement: research.batteryCapacityIncrement,
-        performanceIncrement: research.performanceIncrement,
-      })),
+      researches: laboratory.researches.map((research) => ResearchJsonifier.toJson(research)),
     };
   }
 
   static fromJson(json: LaboratoryJson) {
-    return new Laboratory(
-      json.researches.map((research) => ({
-        ...research,
-        createdAt: new Date(research.createdAt),
-        updatedAt: new Date(research.updatedAt),
-        solvedAt: research.solvedAt ? new Date(research.solvedAt) : null,
-        finishedAt: research.finishedAt ? new Date(research.finishedAt) : null,
-        explanationDisplayedAt: research.explanationDisplayedAt
-          ? new Date(research.explanationDisplayedAt)
-          : null,
-        rewardReceivedAt: research.rewardReceivedAt ? new Date(research.rewardReceivedAt) : null,
-      })),
-    );
+    return new Laboratory(json.researches.map((research) => ResearchJsonifier.fromJson(research)));
   }
 }

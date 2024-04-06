@@ -3,14 +3,9 @@ import { json, redirect } from '@remix-run/node';
 import { useActionData, Form, useLoaderData } from '@remix-run/react';
 import { authenticator } from '~/services/auth.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
-import {
-  LaboratoryRepository,
-  TotalAssetsRepository,
-  TurnRepository,
-} from '~/game/lifecycle/game.server.ts';
+import { LaboratoryRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
 import { getNextTurn } from '~/game/services/game.server.ts';
-import { LaboratoryJsonifier, TotalAssetsJsonifier } from '~/game/services/jsonifier';
-import GameStatusDashboard from '~/components/GameStatusDashboard';
+import { ResearchJsonifier } from '~/game/services/jsonifier';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -19,15 +14,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/play/router');
   }
   const laboratory = await LaboratoryRepository.get(user.id);
-  const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
   const currentResearch = laboratory.getUnfinishedResearch();
   if (!currentResearch) {
     throw new ObjectNotFoundError('unfinished research not found');
   }
-  return json({
-    laboratoryJson: LaboratoryJsonifier.toJson(laboratory),
-    totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
-  });
+  return json({ currentResearchJson: ResearchJsonifier.toJson(currentResearch) });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -55,17 +46,11 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const { laboratoryJson, totalAssetsJson } = useLoaderData<typeof loader>();
-  const laboratory = LaboratoryJsonifier.fromJson(laboratoryJson);
-  const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
-  const currentResearch = laboratory.getUnfinishedResearch();
-  if (!currentResearch) {
-    throw new ObjectNotFoundError('unfinished research not found');
-  }
+  const { currentResearchJson } = useLoaderData<typeof loader>();
+  const currentResearch = ResearchJsonifier.fromJson(currentResearchJson);
   const actionData = useActionData<typeof action>();
   return (
     <>
-      <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratory.laboratoryValue} />
       <div>
         <h1 className="font-bold text-2xl">Solve Problems</h1>
         <div className="flex">
