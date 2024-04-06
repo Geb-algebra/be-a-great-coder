@@ -1,11 +1,11 @@
-import { loader } from './play.buy-ingredients';
+import { loader } from './buy-ingredients';
 import { TurnRepository } from '~/game/lifecycle/game.server';
 import {
   setBeginnersStatus,
   setInitialStatus,
   setVeteransStatus,
   setupAccountAndAuthenticatedRequest,
-} from './test-utils';
+} from '../../test-utils';
 import type { Account } from '~/accounts/models/account';
 
 describe('loader', () => {

@@ -11,7 +11,7 @@ import { authenticator } from '~/services/auth.server.ts';
 import AuthButton from '~/components/AuthButton.tsx';
 import PasskeyHero from '~/components/PasskeyHero.tsx';
 
-import type { action as passkeyAction } from '~/routes/play.settings.passkey.tsx';
+import type { action as passkeyAction } from '~/routes/play+/settings.passkey';
 import { ObjectNotFoundError } from '~/errors';
 
 export async function loader({ request }: LoaderFunctionArgs) {

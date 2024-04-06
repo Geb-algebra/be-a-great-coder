@@ -11,7 +11,7 @@ import { getNextTurn } from '~/game/services/game.server.ts';
 import { TotalAssetsJsonifier } from '~/game/services/jsonifier.ts';
 import { GameLogicViolated } from '~/errors.ts';
 import GameStatusDashboard from '~/components/GameStatusDashboard.tsx';
-import type { action as makeItemsAction } from './play.sell-products.$name.tsx';
+import type { action as makeItemsAction } from './sell-products.$name.tsx';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
