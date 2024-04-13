@@ -17,7 +17,7 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByRole('heading', { name: /buy ingredients/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 1000/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 0/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/battery capacity: 1/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/battery: 1 \/ 1/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 1/i)).toBeVisible();
   });
   test('buy ingredients', async ({ loggedInPage }) => {
@@ -63,11 +63,11 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByText(/cash: 900/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 3/i)).toBeVisible();
     await loggedInPage.getByRole('button', { name: /make sword/i }).click();
-    await expect(loggedInPage.getByText(/battery is not enough/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/not enough battery/i)).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 900/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 3/i)).toBeVisible();
     await loggedInPage.getByRole('button', { name: /finish making products/i }).click();
-    await expect(loggedInPage.getByRole('heading', { name: /select problems/i })).toBeVisible();
+    await expect(loggedInPage.getByRole('heading', { name: /select a problem/i })).toBeVisible();
   });
   test('select problems', async ({ loggedInPage }) => {
     const totalAssets = new TotalAssets(500, 6, new Map([['iron', 6]]));
@@ -77,14 +77,14 @@ test.describe('game cycle', () => {
     await TurnRepository.save(user.id, 'select-problems');
 
     await loggedInPage.goto('/play/router');
-    await expect(loggedInPage.getByRole('heading', { name: /select problems/i })).toBeVisible();
+    await expect(loggedInPage.getByRole('heading', { name: /select a problem/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
     await expect(loggedInPage.getByRole('button', { name: /100/i })).toBeVisible();
     await expect(loggedInPage.getByRole('button', { name: /200/i })).toBeVisible();
     await expect(loggedInPage.getByRole('button', { name: /300/i })).toBeVisible();
     await loggedInPage.getByRole('button', { name: /200/i }).click();
-    await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
+    await expect(loggedInPage.getByRole('heading', { name: /solve the problem/i })).toBeVisible();
   });
   test('finish unsolved problems', async ({ loggedInPage }) => {
     // target problem:
@@ -125,7 +125,7 @@ test.describe('game cycle', () => {
     await LaboratoryRepository.addResearch(user.id, research);
 
     await loggedInPage.goto('/play/router');
-    await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
+    await expect(loggedInPage.getByRole('heading', { name: /solve the problem/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
     await loggedInPage.getByRole('button', { name: /finish/i }).click();
@@ -227,14 +227,14 @@ test.describe('game cycle', () => {
     await expect(loggedInPage.getByRole('heading', { name: /get reward/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/battery capacity: 1/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/battery: 1 \/ 1/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 1/i)).toBeVisible();
     await loggedInPage.getByRole('button', { name: /show answer/i }).click();
     await loggedInPage.getByRole('button', { name: /get reward/i }).click();
     await expect(loggedInPage.getByRole('heading', { name: /buy ingredients/i })).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
     await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/battery capacity: 2/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/battery: 2 \/ 2/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 2/i)).toBeVisible();
   });
 });

@@ -1,8 +1,4 @@
 import { createId } from '@paralleldrive/cuid2';
-import {
-  insertNewProblemsIfAllowed,
-  queryRandomProblemByDifficulty,
-} from '~/atcoder-info/models/problem.server.ts';
 import { prisma } from '~/db.server';
 import {
   LaboratoryRepository,
