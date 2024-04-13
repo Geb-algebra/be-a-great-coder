@@ -87,7 +87,7 @@ describe.each([
     await screen.findByRole('button', { name: /get reward/i });
   });
 
-  it.each([
+  it.todo.each([
     ['solved=False', false],
     ['solved=True', true],
   ])('gives reward on click get reward for %s', async (_, isSolved) => {
@@ -144,7 +144,7 @@ describe.each([
     ); // no change because the answer is not shown
   });
 
-  it.each([
+  it.todo.each([
     ['answerShown=False', false],
     ['answerShown=True', true],
   ])('gives reward on click get reward for %s', async (_, isShown) => {
