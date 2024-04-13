@@ -2,60 +2,21 @@ import { createRemixStub } from '@remix-run/testing';
 import { render, screen } from '@testing-library/react';
 import Page, { loader } from './_layout';
 import { TurnRepository } from '~/game/lifecycle/game.server';
+import { authenticated, setupAccount } from '../../test/utils.ts';
+import type { Account } from '~/accounts/models/account';
 import {
   setBeginnersStatus,
   setInitialStatus,
   setVeteransStatus,
-  setupAccountAndAuthenticatedRequest,
-} from '../../test-utils';
-import type { Account } from '~/accounts/models/account';
-
-const initialJson = {
-  totalAssetsJson: {
-    cash: 1000,
-    battery: 1,
-    ingredientStock: [['iron', 0]],
-  },
-  laboratoryValue: {
-    batteryCapacity: 1,
-    performance: 1,
-    researcherRank: 0,
-  },
-};
-
-const beginnersJson = {
-  totalAssetsJson: {
-    cash: 1200,
-    battery: 3,
-    ingredientStock: [['iron', 16]],
-  },
-  laboratoryValue: {
-    batteryCapacity: 4,
-    performance: 4,
-    researcherRank: 100,
-  },
-};
-
-const veteransJson = {
-  totalAssetsJson: {
-    cash: 32768,
-    battery: 136,
-    ingredientStock: [['iron', 128]],
-  },
-  laboratoryValue: {
-    batteryCapacity: 136,
-    performance: 136,
-    researcherRank: (2 * 800 + 3 * 900) / 5,
-  },
-};
+  initialJson,
+  beginnersJson,
+  veteransJson,
+} from '~/routes/test/data.ts';
 
 describe('Page', () => {
   let account: Account;
-  let request: Request;
   beforeEach(async () => {
-    const d = await setupAccountAndAuthenticatedRequest('http://localhost:3000/play');
-    account = d.account;
-    request = d.request;
+    account = await setupAccount();
     await TurnRepository.save(account.id, 'buy-ingredients');
   });
   it.each([
@@ -67,9 +28,7 @@ describe('Page', () => {
     const RemixStub = createRemixStub([
       {
         path: '',
-        loader() {
-          return loader({ request, params: {}, context: {} });
-        },
+        loader: authenticated(loader),
         Component: Page,
       },
     ]);
@@ -88,7 +47,7 @@ describe('Page', () => {
     expect(
       await screen.findByText(
         RegExp(
-          `battery capacity: ${expected.totalAssetsJson.battery} / ${expected.laboratoryValue.batteryCapacity}`,
+          `battery: ${expected.totalAssetsJson.battery} / ${expected.laboratoryValue.batteryCapacity}`,
           'i',
         ),
       ),

@@ -39,8 +39,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
     const problemId = getRequiredStringFromFormData(formData, 'problemId');
     const newResearch = await ResearchFactory.create(user.id, problemId);
-    laboratory.researches.push(newResearch);
-    await LaboratoryRepository.save(user.id, laboratory);
+    await LaboratoryRepository.addResearch(user.id, newResearch);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {
@@ -69,7 +68,7 @@ export default function Page() {
   const actionData = useActionData<typeof action>();
   return (
     <div>
-      <h1 className="font-bold text-2xl">Select Problems to solve</h1>
+      <h1 className="font-bold text-2xl">Select A Problem to solve</h1>
       <Form method="post" className="flex">
         <p>{actionData?.error.message}</p>
         {problems.map((problem) => (

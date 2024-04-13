@@ -8,13 +8,13 @@ export async function action({ request }: ActionFunctionArgs) {
     failureRedirect: '/',
   });
   const laboratory = await LaboratoryRepository.get(user.id);
-  const currentResearch = laboratory.getRewardUnreceivedResearch();
+  const currentResearch = laboratory.getUnrewardedResearch();
   if (!currentResearch) {
-    throw new ObjectNotFoundError('unrewarded proposedProblem not found');
+    throw new ObjectNotFoundError('unrewarded research not found');
   }
   if (currentResearch.answerShownAt === null) {
     currentResearch.answerShownAt = new Date();
-    await LaboratoryRepository.save(user.id, laboratory);
+    await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
   }
   return redirect('/play/router');
 }

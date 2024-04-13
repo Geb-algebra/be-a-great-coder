@@ -62,14 +62,14 @@ export class Laboratory {
 
   get batteryCapacity() {
     return this.rewardedResearches.reduce(
-      (acc, research) => acc + (research.performanceIncrement ?? 0),
+      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
       1,
     );
   }
 
   get performance() {
     return this.rewardedResearches.reduce(
-      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
+      (acc, research) => acc + (research.performanceIncrement ?? 0),
       1,
     );
   }
@@ -96,9 +96,18 @@ export class Laboratory {
     return this.researches.find((research) => research.finishedAt === null);
   }
 
-  getRewardUnreceivedResearch() {
+  getUnrewardedResearch() {
     return this.researches.find(
       (research) => research.finishedAt !== null && research.rewardReceivedAt === null,
     );
+  }
+
+  getLatestResearch() {
+    return this.researches.reduce((latest, research) => {
+      if (latest === null) {
+        return research;
+      }
+      return research.createdAt > latest.createdAt ? research : latest;
+    });
   }
 }

@@ -21,7 +21,7 @@ export default defineConfig({
             '**/.*',
             '**/*.test.{ts,tsx,js,jsx}',
             '**/*.spec.{ts,tsx,js,jsx}',
-            '**/test-utils.ts',
+            '**/test/**',
           ],
         });
       },

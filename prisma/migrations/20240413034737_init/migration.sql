@@ -72,7 +72,7 @@ CREATE TABLE "Research" (
     "rewardReceivedAt" DATETIME,
     "batteryCapacityIncrement" INTEGER,
     "performanceIncrement" INTEGER,
-    CONSTRAINT "Research_problemId_fkey" FOREIGN KEY ("problemId") REFERENCES "Problem" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Research_problemId_fkey" FOREIGN KEY ("problemId") REFERENCES "Problem" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT "Research_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 

@@ -49,7 +49,7 @@ export class TotalAssetsRepository {
       });
       const ingredientStock = Array.from(totalAssets.ingredientStock.entries()).map(
         ([ingredientName, amount]) => ({
-          userId,
+          user: { connect: { id: userId } },
           ingredientName,
           amount,
         }),
@@ -96,24 +96,53 @@ export class LaboratoryRepository {
     return new Laboratory(researches);
   }
 
-  static async save(userId: User['id'], laboratory: Laboratory) {
-    await prisma.research.deleteMany({ where: { userId } });
-    for (const research of laboratory.researches) {
-      await prisma.research.create({
-        data: {
-          id: research.id,
-          problem: { connect: { id: research.problem.id } },
-          user: { connect: { id: userId } },
-          createdAt: research.createdAt,
-          solvedAt: research.solvedAt,
-          finishedAt: research.finishedAt,
-          answerShownAt: research.answerShownAt,
-          rewardReceivedAt: research.rewardReceivedAt,
-          batteryCapacityIncrement: research.batteryCapacityIncrement,
-          performanceIncrement: research.performanceIncrement,
-        },
-      });
+  static async addResearch(userId: User['id'], research: Research) {
+    await prisma.research.create({
+      data: {
+        id: research.id,
+        problem: { connect: { id: research.problem.id } },
+        user: { connect: { id: userId } },
+        createdAt: research.createdAt,
+        solvedAt: research.solvedAt,
+        finishedAt: research.finishedAt,
+        answerShownAt: research.answerShownAt,
+        rewardReceivedAt: research.rewardReceivedAt,
+        batteryCapacityIncrement: research.batteryCapacityIncrement,
+        performanceIncrement: research.performanceIncrement,
+      },
+    });
+  }
+
+  static async updateUnrewardedResearch(userId: User['id'], laboratory: Laboratory) {
+    const d = await prisma.research.findMany({
+      where: { userId, rewardReceivedAt: null },
+    });
+    if (!d) {
+      throw new ObjectNotFoundError('Saved unrewarded research not found');
     }
+    if (d.length !== 1) {
+      throw new Error('Multiple unrewarded researches found');
+    }
+    const savedUnrewardedResearch = d[0];
+    const updatedResearch = laboratory.researches.find(
+      (research) => research.id === savedUnrewardedResearch.id,
+    );
+    if (!updatedResearch) {
+      throw new ObjectNotFoundError(
+        `Research ${savedUnrewardedResearch.id} not found in laboratory`,
+      );
+    }
+    await prisma.research.update({
+      where: { id: updatedResearch.id },
+      data: {
+        solvedAt: updatedResearch.solvedAt,
+        finishedAt: updatedResearch.finishedAt,
+        answerShownAt: updatedResearch.answerShownAt,
+        rewardReceivedAt: updatedResearch.rewardReceivedAt,
+        batteryCapacityIncrement: updatedResearch.batteryCapacityIncrement,
+        performanceIncrement: updatedResearch.performanceIncrement,
+      },
+    });
   }
 }
 

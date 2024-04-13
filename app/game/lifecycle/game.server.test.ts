@@ -1,5 +1,5 @@
 import { prisma } from '~/db.server.ts';
-import { Laboratory, TotalAssets } from '../models/game.ts';
+import { TotalAssets } from '../models/game.ts';
 import { TotalAssetsRepository, LaboratoryRepository, ResearchFactory } from './game.server.ts';
 import { ObjectNotFoundError } from '~/errors.ts';
 
@@ -44,10 +44,8 @@ describe('LaboratoryRepository', async () => {
     const problem = await prisma.problem.create({
       data: { id: 'problem-id', title: 'problem-title', difficulty: 100 },
     });
-    const laboratory = new Laboratory();
     const research = await ResearchFactory.create(userId, problem.id);
-    laboratory.researches.push(research);
-    await LaboratoryRepository.save(userId, laboratory);
+    await LaboratoryRepository.addResearch(userId, research);
     const savedLaboratory = await LaboratoryRepository.get(userId);
     expect({ ...savedLaboratory.researches[0], updatedAt: undefined }).toMatchObject({
       ...research,
@@ -57,14 +55,11 @@ describe('LaboratoryRepository', async () => {
 
   it('should update laboratory', async () => {
     await (async () => {
-      const lab = new Laboratory();
-
       const problem = await prisma.problem.create({
         data: { id: 'problem-id', title: 'problem-title', difficulty: 100 },
       });
       const research = await ResearchFactory.create(userId, problem.id);
-      lab.researches.push(research);
-      await LaboratoryRepository.save(userId, lab);
+      await LaboratoryRepository.addResearch(userId, research);
     })();
 
     const laboratory = await LaboratoryRepository.get(userId);
@@ -75,10 +70,48 @@ describe('LaboratoryRepository', async () => {
     research.rewardReceivedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 4);
     research.batteryCapacityIncrement = 1;
     research.performanceIncrement = 2;
-    await LaboratoryRepository.save(userId, laboratory);
+    await LaboratoryRepository.updateUnrewardedResearch(userId, laboratory);
 
     const savedLaboratory = await LaboratoryRepository.get(userId);
     expect({ ...savedLaboratory.researches[0], updatedAt: undefined }).toMatchObject({
+      ...research,
+      updatedAt: undefined,
+    });
+  });
+
+  it('should update latest research', async () => {
+    await (async () => {
+      const problem1 = await prisma.problem.create({
+        data: { id: 'problem-id-1', title: 'problem-title-1', difficulty: 100 },
+      });
+      const research1 = await ResearchFactory.create(userId, problem1.id);
+      research1.solvedAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+      research1.finishedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 2);
+      research1.answerShownAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 3);
+      research1.rewardReceivedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 4);
+      research1.batteryCapacityIncrement = 1;
+      research1.performanceIncrement = 2;
+      await LaboratoryRepository.addResearch(userId, research1);
+
+      const problem2 = await prisma.problem.create({
+        data: { id: 'problem-id-2', title: 'problem-title-2', difficulty: 200 },
+      });
+      const research2 = await ResearchFactory.create(userId, problem2.id);
+      await LaboratoryRepository.addResearch(userId, research2);
+    })();
+
+    const laboratory = await LaboratoryRepository.get(userId);
+    const research = laboratory.getLatestResearch();
+    research.solvedAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    research.finishedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 2);
+    research.answerShownAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 3);
+    research.rewardReceivedAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 4);
+    research.batteryCapacityIncrement = 1;
+    research.performanceIncrement = 2;
+    await LaboratoryRepository.updateUnrewardedResearch(userId, laboratory);
+
+    const savedLaboratory = await LaboratoryRepository.get(userId);
+    expect({ ...savedLaboratory.getLatestResearch(), updatedAt: undefined }).toMatchObject({
       ...research,
       updatedAt: undefined,
     });

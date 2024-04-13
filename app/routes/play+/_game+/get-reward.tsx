@@ -19,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (turn !== 'get-reward') {
     return redirect('/play/router');
   }
-  const unrewardedResearch = laboratory.getRewardUnreceivedResearch();
+  const unrewardedResearch = laboratory.getUnrewardedResearch();
   if (!unrewardedResearch) {
     TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
@@ -31,11 +31,11 @@ export async function action({ request }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
   try {
     const laboratory = await LaboratoryRepository.get(user.id);
-    const currentResearch = laboratory.getRewardUnreceivedResearch();
+    const currentResearch = laboratory.getUnrewardedResearch();
     if (!currentResearch) {
       throw new ObjectNotFoundError('unrewarded proposedProblem not found');
     }
-    if (currentResearch.solvedAt) {
+    if (currentResearch.solvedAt !== null) {
       currentResearch.batteryCapacityIncrement = calcRobotGrowthRate(
         currentResearch.problem.difficulty,
       );
@@ -46,7 +46,7 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
     currentResearch.rewardReceivedAt = new Date();
-    await LaboratoryRepository.save(user.id, laboratory);
+    await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
     const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const newAssets = TotalAssetsUpdateService.chargeBattery(
       totalAssets,

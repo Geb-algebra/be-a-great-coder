@@ -1,32 +1,15 @@
 import { createId } from '@paralleldrive/cuid2';
-import { AccountFactory, AccountRepository } from '~/accounts/lifecycle/account.server';
-import { queryRandomProblemByDifficulty } from '~/atcoder-info/models/problem.server';
+import {
+  insertNewProblemsIfAllowed,
+  queryRandomProblemByDifficulty,
+} from '~/atcoder-info/models/problem.server.ts';
+import { prisma } from '~/db.server';
 import {
   LaboratoryRepository,
   TotalAssetsFactory,
   TotalAssetsRepository,
-} from '~/game/lifecycle/game.server';
-import { Laboratory, TotalAssets } from '~/game/models/game';
-import { getSession, sessionStorage } from '~/services/session.server';
-
-/**
- * Sets up an account and add a session to the request.
- *
- * ! This function mutates the given request instance.
- */
-export async function setupAccountAndAuthenticatedRequest(url: string) {
-  const account = await AccountFactory.create({
-    name: 'testuser',
-    id: 'testid',
-  });
-  await AccountRepository.save(account);
-  const session = await getSession(new Request(url));
-  session.set('user', { id: 'testid', name: 'testuser' });
-  const request = new Request(url, {
-    headers: { cookie: await sessionStorage.commitSession(session) },
-  });
-  return { account, request };
-}
+} from '~/game/lifecycle/game.server.ts';
+import { TotalAssets } from '~/game/models/game.ts';
 
 /**
  * Save the initial status to the database.
@@ -34,8 +17,7 @@ export async function setupAccountAndAuthenticatedRequest(url: string) {
 export async function setInitialStatus(userId: string) {
   const totalAssets = TotalAssetsFactory.initialize();
   await TotalAssetsRepository.save(userId, totalAssets);
-  const laboratory = new Laboratory([]);
-  await LaboratoryRepository.save(userId, laboratory);
+  const laboratory = LaboratoryRepository.get(userId);
   return { totalAssets, laboratory };
 }
 
@@ -51,11 +33,11 @@ export async function setInitialStatus(userId: string) {
 export async function setBeginnersStatus(userId: string) {
   const totalAssets = new TotalAssets(1200, 3, new Map([['iron', 16]]));
   await TotalAssetsRepository.save(userId, totalAssets);
-  const researches = [];
+  const laboratory = await LaboratoryRepository.get(userId);
+  await insertNewProblemsIfAllowed();
   for (let i = 0; i < 3; i++) {
-    const problem = await queryRandomProblemByDifficulty(100, 101);
-    console.log(problem);
-    researches.push({
+    const problem = await queryRandomProblemByDifficulty(100, 101, false);
+    await LaboratoryRepository.addResearch(userId, {
       id: createId(),
       problem: problem,
       userId,
@@ -69,30 +51,36 @@ export async function setBeginnersStatus(userId: string) {
       performanceIncrement: 1,
     });
   }
-  const laboratory = new Laboratory(researches);
-  await LaboratoryRepository.save(userId, laboratory);
   return { totalAssets, laboratory };
 }
 
 /**
  * Sets the veterans status to the database.
  *
- * 32768 cash, 165 battery, and 128 iron.
+ * 32768 cash, 136 battery, and 128 iron.
  *
- * 30 researches, difficulty 100 to 1000, battery capacity increment 1 to 10, performance increment 1 to 10.
+ * 30 researches, difficulty 100 to 900, battery capacity increment 1 to 9, performance increment 1 to 9.
  *
  * The researches are solved, finished, the explanation is displayed, and the reward is received.
  */
 export async function setVeteransStatus(userId: string) {
   const totalAssets = new TotalAssets(32768, 136, new Map([['iron', 128]]));
   await TotalAssetsRepository.save(userId, totalAssets);
-  const researches = [];
+  const laboratory = await LaboratoryRepository.get(userId);
   for (let i = 0; i < 9; i++) {
     for (let j = 0; j < 3; j++) {
-      const problem = await queryRandomProblemByDifficulty(100 * (i + 1), 100 * (i + 1) + 1);
-      researches.push({
+      const pid = `ATC0${i}${j}`;
+      const difficulty = (i + 1) * 100;
+      const problem = await prisma.problem.create({
+        data: {
+          id: pid,
+          title: `Test problem ${j} ${difficulty}`,
+          difficulty,
+        },
+      });
+      await LaboratoryRepository.addResearch(userId, {
         id: createId(),
-        problem: problem,
+        problem,
         userId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -105,7 +93,44 @@ export async function setVeteransStatus(userId: string) {
       });
     }
   }
-  const laboratory = new Laboratory(researches);
-  await LaboratoryRepository.save(userId, laboratory);
   return { totalAssets, laboratory };
 }
+
+export const initialJson = {
+  totalAssetsJson: {
+    cash: 1000,
+    battery: 1,
+    ingredientStock: [['iron', 0]],
+  },
+  laboratoryValue: {
+    batteryCapacity: 1,
+    performance: 1,
+    researcherRank: 0,
+  },
+};
+
+export const beginnersJson = {
+  totalAssetsJson: {
+    cash: 1200,
+    battery: 3,
+    ingredientStock: [['iron', 16]],
+  },
+  laboratoryValue: {
+    batteryCapacity: 4,
+    performance: 4,
+    researcherRank: 100,
+  },
+};
+
+export const veteransJson = {
+  totalAssetsJson: {
+    cash: 32768,
+    battery: 136,
+    ingredientStock: [['iron', 128]],
+  },
+  laboratoryValue: {
+    batteryCapacity: 136,
+    performance: 136,
+    researcherRank: (2 * 800 + 3 * 900) / 5,
+  },
+};

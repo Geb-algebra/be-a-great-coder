@@ -68,7 +68,7 @@ export class TotalAssetsUpdateService {
     quantity: number,
   ) {
     if (quantity > currentTotalAssets.battery) {
-      throw new GameLogicViolated('Battery is not enough');
+      throw new GameLogicViolated('Not enough battery');
     }
     const consumedAmountOfIngredients = 3 * quantity;
     if ((currentTotalAssets.ingredientStock.get('iron') ?? 0) < consumedAmountOfIngredients) {

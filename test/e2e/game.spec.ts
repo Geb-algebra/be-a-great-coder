@@ -122,9 +122,7 @@ test.describe('game cycle', () => {
     });
     const research = await ResearchFactory.create(user.id, 'abc070_a');
     research.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
-    const lab = await LaboratoryRepository.get(user.id);
-    lab.researches.push(research);
-    await LaboratoryRepository.save(user.id, lab);
+    await LaboratoryRepository.addResearch(user.id, research);
 
     await loggedInPage.goto('/play/router');
     await expect(loggedInPage.getByRole('heading', { name: /solve problems/i })).toBeVisible();
@@ -223,9 +221,7 @@ test.describe('game cycle', () => {
     research.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
     research.solvedAt = new Date(Date.now() - 1000 * 60 * 60 * 23);
     research.finishedAt = new Date(Date.now() - 1000 * 60 * 60 * 22);
-    const lab = await LaboratoryRepository.get(user.id);
-    lab.researches.push(research);
-    await LaboratoryRepository.save(user.id, lab);
+    await LaboratoryRepository.addResearch(user.id, research);
 
     await loggedInPage.goto('/play/router');
     await expect(loggedInPage.getByRole('heading', { name: /get reward/i })).toBeVisible();

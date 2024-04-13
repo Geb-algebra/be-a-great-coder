@@ -6,6 +6,7 @@ import { ObjectNotFoundError } from '~/errors.ts';
 import { LaboratoryRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
 import { getNextTurn } from '~/game/services/game.server.ts';
 import { ResearchJsonifier } from '~/game/services/jsonifier';
+import { getProblemSolvedTime } from '~/atcoder-info/services/atcoder.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
@@ -18,6 +19,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!currentResearch) {
     throw new ObjectNotFoundError('unfinished research not found');
   }
+  if (currentResearch.finishedAt == null) {
+    const solvedTime = await getProblemSolvedTime(
+      currentResearch.problem.id,
+      user.name,
+      currentResearch.createdAt.getTime() / 1000,
+    );
+    if (solvedTime) {
+      currentResearch.solvedAt = solvedTime;
+      await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
+    }
+  }
+
   return json({ currentResearchJson: ResearchJsonifier.toJson(currentResearch) });
 }
 
@@ -30,7 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new ObjectNotFoundError('unfinished proposedProblem not found');
     }
     currentResearch.finishedAt = new Date();
-    await LaboratoryRepository.save(user.id, laboratory);
+    await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect('/play/router');
   } catch (error) {
@@ -52,7 +65,7 @@ export default function Page() {
   return (
     <>
       <div>
-        <h1 className="font-bold text-2xl">Solve Problems</h1>
+        <h1 className="font-bold text-2xl">Solve The Problem</h1>
         <div className="flex">
           <p>{currentResearch.problem.title}</p>
           <a

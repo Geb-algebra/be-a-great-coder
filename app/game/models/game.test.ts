@@ -41,7 +41,7 @@ describe('Laboratory', async () => {
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
         batteryCapacityIncrement: 1,
-        performanceIncrement: 1,
+        performanceIncrement: 2,
       },
       {
         id: '2',
@@ -54,7 +54,7 @@ describe('Laboratory', async () => {
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
         batteryCapacityIncrement: 1,
-        performanceIncrement: 1,
+        performanceIncrement: 2,
       },
       {
         id: '3',
@@ -67,11 +67,11 @@ describe('Laboratory', async () => {
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
         batteryCapacityIncrement: 1,
-        performanceIncrement: 1,
+        performanceIncrement: 2,
       },
     ]);
     expect(laboratory.batteryCapacity).toBe(4);
-    expect(laboratory.performance).toBe(4);
+    expect(laboratory.performance).toBe(7);
     expect(laboratory.researcherRank).toBe(100); // unsolved problem should not be counted
   });
 
@@ -88,7 +88,7 @@ describe('Laboratory', async () => {
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
         batteryCapacityIncrement: 1,
-        performanceIncrement: 1,
+        performanceIncrement: 2,
       },
       {
         id: '2',
@@ -101,7 +101,7 @@ describe('Laboratory', async () => {
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
         batteryCapacityIncrement: 1,
-        performanceIncrement: 1,
+        performanceIncrement: 2,
       },
       {
         id: '3',
@@ -114,11 +114,44 @@ describe('Laboratory', async () => {
         answerShownAt: null,
         rewardReceivedAt: null,
         batteryCapacityIncrement: 10,
-        performanceIncrement: 10,
+        performanceIncrement: 20,
       },
     ]);
     expect(laboratory.batteryCapacity).toBe(3);
-    expect(laboratory.performance).toBe(3);
+    expect(laboratory.performance).toBe(5);
     expect(laboratory.researcherRank).toBe(100); // unsolved problem should not be counted
+  });
+
+  test('with null increment', async () => {
+    laboratory = new Laboratory([
+      {
+        id: '1',
+        problem: { id: '1', title: 'problem1', difficulty: 100 },
+        userId: '1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        solvedAt: new Date(),
+        finishedAt: new Date(),
+        answerShownAt: new Date(),
+        rewardReceivedAt: new Date(),
+        batteryCapacityIncrement: 1,
+        performanceIncrement: 2,
+      },
+      {
+        id: '2',
+        problem: { id: '2', title: 'problem2', difficulty: 100 },
+        userId: '1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        solvedAt: new Date(),
+        finishedAt: new Date(),
+        answerShownAt: new Date(),
+        rewardReceivedAt: new Date(),
+        batteryCapacityIncrement: null,
+        performanceIncrement: null,
+      },
+    ]);
+    expect(laboratory.batteryCapacity).toBe(2);
+    expect(laboratory.performance).toBe(3);
   });
 });
