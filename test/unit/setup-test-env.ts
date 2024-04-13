@@ -1,17 +1,19 @@
 import { installGlobals } from '@remix-run/node';
-import { beforeEach } from 'vitest';
 import { resetDB } from 'test/utils.ts';
 import { server } from 'mocks/mock-server.ts';
+import { cleanup } from '@testing-library/react';
 
 installGlobals();
 
-beforeAll(() => {
+beforeAll(async () => {
   server.listen({ onUnhandledRequest: 'warn' });
+  await resetDB();
 });
 
-beforeEach(async () => {
+afterEach(async () => {
   await resetDB();
   server.resetHandlers();
+  cleanup();
 });
 
 afterAll(() => server.close());

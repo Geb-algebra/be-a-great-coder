@@ -5,12 +5,12 @@ import { TotalAssetsUpdateService } from '~/game/services/game.server';
 import { authenticator } from '~/services/auth.server';
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const itemName = params.name;
-  if (!itemName) throw new ValueError('Item name is required');
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: '/',
   });
   try {
+    const itemName = params.name;
+    if (!itemName) throw new ValueError('Item name is required');
     const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const { newTotalAssets, quantity } = TotalAssetsUpdateService.manufactureProducts(
       totalAssets,

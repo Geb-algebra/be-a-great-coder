@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 import { remixDevTools } from 'remix-development-tools/vite';
 import { installGlobals } from '@remix-run/node';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { flatRoutes } from 'remix-flat-routes';
 
 installGlobals();
 
@@ -13,7 +14,17 @@ export default defineConfig({
   plugins: [
     remixDevTools(),
     remix({
-      ignoredRouteFiles: ['**/.*'],
+      ignoredRouteFiles: ['**/*'],
+      routes: async (defineRoutes) => {
+        return flatRoutes('routes', defineRoutes, {
+          ignoredRouteFiles: [
+            '**/.*',
+            '**/*.test.{ts,tsx,js,jsx}',
+            '**/*.spec.{ts,tsx,js,jsx}',
+            '**/test/**',
+          ],
+        });
+      },
     }),
     tsconfigPaths(),
   ],

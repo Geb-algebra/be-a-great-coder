@@ -1,5 +1,5 @@
-import { json, type LoaderFunctionArgs, redirect, type ActionFunctionArgs } from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Outlet, useLoaderData } from '@remix-run/react';
 import { authenticator } from '~/services/auth.server.ts';
 import GameStatusDashboard from '~/components/GameStatusDashboard';
 import { TotalAssetsJsonifier } from '~/game/services/jsonifier';
@@ -19,22 +19,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  await authenticator.isAuthenticated(request, {
-    failureRedirect: '/',
-  });
-  return redirect('/play/router');
-}
-
 export default function Page() {
   const { totalAssetsJson, laboratoryValue } = useLoaderData<typeof loader>();
   const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
   return (
     <>
       <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratoryValue} />
-      <Form method="post">
-        <button type="submit">Start Game</button>
-      </Form>
+      <Outlet />
     </>
   );
 }
