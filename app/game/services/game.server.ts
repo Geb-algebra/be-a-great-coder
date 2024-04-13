@@ -1,24 +1,24 @@
-import { GameLogicViolated, ObjectNotFoundError } from '~/errors.ts';
-import { TotalAssets, type Turn, TURNS } from '../models/game.ts';
-import type { User } from '~/accounts/models/account.ts';
+import { GameLogicViolated, ObjectNotFoundError } from "~/errors.ts";
+import { TotalAssets, type Turn, TURNS } from "../models/game.ts";
+import type { User } from "~/accounts/models/account.ts";
 import {
   TurnFactory,
   TurnRepository,
   TotalAssetsFactory,
   TotalAssetsRepository,
-} from '../lifecycle/game.server.ts';
-import { PROBLEM_DIFFICULTIES } from './config.ts';
+} from "../lifecycle/game.server.ts";
+import { PROBLEM_DIFFICULTIES } from "./config.ts";
 import {
   insertNewProblemsIfAllowed,
   queryRandomProblemByDifficulty,
-} from '~/atcoder-info/models/problem.server.ts';
+} from "~/atcoder-info/models/problem.server.ts";
 
 export function getNextTurn(currentTurn: Turn): Turn {
   const currentIndex = TURNS.indexOf(currentTurn);
   return TURNS[(currentIndex + 1) % TURNS.length];
 }
 
-export async function getOrInitializeTurn(userId: User['id']) {
+export async function getOrInitializeTurn(userId: User["id"]) {
   try {
     return await TurnRepository.getOrThrow(userId);
   } catch (error) {
@@ -31,7 +31,7 @@ export async function getOrInitializeTurn(userId: User['id']) {
   }
 }
 
-export async function getOrInitializeTotalAssets(userId: User['id']) {
+export async function getOrInitializeTotalAssets(userId: User["id"]) {
   try {
     return await TotalAssetsRepository.getOrThrow(userId);
   } catch (error) {
@@ -48,7 +48,7 @@ export class TotalAssetsUpdateService {
   static buyIngredients(currentTotalAssets: TotalAssets, ingredientName: string, quantity: number) {
     const cost = quantity * 100;
     if (currentTotalAssets.cash < cost) {
-      throw new GameLogicViolated('Not enough money');
+      throw new GameLogicViolated("Not enough money");
     }
     const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
     newIngredientStock.set(
@@ -68,11 +68,11 @@ export class TotalAssetsUpdateService {
     quantity: number,
   ) {
     if (quantity > currentTotalAssets.battery) {
-      throw new GameLogicViolated('Not enough battery');
+      throw new GameLogicViolated("Not enough battery");
     }
     const consumedAmountOfIngredients = 3 * quantity;
-    if ((currentTotalAssets.ingredientStock.get('iron') ?? 0) < consumedAmountOfIngredients) {
-      throw new GameLogicViolated('Not enough ingredients');
+    if ((currentTotalAssets.ingredientStock.get("iron") ?? 0) < consumedAmountOfIngredients) {
+      throw new GameLogicViolated("Not enough ingredients");
     }
     const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
     for (const [ingredientName, amount] of currentTotalAssets.ingredientStock) {

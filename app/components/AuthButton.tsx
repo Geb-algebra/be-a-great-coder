@@ -1,6 +1,6 @@
 export default function AuthButton(props: {
-  type?: 'button' | 'submit' | 'reset' | undefined;
-  formMethod?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS' | undefined;
+  type?: "button" | "submit" | "reset" | undefined;
+  formMethod?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS" | undefined;
   disabled?: boolean;
   value?: string;
   name?: string;

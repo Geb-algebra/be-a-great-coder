@@ -1,45 +1,45 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { redirect } from '@remix-run/node';
-import { useLoaderData, useActionData, Form } from '@remix-run/react';
-import type { RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
-import AuthButton from '~/components/AuthButton.tsx';
-import AuthContainer from '~/components/AuthContainer.tsx';
-import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
-import PasskeyHero from '~/components/PasskeyHero.tsx';
-import { AccountRepository } from '~/accounts/lifecycle/account.server';
-import { authenticator, verifyNewAuthenticator, webAuthnStrategy } from '~/services/auth.server.ts';
-import { handleFormSubmit } from 'remix-auth-webauthn/browser';
-import { getRequiredStringFromFormData } from '~/utils/utils.ts';
-import { getSession, sessionStorage } from '~/services/session.server.ts';
-import { ObjectNotFoundError, ValueError } from '~/errors';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
+import { useLoaderData, useActionData, Form } from "@remix-run/react";
+import type { RegistrationResponseJSON } from "@simplewebauthn/typescript-types";
+import AuthButton from "~/components/AuthButton.tsx";
+import AuthContainer from "~/components/AuthContainer.tsx";
+import AuthErrorMessage from "~/components/AuthErrorMessage.tsx";
+import PasskeyHero from "~/components/PasskeyHero.tsx";
+import { AccountRepository } from "~/accounts/lifecycle/account.server";
+import { authenticator, verifyNewAuthenticator, webAuthnStrategy } from "~/services/auth.server.ts";
+import { handleFormSubmit } from "remix-auth-webauthn/browser";
+import { getRequiredStringFromFormData } from "~/utils/utils.ts";
+import { getSession, sessionStorage } from "~/services/session.server.ts";
+import { ObjectNotFoundError, ValueError } from "~/errors";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/welcome' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/welcome" });
   return webAuthnStrategy.generateOptions(request, sessionStorage, user);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/" });
   const session = await getSession(request);
-  const expectedChallenge = session.get('challenge');
+  const expectedChallenge = session.get("challenge");
   if (!expectedChallenge) {
-    throw new ValueError('Expected challenge not found.');
+    throw new ValueError("Expected challenge not found.");
   }
   try {
     const formData = await request.formData();
     let data: RegistrationResponseJSON;
     try {
-      const responseData = getRequiredStringFromFormData(formData, 'response');
+      const responseData = getRequiredStringFromFormData(formData, "response");
       data = JSON.parse(responseData);
     } catch {
-      throw new ValueError('Invalid passkey response JSON.');
+      throw new ValueError("Invalid passkey response JSON.");
     }
     const account = await AccountRepository.getById(user.id);
-    if (!account) throw new ObjectNotFoundError('Account not found');
+    if (!account) throw new ObjectNotFoundError("Account not found");
     const newAuthenticator = await verifyNewAuthenticator(data, expectedChallenge);
     account.authenticators.push({ ...newAuthenticator, name: null });
     await AccountRepository.save(account);
-    throw redirect('/play/settings');
+    throw redirect("/play/settings");
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {
       return { error: (await error.json()) as { message: string } };
@@ -49,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Add a new Passkey' }];
+  return [{ title: "Add a new Passkey" }];
 };
 
 export default function Page() {

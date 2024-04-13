@@ -1,15 +1,15 @@
-import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { json } from '@remix-run/node';
-import { Link } from '@remix-run/react';
-import { authenticator } from '~/services/auth.server.ts';
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Link } from "@remix-run/react";
+import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, { successRedirect: '/play' });
+  await authenticator.isAuthenticated(request, { successRedirect: "/play" });
   return json({});
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: '' }];
+  return [{ title: "" }];
 };
 
 export default function Page() {

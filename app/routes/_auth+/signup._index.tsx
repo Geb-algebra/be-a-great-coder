@@ -1,30 +1,30 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 
-import { json } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import AuthFormInput from '~/components/AuthFormInput.tsx';
+import { json } from "@remix-run/node";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import AuthFormInput from "~/components/AuthFormInput.tsx";
 
-import { authenticator, webAuthnStrategy } from '~/services/auth.server.ts';
-import { sessionStorage } from '~/services/session.server.ts';
-import AuthContainer from '~/components/AuthContainer.tsx';
-import AuthButton from '~/components/AuthButton.tsx';
-import AuthErrorMessage from '~/components/AuthErrorMessage.tsx';
-import GoogleAuthButton from '~/components/GoogleAuthButton.tsx';
-import PasskeyHero from '~/components/PasskeyHero.tsx';
-import { handleFormSubmit } from 'remix-auth-webauthn/browser';
-import { createId } from '@paralleldrive/cuid2';
+import { authenticator, webAuthnStrategy } from "~/services/auth.server.ts";
+import { sessionStorage } from "~/services/session.server.ts";
+import AuthContainer from "~/components/AuthContainer.tsx";
+import AuthButton from "~/components/AuthButton.tsx";
+import AuthErrorMessage from "~/components/AuthErrorMessage.tsx";
+import GoogleAuthButton from "~/components/GoogleAuthButton.tsx";
+import PasskeyHero from "~/components/PasskeyHero.tsx";
+import { handleFormSubmit } from "remix-auth-webauthn/browser";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, { successRedirect: '/play' });
+  await authenticator.isAuthenticated(request, { successRedirect: "/play" });
   return webAuthnStrategy.generateOptions(request, sessionStorage, null);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
-    await authenticator.authenticate('webauthn', request, {
-      successRedirect: '/play',
+    await authenticator.authenticate("webauthn", request, {
+      successRedirect: "/play",
     });
-    return json({ errorMessage: '' });
+    return json({ errorMessage: "" });
   } catch (error) {
     // Because redirects work by throwing a Response, you need to check if the
     // caught error is a response and return it or throw it again
@@ -33,13 +33,13 @@ export async function action({ request }: ActionFunctionArgs) {
     if (error instanceof Error) {
       return json({ errorMessage: error.message }, { status: 400 });
     } else {
-      return json({ errorMessage: 'unknown error' }, { status: 500 });
+      return json({ errorMessage: "unknown error" }, { status: 500 });
     }
   }
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Sign Up' }];
+  return [{ title: "Sign Up" }];
 };
 
 export default function LoginPage() {
@@ -56,7 +56,7 @@ export default function LoginPage() {
       <AuthErrorMessage
         message={
           actionData?.errorMessage ??
-          (options.usernameAvailable === false ? 'Username already taken' : '')
+          (options.usernameAvailable === false ? "Username already taken" : "")
         }
       />
       <AuthContainer>

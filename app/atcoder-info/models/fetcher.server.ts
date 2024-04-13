@@ -1,8 +1,8 @@
-import type { AtCoderAPIFetchLog } from '@prisma/client';
+import type { AtCoderAPIFetchLog } from "@prisma/client";
 
-import { prisma } from '~/db.server.ts';
+import { prisma } from "~/db.server.ts";
 
-export type { AtCoderAPIFetchLog } from '@prisma/client';
+export type { AtCoderAPIFetchLog } from "@prisma/client";
 
 export const createFetchLog = async (
   endpoint: string,
@@ -27,7 +27,7 @@ export const getLatestFetchLog = async (
       },
     },
     orderBy: {
-      timestamp: 'desc',
+      timestamp: "desc",
     },
     take: 1,
   });
@@ -47,7 +47,7 @@ export const fetchIfAllowed = async (
   const latestFetchLog = await getLatestFetchLog(endpoint);
   const lastFetchTime = latestFetchLog ? latestFetchLog.timestamp.getTime() : 0;
   if (Date.now() - lastFetchTime > interval) {
-    const res = await fetch(endpoint, { headers: [['ACCEPT-ENCODING', 'gzip']] });
+    const res = await fetch(endpoint, { headers: [["ACCEPT-ENCODING", "gzip"]] });
     await createFetchLog(endpoint, res.status);
     return res;
   } else {

@@ -1,19 +1,19 @@
-import { json, type LoaderFunctionArgs, redirect, type ActionFunctionArgs } from '@remix-run/node';
-import { Form } from '@remix-run/react';
-import { authenticator } from '~/services/auth.server.ts';
+import { json, type LoaderFunctionArgs, redirect, type ActionFunctionArgs } from "@remix-run/node";
+import { Form } from "@remix-run/react";
+import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, {
-    failureRedirect: '/',
+    failureRedirect: "/",
   });
   return json({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   await authenticator.isAuthenticated(request, {
-    failureRedirect: '/',
+    failureRedirect: "/",
   });
-  return redirect('/play/router');
+  return redirect("/play/router");
 }
 
 export default function Page() {

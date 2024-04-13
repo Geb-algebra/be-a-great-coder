@@ -3,4 +3,4 @@ export {
   generateAuthenticationOptions,
   verifyRegistrationResponse,
   verifyAuthenticationResponse,
-} from '@simplewebauthn/server';
+} from "@simplewebauthn/server";

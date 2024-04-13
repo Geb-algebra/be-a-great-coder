@@ -1,14 +1,14 @@
-import { AccountFactory, AccountRepository } from '~/accounts/lifecycle/account.server';
-import { getSession, sessionStorage } from '~/services/session.server';
-import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { AccountFactory, AccountRepository } from "~/accounts/lifecycle/account.server";
+import { getSession, sessionStorage } from "~/services/session.server";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 
 /**
  * Sets up an account and add a session to the request.
  * */
 export async function setupAccount() {
   const account = await AccountFactory.create({
-    name: 'testuser',
-    id: 'testid',
+    name: "testuser",
+    id: "testid",
   });
   await AccountRepository.save(account);
   return account;
@@ -19,8 +19,8 @@ export async function setupAccount() {
  */
 export async function addAuthenticationSessionTo(request: Request) {
   const session = await getSession(request);
-  session.set('user', { id: 'testid', name: 'testuser' });
-  request.headers.set('cookie', await sessionStorage.commitSession(session));
+  session.set("user", { id: "testid", name: "testuser" });
+  request.headers.set("cookie", await sessionStorage.commitSession(session));
 }
 
 export function authenticated(dataFunction: LoaderFunction | ActionFunction) {

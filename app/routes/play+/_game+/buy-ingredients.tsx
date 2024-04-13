@@ -1,24 +1,24 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import { useActionData, Form, useFetcher } from '@remix-run/react';
-import { authenticator } from '~/services/auth.server.ts';
-import { GameLogicViolated } from '~/errors';
-import { TurnRepository } from '~/game/lifecycle/game.server.ts';
-import { getNextTurn } from '~/game/services/game.server.ts';
-import type { action as detailAction } from './buy-ingredients.$name.tsx';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { useActionData, Form, useFetcher } from "@remix-run/react";
+import { authenticator } from "~/services/auth.server.ts";
+import { GameLogicViolated } from "~/errors";
+import { TurnRepository } from "~/game/lifecycle/game.server.ts";
+import { getNextTurn } from "~/game/services/game.server.ts";
+import type { action as detailAction } from "./buy-ingredients.$name.tsx";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   const turn = await TurnRepository.getOrThrow(user.id);
-  if (turn !== 'buy-ingredients') return redirect('/play/router');
+  if (turn !== "buy-ingredients") return redirect("/play/router");
   return json({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   try {
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
-    return redirect('/play/router');
+    return redirect("/play/router");
   } catch (error) {
     if (error instanceof GameLogicViolated) {
       return { error: { message: error.message } };
@@ -28,13 +28,13 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: '' }];
+  return [{ title: "" }];
 };
 
 export default function Page() {
   const actionData = useActionData<typeof action>();
   const fetcher = useFetcher<typeof detailAction>();
-  const ingredientNames = ['iron'];
+  const ingredientNames = ["iron"];
   return (
     <div>
       <h1 className="font-bold text-2xl">Buy Ingredients</h1>

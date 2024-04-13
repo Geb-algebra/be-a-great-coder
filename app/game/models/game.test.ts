@@ -1,39 +1,39 @@
-import { Laboratory } from './game.ts';
+import { Laboratory } from "./game.ts";
 
-describe('Laboratory with no research', () => {
+describe("Laboratory with no research", () => {
   let laboratory: Laboratory;
   beforeEach(() => {
     laboratory = new Laboratory();
   });
 
-  it('should calculate batteryCapacity', () => {
+  it("should calculate batteryCapacity", () => {
     expect(laboratory.batteryCapacity).toBe(1);
   });
 
-  it('should calculate performance', () => {
+  it("should calculate performance", () => {
     expect(laboratory.performance).toBe(1);
   });
 
-  it('should calculate researcherRank', () => {
+  it("should calculate researcherRank", () => {
     expect(laboratory.researcherRank).toBe(0);
   });
 });
 
-describe('Laboratory', async () => {
+describe("Laboratory", async () => {
   let laboratory: Laboratory;
-  test('with no researches', async () => {
+  test("with no researches", async () => {
     laboratory = new Laboratory();
     expect(laboratory.batteryCapacity).toBe(1);
     expect(laboratory.performance).toBe(1);
     expect(laboratory.researcherRank).toBe(0);
   });
 
-  test('with failed research', async () => {
+  test("with failed research", async () => {
     laboratory = new Laboratory([
       {
-        id: '1',
-        problem: { id: '1', title: 'problem1', difficulty: 100 },
-        userId: '1',
+        id: "1",
+        problem: { id: "1", title: "problem1", difficulty: 100 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: new Date(),
@@ -44,9 +44,9 @@ describe('Laboratory', async () => {
         performanceIncrement: 2,
       },
       {
-        id: '2',
-        problem: { id: '2', title: 'problem2', difficulty: 100 },
-        userId: '1',
+        id: "2",
+        problem: { id: "2", title: "problem2", difficulty: 100 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: new Date(),
@@ -57,9 +57,9 @@ describe('Laboratory', async () => {
         performanceIncrement: 2,
       },
       {
-        id: '3',
-        problem: { id: '3', title: 'problem3', difficulty: 1000 },
-        userId: '1',
+        id: "3",
+        problem: { id: "3", title: "problem3", difficulty: 1000 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: null,
@@ -75,12 +75,12 @@ describe('Laboratory', async () => {
     expect(laboratory.researcherRank).toBe(100); // unsolved problem should not be counted
   });
 
-  test('with unsolved research', async () => {
+  test("with unsolved research", async () => {
     laboratory = new Laboratory([
       {
-        id: '1',
-        problem: { id: '1', title: 'problem1', difficulty: 100 },
-        userId: '1',
+        id: "1",
+        problem: { id: "1", title: "problem1", difficulty: 100 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: new Date(),
@@ -91,9 +91,9 @@ describe('Laboratory', async () => {
         performanceIncrement: 2,
       },
       {
-        id: '2',
-        problem: { id: '2', title: 'problem2', difficulty: 100 },
-        userId: '1',
+        id: "2",
+        problem: { id: "2", title: "problem2", difficulty: 100 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: new Date(),
@@ -104,9 +104,9 @@ describe('Laboratory', async () => {
         performanceIncrement: 2,
       },
       {
-        id: '3',
-        problem: { id: '3', title: 'problem3', difficulty: 1000 },
-        userId: '1',
+        id: "3",
+        problem: { id: "3", title: "problem3", difficulty: 1000 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: null,
@@ -122,12 +122,12 @@ describe('Laboratory', async () => {
     expect(laboratory.researcherRank).toBe(100); // unsolved problem should not be counted
   });
 
-  test('with null increment', async () => {
+  test("with null increment", async () => {
     laboratory = new Laboratory([
       {
-        id: '1',
-        problem: { id: '1', title: 'problem1', difficulty: 100 },
-        userId: '1',
+        id: "1",
+        problem: { id: "1", title: "problem1", difficulty: 100 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: new Date(),
@@ -138,9 +138,9 @@ describe('Laboratory', async () => {
         performanceIncrement: 2,
       },
       {
-        id: '2',
-        problem: { id: '2', title: 'problem2', difficulty: 100 },
-        userId: '1',
+        id: "2",
+        problem: { id: "2", title: "problem2", difficulty: 100 },
+        userId: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
         solvedAt: new Date(),

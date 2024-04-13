@@ -1,11 +1,11 @@
-import { createId } from '@paralleldrive/cuid2';
-import { prisma } from '~/db.server';
+import { createId } from "@paralleldrive/cuid2";
+import { prisma } from "~/db.server";
 import {
   LaboratoryRepository,
   TotalAssetsFactory,
   TotalAssetsRepository,
-} from '~/game/lifecycle/game.server.ts';
-import { TotalAssets } from '~/game/models/game.ts';
+} from "~/game/lifecycle/game.server.ts";
+import { TotalAssets } from "~/game/models/game.ts";
 
 /**
  * Save the initial status to the database.
@@ -27,7 +27,7 @@ export async function setInitialStatus(userId: string) {
  * The researches are solved, finished, the explanation is displayed, and the reward is received.
  */
 export async function setBeginnersStatus(userId: string) {
-  const totalAssets = new TotalAssets(1200, 3, new Map([['iron', 16]]));
+  const totalAssets = new TotalAssets(1200, 3, new Map([["iron", 16]]));
   await TotalAssetsRepository.save(userId, totalAssets);
   const laboratory = await LaboratoryRepository.get(userId);
   for (let i = 0; i < 3; i++) {
@@ -73,7 +73,7 @@ export async function setBeginnersStatus(userId: string) {
  * The researches are solved, finished, the explanation is displayed, and the reward is received.
  */
 export async function setVeteransStatus(userId: string) {
-  const totalAssets = new TotalAssets(32768, 136, new Map([['iron', 128]]));
+  const totalAssets = new TotalAssets(32768, 136, new Map([["iron", 128]]));
   await TotalAssetsRepository.save(userId, totalAssets);
   const laboratory = await LaboratoryRepository.get(userId);
   for (let i = 0; i < 9; i++) {
@@ -115,7 +115,7 @@ export const initialJson = {
   totalAssetsJson: {
     cash: 1000,
     battery: 1,
-    ingredientStock: [['iron', 0]],
+    ingredientStock: [["iron", 0]],
   },
   laboratoryValue: {
     batteryCapacity: 1,
@@ -128,7 +128,7 @@ export const beginnersJson = {
   totalAssetsJson: {
     cash: 1200,
     battery: 3,
-    ingredientStock: [['iron', 16]],
+    ingredientStock: [["iron", 16]],
   },
   laboratoryValue: {
     batteryCapacity: 4,
@@ -141,7 +141,7 @@ export const veteransJson = {
   totalAssetsJson: {
     cash: 32768,
     battery: 136,
-    ingredientStock: [['iron', 128]],
+    ingredientStock: [["iron", 128]],
   },
   laboratoryValue: {
     batteryCapacity: 136,

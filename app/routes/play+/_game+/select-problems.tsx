@@ -1,26 +1,26 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import { useActionData, Form, useLoaderData } from '@remix-run/react';
-import { authenticator } from '~/services/auth.server.ts';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { useActionData, Form, useLoaderData } from "@remix-run/react";
+import { authenticator } from "~/services/auth.server.ts";
 import {
   LaboratoryRepository,
   ResearchFactory,
   TurnRepository,
-} from '~/game/lifecycle/game.server.ts';
-import { getNextTurn, getProblemsMatchUserRank } from '~/game/services/game.server.ts';
-import { Problem } from '~/game/models/game';
-import { getRequiredStringFromFormData } from '~/utils/utils';
+} from "~/game/lifecycle/game.server.ts";
+import { getNextTurn, getProblemsMatchUserRank } from "~/game/services/game.server.ts";
+import { Problem } from "~/game/models/game";
+import { getRequiredStringFromFormData } from "~/utils/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   const turn = await TurnRepository.getOrThrow(user.id);
-  if (turn !== 'select-problems') {
-    return redirect('/play/router');
+  if (turn !== "select-problems") {
+    return redirect("/play/router");
   }
   const laboratory = await LaboratoryRepository.get(user.id);
   const currentResearch = laboratory.getUnfinishedResearch();
   if (currentResearch) {
-    return redirect('/play/solve-problems');
+    return redirect("/play/solve-problems");
   }
   const problems = await getProblemsMatchUserRank(laboratory.researcherRank);
   return json({
@@ -29,19 +29,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   try {
     const laboratory = await LaboratoryRepository.get(user.id);
     const currentResearch = laboratory.getUnfinishedResearch();
     if (currentResearch) {
-      return redirect('/play/solve-problems');
+      return redirect("/play/solve-problems");
     }
     const formData = await request.formData();
-    const problemId = getRequiredStringFromFormData(formData, 'problemId');
+    const problemId = getRequiredStringFromFormData(formData, "problemId");
     const newResearch = await ResearchFactory.create(user.id, problemId);
     await LaboratoryRepository.addResearch(user.id, newResearch);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
-    return redirect('/play/router');
+    return redirect("/play/router");
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {
       return { error: (await error.json()) as { message: string } };
@@ -51,7 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: '' }];
+  return [{ title: "" }];
 };
 
 function Problem(props: { problem: Problem }) {
