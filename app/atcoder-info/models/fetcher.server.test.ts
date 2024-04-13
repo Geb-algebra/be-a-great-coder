@@ -1,15 +1,15 @@
-import { prisma } from '~/db.server.ts';
-import { createFetchLog, fetchIfAllowed } from './fetcher.server.ts';
-import { PROBLEM_UPDATE_INTERVAL } from './problem.server.ts';
-import type { MockInstance } from 'vitest';
-import { server } from 'mocks/mock-server.ts';
-import { http } from 'msw';
+import { prisma } from "~/db.server.ts";
+import { createFetchLog, fetchIfAllowed } from "./fetcher.server.ts";
+import { PROBLEM_UPDATE_INTERVAL } from "./problem.server.ts";
+import type { MockInstance } from "vitest";
+import { server } from "mocks/mock-server.ts";
+import { http } from "msw";
 
-describe('fetchIfAllowed', () => {
+describe("fetchIfAllowed", () => {
   let mockedFetch: MockInstance;
   beforeEach(async () => {
-    mockedFetch = vi.spyOn(global, 'fetch');
-    server.use(http.get('https://example.com', () => new Response('')));
+    mockedFetch = vi.spyOn(global, "fetch");
+    server.use(http.get("https://example.com", () => new Response("")));
   });
   afterEach(() => {
     vi.restoreAllMocks();
@@ -18,9 +18,9 @@ describe('fetchIfAllowed', () => {
     PROBLEM_UPDATE_INTERVAL,
     PROBLEM_UPDATE_INTERVAL * 1.00001,
     PROBLEM_UPDATE_INTERVAL * 10,
-  ])('should fetch when the specified interval elapsed', async (elapsed) => {
+  ])("should fetch when the specified interval elapsed", async (elapsed) => {
     const lastFetchedTime = new Date(Date.now() - elapsed);
-    const endpoint = 'https://example.com';
+    const endpoint = "https://example.com";
     await createFetchLog(endpoint, 200, lastFetchedTime);
     expect(mockedFetch).not.toHaveBeenCalled();
     const fetchLogs = await prisma.atCoderAPIFetchLog.findMany();
@@ -31,10 +31,10 @@ describe('fetchIfAllowed', () => {
     expect(mockedFetch).toHaveBeenCalled();
   });
   it.each([PROBLEM_UPDATE_INTERVAL * 0.9999999, PROBLEM_UPDATE_INTERVAL * 0.1])(
-    'should not fetch when the specified interval doesnt elapsed',
+    "should not fetch when the specified interval doesnt elapsed",
     async (elapsed) => {
       const lastFetchedTime = new Date(Date.now() - elapsed);
-      const endpoint = 'https://example.com';
+      const endpoint = "https://example.com";
       await createFetchLog(endpoint, 200, lastFetchedTime);
       expect(mockedFetch).not.toHaveBeenCalled();
       const fetchLogs = await prisma.atCoderAPIFetchLog.findMany();

@@ -1,20 +1,20 @@
-import { test as base } from '@playwright/test';
-import { username, googleProfileId } from './consts.ts';
-import { AccountFactory, AccountRepository } from '~/accounts/lifecycle/account.server.ts';
-import { getSession, sessionStorage } from '~/services/session.server.ts';
-import { authenticator } from '~/services/auth.server.ts';
-import { parse } from 'cookie';
+import { test as base } from "@playwright/test";
+import { username, googleProfileId } from "./consts.ts";
+import { AccountFactory, AccountRepository } from "~/accounts/lifecycle/account.server.ts";
+import { getSession, sessionStorage } from "~/services/session.server.ts";
+import { authenticator } from "~/services/auth.server.ts";
+import { parse } from "cookie";
 
-import { resetDB } from 'test/utils.ts';
-import invariant from 'tiny-invariant';
-import { prisma } from '~/db.server.ts';
+import { resetDB } from "test/utils.ts";
+import invariant from "tiny-invariant";
+import { prisma } from "~/db.server.ts";
 
 export const test = base.extend({
   // Extend the base test with a new "login" method.
   pageWithUser: async ({ page }, use) => {
     const account = await AccountFactory.create({
       name: username,
-      googleProfileId: 'testGoogleProfileId',
+      googleProfileId: "testGoogleProfileId",
     });
     await AccountRepository.save(account);
     await use(page);
@@ -22,7 +22,7 @@ export const test = base.extend({
   },
   loggedInPage: async ({ page, baseURL }, use) => {
     // referred to https://github.com/kentcdodds/kentcdodds.com/blob/main/e2e/utils.ts
-    invariant(baseURL, 'baseURL is required playwright config');
+    invariant(baseURL, "baseURL is required playwright config");
     const { authenticators, ...user } = await AccountFactory.create({
       name: username,
       googleProfileId: googleProfileId,
@@ -31,13 +31,13 @@ export const test = base.extend({
     const session = await getSession(new Request(baseURL));
     // how sessions are set is from https://github.com/sergiodxa/remix-auth/blob/main/src/strategy.ts
     session.set(authenticator.sessionKey, user);
-    session.set(authenticator.sessionStrategyKey, 'google');
+    session.set(authenticator.sessionStrategyKey, "google");
 
     const { __session } = parse(await sessionStorage.commitSession(session));
     await page.context().addCookies([
       {
-        name: '__session',
-        sameSite: 'Lax',
+        name: "__session",
+        sameSite: "Lax",
         url: baseURL,
         httpOnly: true,
         secure: false,
@@ -59,4 +59,4 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-export { expect } from '@playwright/test';
+export { expect } from "@playwright/test";

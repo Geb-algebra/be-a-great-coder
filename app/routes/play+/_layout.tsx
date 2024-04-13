@@ -1,19 +1,19 @@
-import { type MetaFunction, json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import { useState } from 'react';
-import Overlay from '~/components/Overlay.tsx';
-import { authenticator } from '~/services/auth.server.ts';
+import { type MetaFunction, json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
+import Overlay from "~/components/Overlay.tsx";
+import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: '/',
+    failureRedirect: "/",
   });
 
   return json(user);
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'New Remix App' }, { name: 'description', content: 'Welcome to Remix!' }];
+  return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
 };
 
 export default function Index() {

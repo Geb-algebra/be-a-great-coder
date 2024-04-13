@@ -1,15 +1,15 @@
-import { type User } from '../models/account.ts';
-import { prisma } from '~/db.server.ts';
+import { type User } from "../models/account.ts";
+import { prisma } from "~/db.server.ts";
 
 export class UserRepository {
-  static async getById(id: User['id']) {
+  static async getById(id: User["id"]) {
     const _user = await prisma.user.findUnique({ where: { id } });
     if (!_user) return null;
     const { createdAt, updatedAt, ...user } = _user;
     return user;
   }
 
-  static async getByName(name: User['name']) {
+  static async getByName(name: User["name"]) {
     const _user = await prisma.user.findUnique({ where: { name } });
     if (!_user) return null;
     const { createdAt, updatedAt, ...user } = _user;

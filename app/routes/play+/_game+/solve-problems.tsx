@@ -1,23 +1,23 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import { useActionData, Form, useLoaderData } from '@remix-run/react';
-import { authenticator } from '~/services/auth.server.ts';
-import { ObjectNotFoundError } from '~/errors.ts';
-import { LaboratoryRepository, TurnRepository } from '~/game/lifecycle/game.server.ts';
-import { getNextTurn } from '~/game/services/game.server.ts';
-import { ResearchJsonifier } from '~/game/services/jsonifier';
-import { getProblemSolvedTime } from '~/atcoder-info/services/atcoder.server';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { useActionData, Form, useLoaderData } from "@remix-run/react";
+import { authenticator } from "~/services/auth.server.ts";
+import { ObjectNotFoundError } from "~/errors.ts";
+import { LaboratoryRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
+import { getNextTurn } from "~/game/services/game.server.ts";
+import { ResearchJsonifier } from "~/game/services/jsonifier";
+import { getProblemSolvedTime } from "~/atcoder-info/services/atcoder.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   const turn = await TurnRepository.getOrThrow(user.id);
-  if (turn !== 'solve-problems') {
-    return redirect('/play/router');
+  if (turn !== "solve-problems") {
+    return redirect("/play/router");
   }
   const laboratory = await LaboratoryRepository.get(user.id);
   const currentResearch = laboratory.getUnfinishedResearch();
   if (!currentResearch) {
-    throw new ObjectNotFoundError('unfinished research not found');
+    throw new ObjectNotFoundError("unfinished research not found");
   }
   if (currentResearch.finishedAt == null) {
     const solvedTime = await getProblemSolvedTime(
@@ -35,17 +35,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await authenticator.isAuthenticated(request, { failureRedirect: '/login' });
+  const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   try {
     const laboratory = await LaboratoryRepository.get(user.id);
     const currentResearch = laboratory.getUnfinishedResearch();
     if (!currentResearch) {
-      throw new ObjectNotFoundError('unfinished proposedProblem not found');
+      throw new ObjectNotFoundError("unfinished proposedProblem not found");
     }
     currentResearch.finishedAt = new Date();
     await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
-    return redirect('/play/router');
+    return redirect("/play/router");
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {
       return { error: (await error.json()) as { message: string } };
@@ -55,7 +55,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: '' }];
+  return [{ title: "" }];
 };
 
 export default function Page() {
@@ -69,7 +69,7 @@ export default function Page() {
         <div className="flex">
           <p>{currentResearch.problem.title}</p>
           <a
-            href={`https://atcoder.jp/contests/${currentResearch.problem.id.split('_')[0]}/tasks/${currentResearch.problem.id}`}
+            href={`https://atcoder.jp/contests/${currentResearch.problem.id.split("_")[0]}/tasks/${currentResearch.problem.id}`}
           >
             Go to Problem Page!
           </a>

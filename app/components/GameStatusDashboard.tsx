@@ -1,4 +1,4 @@
-import type { TotalAssets, LaboratoryValue } from '~/game/models/game';
+import type { TotalAssets, LaboratoryValue } from "~/game/models/game";
 
 export default function GameStatusDashboard(props: {
   totalAssets: TotalAssets;
@@ -8,7 +8,7 @@ export default function GameStatusDashboard(props: {
     <ul>
       <li>researcher's rank: {props.laboratoryValue.researcherRank}</li>
       <li>cash: {props.totalAssets.cash}</li>
-      <li>iron: {props.totalAssets.ingredientStock.get('iron')}</li>
+      <li>iron: {props.totalAssets.ingredientStock.get("iron")}</li>
       <li>
         battery: {props.totalAssets.battery} / {props.laboratoryValue.batteryCapacity}
       </li>

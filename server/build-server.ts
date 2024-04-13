@@ -1,17 +1,17 @@
-import esbuild from 'esbuild';
+import esbuild from "esbuild";
 
 console.log();
-console.log('building...');
+console.log("building...");
 
 esbuild
   .build({
-    entryPoints: ['./server/index.ts'],
-    outdir: './server-build',
-    target: ['node20'],
-    platform: 'node',
+    entryPoints: ["./server/index.ts"],
+    outdir: "./server-build",
+    target: ["node20"],
+    platform: "node",
     sourcemap: true,
-    format: 'esm',
-    logLevel: 'info',
+    format: "esm",
+    logLevel: "info",
   })
   .catch((error: unknown) => {
     console.error(error);

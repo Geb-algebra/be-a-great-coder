@@ -1,4 +1,4 @@
-import { Laboratory, type Problem, TotalAssets, type Research } from '../models/game';
+import { Laboratory, type Problem, TotalAssets, type Research } from "../models/game";
 
 export type TotalAssetsJson = {
   cash: number;

@@ -1,9 +1,9 @@
 export const TURNS = [
-  'buy-ingredients',
-  'sell-products',
-  'select-problems',
-  'solve-problems',
-  'get-reward',
+  "buy-ingredients",
+  "sell-products",
+  "select-problems",
+  "solve-problems",
+  "get-reward",
 ] as const;
 export type Turn = (typeof TURNS)[number];
 
