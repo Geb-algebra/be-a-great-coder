@@ -2,16 +2,20 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 import { prisma } from "~/db.server.ts";
 
-import { Laboratory, TotalAssets, TURNS } from "../models/game.ts";
+import { Laboratory, TotalAssets, TURNS, INGREDIENTS, isIngredientName } from "../models/game.ts";
 import type { User } from "~/accounts/models/account.ts";
 import type { Problem, Research, Turn } from "../models/game.ts";
 import invariant from "tiny-invariant";
 import { ObjectNotFoundError } from "~/errors.ts";
 import { createId } from "@paralleldrive/cuid2";
 
+function getEmptyIngredientStock() {
+  return new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0]));
+}
+
 export class TotalAssetsFactory {
   static initialize() {
-    return new TotalAssets(1000, 1, new Map([["iron", 0]]));
+    return new TotalAssets(1000, 1, getEmptyIngredientStock());
   }
 }
 
@@ -23,10 +27,12 @@ export class TotalAssetsRepository {
       return new TotalAssets(
         cash,
         battery,
-        ingredientStock.reduce(
-          (map, stock) => map.set(stock.ingredientName, stock.amount),
-          new Map(),
-        ),
+        ingredientStock.reduce((map, stock) => {
+          if (!isIngredientName(stock.ingredientName)) {
+            throw new Error(`Invalid ingredient name: ${stock.ingredientName}`);
+          }
+          return map.set(stock.ingredientName, stock.amount);
+        }, getEmptyIngredientStock()),
       );
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === "P2025") {
@@ -57,7 +63,9 @@ export class TotalAssetsRepository {
       if (ingredientStock.length !== 0) {
         await prisma.ingredientStock.deleteMany({ where: { userId } });
         for (const ingredient of ingredientStock) {
-          await prisma.ingredientStock.create({ data: ingredient });
+          if (ingredient.amount !== 0) {
+            await prisma.ingredientStock.create({ data: ingredient });
+          }
         }
       }
     });

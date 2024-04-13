@@ -3,18 +3,18 @@ import { TotalAssets } from "../models/game.ts";
 import { TotalAssetsUpdateService, getDifficultiesMatchUserRank } from "./game.server.ts";
 
 describe("TotalAssetsUpdateService", () => {
-  const initialTotalAssets = new TotalAssets(1000, 10, new Map([["iron", 5]]));
+  const initialTotalAssets = new TotalAssets(1000, 10, new Map([["Iron", 5]]));
 
   it("should buy ingredients", () => {
-    const newTotalAssets = TotalAssetsUpdateService.buyIngredients(initialTotalAssets, "iron", 5);
+    const newTotalAssets = TotalAssetsUpdateService.buyIngredients(initialTotalAssets, "Iron", 5);
     expect(newTotalAssets.cash).toEqual(1000 - 100 * 5);
-    expect(newTotalAssets.ingredientStock.get("iron")).toEqual(5 + 5);
+    expect(newTotalAssets.ingredientStock.get("Iron")).toEqual(5 + 5);
     expect(newTotalAssets.battery).toEqual(10);
   });
 
   it("should not buy ingredients if not enough money", () => {
     expect(() => {
-      TotalAssetsUpdateService.buyIngredients(initialTotalAssets, "iron", 11);
+      TotalAssetsUpdateService.buyIngredients(initialTotalAssets, "Iron", 11);
     }).toThrow(GameLogicViolated);
   });
 
@@ -25,7 +25,7 @@ describe("TotalAssetsUpdateService", () => {
       1,
     );
     expect(newTotalAssets.cash).toEqual(1000);
-    expect(newTotalAssets.ingredientStock.get("iron")).toEqual(5 - 3);
+    expect(newTotalAssets.ingredientStock.get("Iron")).toEqual(5 - 3);
     expect(quantity).toEqual(1);
     expect(newTotalAssets.battery).toEqual(10 - 1);
   });
@@ -42,14 +42,14 @@ describe("TotalAssetsUpdateService", () => {
       new Map([["sword", 1]]),
     );
     expect(newTotalAssets.cash).toEqual(1000 + 400);
-    expect(newTotalAssets.ingredientStock.get("iron")).toEqual(5);
+    expect(newTotalAssets.ingredientStock.get("Iron")).toEqual(5);
     expect(newTotalAssets.battery).toEqual(10);
   });
 
   it("should charge battery", () => {
     const newTotalAssets = TotalAssetsUpdateService.chargeBattery(initialTotalAssets, 20);
     expect(newTotalAssets.cash).toEqual(1000);
-    expect(newTotalAssets.ingredientStock.get("iron")).toEqual(5);
+    expect(newTotalAssets.ingredientStock.get("Iron")).toEqual(5);
     expect(newTotalAssets.battery).toEqual(20);
   });
 });

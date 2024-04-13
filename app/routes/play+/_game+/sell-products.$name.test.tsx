@@ -16,10 +16,10 @@ describe("action", () => {
       method: "POST",
     });
     await addAuthenticationSessionTo(request);
-    const response = await action({ request, params: { name: "iron" }, context: {} });
+    const response = await action({ request, params: { name: "Iron" }, context: {} });
     expect(response).toBeNull();
     const totalAssets = await TotalAssetsRepository.getOrThrow(account.id);
     expect(totalAssets.cash).toBe(32768 + 400);
-    expect(totalAssets.ingredientStock.get("iron")).toBe(128 - 3);
+    expect(totalAssets.ingredientStock.get("Iron")).toBe(128 - 3);
   });
 });

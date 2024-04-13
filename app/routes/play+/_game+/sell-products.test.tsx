@@ -70,7 +70,7 @@ describe.each([
 
   it("throws an error if the user doesnt have enough ingredients", async () => {
     await statusSetter(account.id);
-    const newAssets = new TotalAssets(cash, battery, new Map([["iron", 0]]));
+    const newAssets = new TotalAssets(cash, battery, new Map([["Iron", 0]]));
     await TotalAssetsRepository.save(account.id, newAssets);
     render(<RemixStub initialEntries={["/play/sell-products"]} />);
     await screen.findByText(/iron: 0/i);

@@ -1,6 +1,11 @@
 import { prisma } from "~/db.server.ts";
-import { TotalAssets } from "../models/game.ts";
-import { TotalAssetsRepository, LaboratoryRepository, ResearchFactory } from "./game.server.ts";
+import { INGREDIENTS, TotalAssets } from "../models/game.ts";
+import {
+  TotalAssetsRepository,
+  LaboratoryRepository,
+  ResearchFactory,
+  TotalAssetsFactory,
+} from "./game.server.ts";
 import { ObjectNotFoundError } from "~/errors.ts";
 
 beforeEach(async () => {
@@ -16,7 +21,19 @@ describe("TotalAssetsRepository", () => {
   const userId = "test-user-id";
 
   it("should save and get total assets", async () => {
-    const totalAssets = new TotalAssets(1000, 1, new Map([["iron", 0]]));
+    const totalAssets = new TotalAssets(
+      1000,
+      1,
+      new Map(INGREDIENTS.map((ingredient, index) => [ingredient.name, index])),
+    );
+    await TotalAssetsRepository.save(userId, totalAssets);
+    const savedTotalAssets = await TotalAssetsRepository.getOrThrow(userId);
+
+    expect(savedTotalAssets).toEqual(totalAssets);
+  });
+
+  it("should save and get empty total assets", async () => {
+    const totalAssets = TotalAssetsFactory.initialize();
     await TotalAssetsRepository.save(userId, totalAssets);
     const savedTotalAssets = await TotalAssetsRepository.getOrThrow(userId);
 
@@ -28,9 +45,17 @@ describe("TotalAssetsRepository", () => {
   });
 
   it("should update total assets", async () => {
-    const totalAssets = new TotalAssets(1000, 1, new Map([["iron", 0]]));
+    const totalAssets = new TotalAssets(
+      1000,
+      1,
+      new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0])),
+    );
     await TotalAssetsRepository.save(userId, totalAssets);
-    const updatedTotalAssets = new TotalAssets(2000, 2, new Map([["iron", 1]]));
+    const updatedTotalAssets = new TotalAssets(
+      2000,
+      2,
+      new Map(INGREDIENTS.map((ingredient, index) => [ingredient.name, index])),
+    );
     await TotalAssetsRepository.save(userId, updatedTotalAssets);
     const savedTotalAssets = await TotalAssetsRepository.getOrThrow(userId);
     expect(savedTotalAssets).toEqual(updatedTotalAssets);

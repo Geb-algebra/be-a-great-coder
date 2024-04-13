@@ -1,5 +1,5 @@
 import { GameLogicViolated, ObjectNotFoundError } from "~/errors.ts";
-import { TotalAssets, type Turn, TURNS } from "../models/game.ts";
+import { TotalAssets, type Turn, TURNS, type IngredientName, INGREDIENTS } from "../models/game.ts";
 import type { User } from "~/accounts/models/account.ts";
 import {
   TurnFactory,
@@ -45,8 +45,16 @@ export async function getOrInitializeTotalAssets(userId: User["id"]) {
 }
 
 export class TotalAssetsUpdateService {
-  static buyIngredients(currentTotalAssets: TotalAssets, ingredientName: string, quantity: number) {
-    const cost = quantity * 100;
+  static buyIngredients(
+    currentTotalAssets: TotalAssets,
+    ingredientName: IngredientName,
+    quantity: number,
+  ) {
+    const ingredient = INGREDIENTS.find((ingredient) => ingredient.name === ingredientName);
+    if (!ingredient) {
+      throw new GameLogicViolated("Invalid ingredient name");
+    }
+    const cost = ingredient.price * quantity;
     if (currentTotalAssets.cash < cost) {
       throw new GameLogicViolated("Not enough money");
     }
@@ -71,7 +79,7 @@ export class TotalAssetsUpdateService {
       throw new GameLogicViolated("Not enough battery");
     }
     const consumedAmountOfIngredients = 3 * quantity;
-    if ((currentTotalAssets.ingredientStock.get("iron") ?? 0) < consumedAmountOfIngredients) {
+    if ((currentTotalAssets.ingredientStock.get("Iron") ?? 0) < consumedAmountOfIngredients) {
       throw new GameLogicViolated("Not enough ingredients");
     }
     const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
