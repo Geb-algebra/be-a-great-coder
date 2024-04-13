@@ -12,15 +12,53 @@ import { render, screen } from '@testing-library/react';
 import { addAuthenticationSessionTo, authenticated, setupAccount } from '~/routes/test/utils.ts';
 import { prisma } from '~/db.server.ts';
 import { createRemixStub } from '@remix-run/testing';
-import { setVeteransStatus, veteransJson } from '~/routes/test/data.ts';
+import {
+  beginnersJson,
+  initialJson,
+  setBeginnersStatus,
+  setInitialStatus,
+  setVeteransStatus,
+  veteransJson,
+} from '~/routes/test/data.ts';
 import type { Account } from '~/accounts/models/account.ts';
 import userEvent from '@testing-library/user-event';
 import invariant from 'tiny-invariant';
 import { createId } from '@paralleldrive/cuid2';
 
+const RemixStub = createRemixStub([
+  {
+    path: '/play',
+    loader: authenticated(layoutLoader),
+    Component: Layout,
+    children: [
+      {
+        path: '/play/get-reward',
+        loader: authenticated(loader),
+        action: authenticated(action),
+        Component,
+        children: [
+          {
+            path: '/play/get-reward/show-answer',
+            action: authenticated(showAnswerAction),
+          },
+        ],
+      },
+      {
+        path: '/play/router',
+        loader: authenticated(routerLoader),
+      },
+      {
+        path: '/play/buy-ingredients',
+        loader: authenticated(buyLoader),
+        Component: () => <div />,
+      },
+    ],
+  },
+]);
+
 describe.each([
-  // ['newcomers', setInitialStatus, initialJson],
-  // ['beginners', setBeginnersStatus, beginnersJson],
+  ['newcomers', setInitialStatus, initialJson],
+  ['beginners', setBeginnersStatus, beginnersJson],
   ['veterans', setVeteransStatus, veteransJson],
 ])('Page for %s', (_, statusSetter, status) => {
   let account: Account;
@@ -45,14 +83,6 @@ describe.each([
   });
 
   it('renders the page with solved=False', async () => {
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/get-reward',
-        loader: authenticated(loader),
-        action: authenticated(action),
-        Component,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/get-reward']} />);
     await screen.findByRole('heading', { name: /get reward/i });
     await screen.findByText(/testproblemtitle/i);
@@ -69,14 +99,6 @@ describe.each([
     invariant(unrewardedResearch, 'unrewardedResearch should be defined');
     unrewardedResearch.solvedAt = new Date();
     await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/get-reward',
-        loader: authenticated(loader),
-        action: authenticated(action),
-        Component,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/get-reward']} />);
     await screen.findByRole('heading', { name: /get reward/i });
     await screen.findByText(/testproblemtitle/i);
@@ -98,30 +120,6 @@ describe.each([
       unrewardedResearch.solvedAt = new Date();
       await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
     }
-    const RemixStub = createRemixStub([
-      {
-        path: '/play',
-        loader: authenticated(layoutLoader),
-        Component: Layout,
-        children: [
-          {
-            path: '/play/get-reward',
-            loader: authenticated(loader),
-            action: authenticated(action),
-            Component,
-          },
-          {
-            path: '/play/router',
-            loader: authenticated(routerLoader),
-          },
-          {
-            path: '/play/buy-ingredients',
-            loader: authenticated(buyLoader),
-            Component: () => <div />,
-          },
-        ],
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/get-reward']} />);
     await screen.findByText(RegExp(`cash: ${status.totalAssetsJson.cash}`, 'i'));
     await screen.findByText(
@@ -148,36 +146,6 @@ describe.each([
     ['answerShown=False', false],
     ['answerShown=True', true],
   ])('gives reward on click get reward for %s', async (_, isShown) => {
-    const RemixStub = createRemixStub([
-      {
-        path: '/play',
-        loader: authenticated(layoutLoader),
-        Component: Layout,
-        children: [
-          {
-            path: '/play/get-reward',
-            loader: authenticated(loader),
-            action: authenticated(action),
-            Component,
-            children: [
-              {
-                path: '/play/get-reward/show-answer',
-                action: authenticated(showAnswerAction),
-              },
-            ],
-          },
-          {
-            path: '/play/router',
-            loader: authenticated(routerLoader),
-          },
-          {
-            path: '/play/buy-ingredients',
-            loader: authenticated(buyLoader),
-            Component: () => <div />,
-          },
-        ],
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/get-reward']} />);
     await screen.findByText(RegExp(`cash: ${status.totalAssetsJson.cash}`, 'i'));
     await screen.findByText(

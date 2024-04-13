@@ -10,6 +10,25 @@ import type { Account } from '~/accounts/models/account.ts';
 import userEvent from '@testing-library/user-event';
 import { TURNS } from '~/game/models/game.ts';
 
+const RemixStub = createRemixStub([
+  {
+    path: '/play/select-problems',
+    loader: authenticated(loader),
+    action: authenticated(action),
+    Component: Page,
+  },
+  {
+    path: '/play/router',
+    loader: authenticated(routerLoader),
+    Component: () => <div>Test Succeeded 😆</div>,
+  },
+  {
+    path: '/play/solve-problems',
+    loader: authenticated(solveLoader),
+    Component: solvePage,
+  },
+]);
+
 describe.each([
   ['newcomers', setInitialStatus, [100, 200, 300]],
   ['beginners', setBeginnersStatus, [100, 200, 300]],
@@ -22,13 +41,6 @@ describe.each([
     await statusSetter(account.id);
   });
   it('renders three problems that match the users rank', async () => {
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/select-problems',
-        loader: authenticated(loader),
-        Component: Page,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/select-problems']} />);
     await screen.findByRole('heading', { name: /select a problem to solve/i });
     for (const difficulty of difficulties) {
@@ -36,23 +48,6 @@ describe.each([
     }
   });
   it('redirects to the solve page when a problem is selected', async () => {
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/select-problems',
-        loader: authenticated(loader),
-        action: authenticated(action),
-        Component: Page,
-      },
-      {
-        path: '/play/router',
-        loader: authenticated(routerLoader),
-      },
-      {
-        path: '/play/solve-problems',
-        loader: authenticated(solveLoader),
-        Component: solvePage,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/select-problems']} />);
     await screen.findByRole('heading', { name: /select a problem to solve/i });
     const button = await screen.findByRole('button', { name: RegExp(`${difficulties[0]}`, 'i') });
@@ -67,10 +62,11 @@ describe.each([
     async (turn) => {
       await statusSetter(account.id);
       await TurnRepository.save(account.id, turn);
-      const RemixStub = createRemixStub([
+      const RemixStub2 = createRemixStub([
         {
-          path: '/play/sell-products',
+          path: '/play/select-problems',
           loader: authenticated(loader),
+          action: authenticated(action),
           Component: Page,
         },
         {
@@ -78,7 +74,7 @@ describe.each([
           Component: () => <div>Test Succeeded 😆</div>,
         },
       ]);
-      render(<RemixStub initialEntries={['/play/sell-products']} />);
+      render(<RemixStub2 initialEntries={['/play/select-problems']} />);
       await screen.findByText(/test succeeded/i);
     },
   );

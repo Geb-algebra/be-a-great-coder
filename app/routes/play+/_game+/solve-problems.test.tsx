@@ -15,6 +15,19 @@ import { http } from 'msw';
 import userEvent from '@testing-library/user-event';
 import { TURNS } from '~/game/models/game';
 
+const RemixStub = createRemixStub([
+  {
+    path: '/play/solve-problems',
+    loader: authenticated(loader),
+    action: authenticated(action),
+    Component,
+  },
+  {
+    path: '/play/router',
+    Component: () => <div>Test Succeeded 😆</div>,
+  },
+]);
+
 describe.each([
   ['newcomers', setInitialStatus],
   ['beginners', setBeginnersStatus],
@@ -40,14 +53,6 @@ describe.each([
     vi.useRealTimers();
   });
   it('renders the page with unsolved state', async () => {
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/solve-problems',
-        loader: authenticated(loader),
-        action: authenticated(action),
-        Component,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/solve-problems']} />);
     await screen.findByRole('heading', { name: /solve the problem/i });
     await screen.findByText(/testproblemtitle/i);
@@ -78,14 +83,6 @@ describe.each([
         );
       }),
     );
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/solve-problems',
-        loader: authenticated(loader),
-        action: authenticated(action),
-        Component,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/solve-problems']} />);
     await screen.findByRole('heading', { name: /solve the problem/i });
     await screen.findByText(/testproblemtitle/i);
@@ -96,18 +93,6 @@ describe.each([
     await screen.findByRole('button', { name: /finish/i });
   });
   it('redirects to /play/router on click of the finish button', async () => {
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/solve-problems',
-        loader: authenticated(loader),
-        action: authenticated(action),
-        Component,
-      },
-      {
-        path: '/play/router',
-        Component: () => <div>Test Succeeded 😆</div>,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/solve-problems']} />);
     await screen.findByRole('heading', { name: /solve the problem/i });
     const finishButton = await screen.findByRole('button', { name: /finish/i });

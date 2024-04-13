@@ -10,6 +10,32 @@ import type { Account } from '~/accounts/models/account.ts';
 import userEvent from '@testing-library/user-event';
 import { TURNS, TotalAssets } from '~/game/models/game.ts';
 
+const RemixStub = createRemixStub([
+  {
+    path: '/play',
+    loader: authenticated(layoutLoader),
+    Component: Layout,
+    children: [
+      {
+        path: '/play/sell-products',
+        loader: authenticated(loader),
+        action: authenticated(action),
+        Component: Page,
+        children: [
+          {
+            path: '/play/sell-products/sword',
+            action: (args) => authenticated(sellAction)({ ...args, params: { name: 'sword' } }),
+          },
+        ],
+      },
+      {
+        path: '/play/router',
+        Component: () => <div>Test Succeeded 😆</div>,
+      },
+    ],
+  },
+]);
+
 describe.each([
   ['beginners', setBeginnersStatus, 1200, 16, 3],
   ['veterans', setVeteransStatus, 32768, 128, 136],
@@ -22,13 +48,6 @@ describe.each([
 
   it('renders the page', async () => {
     await statusSetter(account.id);
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/sell-products',
-        loader: authenticated(loader),
-        Component: Page,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/sell-products']} />);
     await screen.findByRole('heading', { name: /make and sell products/i });
     await screen.findByRole('button', { name: /make sword/i });
@@ -37,26 +56,6 @@ describe.each([
 
   it('sells the item when the button is clicked', async () => {
     await statusSetter(account.id);
-    const RemixStub = createRemixStub([
-      {
-        path: '/play',
-        loader: authenticated(layoutLoader),
-        Component: Layout,
-        children: [
-          {
-            path: '/play/sell-products',
-            Component: Page,
-            loader: authenticated(loader),
-            children: [
-              {
-                path: '/play/sell-products/sword',
-                action: (args) => authenticated(sellAction)({ ...args, params: { name: 'sword' } }),
-              },
-            ],
-          },
-        ],
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/sell-products']} />);
     await screen.findByText(RegExp(`cash: ${cash}`, 'i'));
     await screen.findByText(RegExp(`iron: ${iron}`, 'i'));
@@ -73,26 +72,6 @@ describe.each([
     await statusSetter(account.id);
     const newAssets = new TotalAssets(cash, battery, new Map([['iron', 0]]));
     await TotalAssetsRepository.save(account.id, newAssets);
-    const RemixStub = createRemixStub([
-      {
-        path: '/play',
-        loader: authenticated(layoutLoader),
-        Component: Layout,
-        children: [
-          {
-            path: '/play/sell-products',
-            loader: authenticated(loader),
-            Component: Page,
-            children: [
-              {
-                path: '/play/sell-products/sword',
-                action: (args) => authenticated(sellAction)({ ...args, params: { name: 'sword' } }),
-              },
-            ],
-          },
-        ],
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/sell-products']} />);
     await screen.findByText(/iron: 0/i);
     const makeSwordButton = await screen.findByRole('button', { name: /make sword/i });
@@ -106,26 +85,6 @@ describe.each([
     const totalAssets = await TotalAssetsRepository.getOrThrow(account.id);
     const newAssets = new TotalAssets(cash, 0, totalAssets.ingredientStock);
     await TotalAssetsRepository.save(account.id, newAssets);
-    const RemixStub = createRemixStub([
-      {
-        path: '/play',
-        loader: authenticated(layoutLoader),
-        Component: Layout,
-        children: [
-          {
-            path: '/play/sell-products',
-            loader: authenticated(loader),
-            Component: Page,
-            children: [
-              {
-                path: '/play/sell-products/sword',
-                action: (args) => authenticated(sellAction)({ ...args, params: { name: 'sword' } }),
-              },
-            ],
-          },
-        ],
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/sell-products']} />);
     await screen.findByText(/battery: 0/i);
     const makeSwordButton = await screen.findByRole('button', { name: /make sword/i });
@@ -139,17 +98,6 @@ describe.each([
     async (turn) => {
       await statusSetter(account.id);
       await TurnRepository.save(account.id, turn);
-      const RemixStub = createRemixStub([
-        {
-          path: '/play/sell-products',
-          loader: authenticated(loader),
-          Component: Page,
-        },
-        {
-          path: '/play/router',
-          Component: () => <div>Test Succeeded 😆</div>,
-        },
-      ]);
       render(<RemixStub initialEntries={['/play/sell-products']} />);
       await screen.findByText(/test succeeded/i);
     },
@@ -157,18 +105,6 @@ describe.each([
 
   it('redirects to /play/router after clicking the finish buying button', async () => {
     await statusSetter(account.id);
-    const RemixStub = createRemixStub([
-      {
-        path: '/play/sell-products',
-        loader: authenticated(loader),
-        action: authenticated(action),
-        Component: Page,
-      },
-      {
-        path: '/play/router',
-        Component: () => <div>Test Succeeded 😆</div>,
-      },
-    ]);
     render(<RemixStub initialEntries={['/play/sell-products']} />);
     const finishButton = await screen.findByRole('button', { name: /finish making products/i });
     const user = userEvent.setup();
