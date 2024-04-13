@@ -34,12 +34,25 @@ export async function setBeginnersStatus(userId: string) {
   const totalAssets = new TotalAssets(1200, 3, new Map([['iron', 16]]));
   await TotalAssetsRepository.save(userId, totalAssets);
   const laboratory = await LaboratoryRepository.get(userId);
-  await insertNewProblemsIfAllowed();
   for (let i = 0; i < 3; i++) {
-    const problem = await queryRandomProblemByDifficulty(100, 101, false);
+    const pid = `ATC10${i}`;
+    const difficulty = 100;
+    const problem = await prisma.problem.upsert({
+      where: { id: pid },
+      create: {
+        id: pid,
+        title: `Test problem ${i} ${difficulty}`,
+        difficulty,
+      },
+      update: {
+        id: pid,
+        title: `Test problem ${i} ${difficulty}`,
+        difficulty,
+      },
+    });
     await LaboratoryRepository.addResearch(userId, {
       id: createId(),
-      problem: problem,
+      problem,
       userId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -71,8 +84,14 @@ export async function setVeteransStatus(userId: string) {
     for (let j = 0; j < 3; j++) {
       const pid = `ATC0${i}${j}`;
       const difficulty = (i + 1) * 100;
-      const problem = await prisma.problem.create({
-        data: {
+      const problem = await prisma.problem.upsert({
+        where: { id: pid },
+        create: {
+          id: pid,
+          title: `Test problem ${j} ${difficulty}`,
+          difficulty,
+        },
+        update: {
           id: pid,
           title: `Test problem ${j} ${difficulty}`,
           difficulty,
