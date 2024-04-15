@@ -1,0 +1,43 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.7.0/schema.json",
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 100,
+    "attributePosition": "auto",
+    "ignore": [
+      "**/.vscode/",
+      "**/.DS_Store",
+      "**/node_modules/",
+      "./.cache",
+      "./build",
+      "./server-build",
+      "./public/build",
+      "./coverage",
+      "./test-results/",
+      "./playwright-report/",
+      "./playwright/.cache/"
+    ]
+  },
+  "organizeImports": { "enabled": true },
+  "linter": {
+    "enabled": true,
+    "rules": { "recommended": false, "style": { "useBlockStatements": "off" } },
+    "ignore": [
+      "**/.vscode/",
+      "**/.DS_Store",
+      "**/node_modules/",
+      "./.cache",
+      "./build",
+      "./server-build",
+      "./public/build",
+      "./coverage",
+      "./test-results/",
+      "./playwright-report/",
+      "./playwright/.cache/"
+    ]
+  }
+}

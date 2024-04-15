@@ -7,7 +7,7 @@ module.exports = {
   overrides: [
     {
       files: ["app/routes/**/*.test.{ts,tsx}"],
-      extends: ["plugin:testing-library/react"],
+      extends: ["plugin:testing-library/react", "biome"],
     },
   ],
 };

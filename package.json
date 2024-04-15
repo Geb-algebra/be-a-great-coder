@@ -11,8 +11,8 @@
     "dev": "MOCKS=true tsx ./server/index.ts",
     "dev:unmock": "tsx ./server/index.ts",
     "start": "NODE_ENV=production node ./server-build/index.js",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx .",
-    "format": "prettier --write .",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
     "typecheck": "tsc",
     "test:unit": "run-s test:unit:reset-db-dev test:unit:watch",
     "test:unit:ci": "run-s test:unit:reset-db test:unit:run",
@@ -54,6 +54,7 @@
     "tiny-invariant": "^1.3.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.7.0",
     "@playwright/test": "^1.41.2",
     "@remix-run/dev": "^2.7.2",
     "@remix-run/eslint-config": "^2.7.2",
@@ -69,6 +70,7 @@
     "@vitest/ui": "^1.4.0",
     "esbuild": "^0.20.1",
     "eslint": "^8.56.0",
+    "eslint-config-biome": "^1.5.3",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-testing-library": "^6.2.1",
     "happy-dom": "^13.4.1",
