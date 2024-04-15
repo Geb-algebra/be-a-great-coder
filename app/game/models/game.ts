@@ -35,10 +35,17 @@ export const INGREDIENTS: Ingredient[] = [
   { name: "Diamond", price: 600 },
 ];
 
+export const PRODUCT_NAMES = ["Sword", "Shield", "Ring", "Necklace"] as const;
+export type ProductName = (typeof PRODUCT_NAMES)[number];
+
+export function isProductName(name: string): name is ProductName {
+  return PRODUCT_NAMES.includes(name as ProductName);
+}
+
 export type Product = {
   name: string;
   price: number;
-  ingredients: Map<string, number>;
+  ingredients: Map<IngredientName, number>;
 };
 
 export const PRODUCTS: Product[] = [

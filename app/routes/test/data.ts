@@ -17,6 +17,19 @@ export async function setInitialStatus(userId: string) {
   return { totalAssets, laboratory };
 }
 
+export const initialStatus = {
+  totalAssets: {
+    cash: 1000,
+    battery: 1,
+    ingredientStock: new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0])),
+  },
+  laboratoryValue: {
+    batteryCapacity: 1,
+    performance: 1,
+    researcherRank: 0,
+  },
+};
+
 /**
  * Sets the beginners status to the database.
  *
@@ -66,6 +79,19 @@ export async function setBeginnersStatus(userId: string) {
   }
   return { totalAssets, laboratory };
 }
+
+export const beginnersStatus = {
+  totalAssets: {
+    cash: 1200,
+    battery: 3,
+    ingredientStock: new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 16])),
+  },
+  laboratoryValue: {
+    batteryCapacity: 4,
+    performance: 4,
+    researcherRank: 100,
+  },
+};
 
 /**
  * Sets the veterans status to the database.
@@ -119,37 +145,11 @@ export async function setVeteransStatus(userId: string) {
   return { totalAssets, laboratory };
 }
 
-export const initialJson = {
-  totalAssetsJson: {
-    cash: 1000,
-    battery: 1,
-    ingredientStock: [["Iron", 0]],
-  },
-  laboratoryValue: {
-    batteryCapacity: 1,
-    performance: 1,
-    researcherRank: 0,
-  },
-};
-
-export const beginnersJson = {
-  totalAssetsJson: {
-    cash: 1200,
-    battery: 3,
-    ingredientStock: [["Iron", 16]],
-  },
-  laboratoryValue: {
-    batteryCapacity: 4,
-    performance: 4,
-    researcherRank: 100,
-  },
-};
-
-export const veteransJson = {
-  totalAssetsJson: {
+export const veteransStatus = {
+  totalAssets: {
     cash: 32768,
     battery: 136,
-    ingredientStock: [["Iron", 128]],
+    ingredientStock: new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 128])),
   },
   laboratoryValue: {
     batteryCapacity: 136,

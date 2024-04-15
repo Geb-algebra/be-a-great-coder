@@ -8,10 +8,11 @@ import {
   setBeginnersStatus,
   setInitialStatus,
   setVeteransStatus,
-  initialJson,
-  beginnersJson,
-  veteransJson,
+  initialStatus,
+  beginnersStatus,
+  veteransStatus,
 } from "~/routes/test/data.ts";
+import { INGREDIENT_NAMES } from "~/game/models/game.ts";
 
 describe("Page", () => {
   let account: Account;
@@ -20,9 +21,9 @@ describe("Page", () => {
     await TurnRepository.save(account.id, "buy-ingredients");
   });
   it.each([
-    ["newcomers", setInitialStatus, initialJson],
-    ["beginners", setBeginnersStatus, beginnersJson],
-    ["veterans", setVeteransStatus, veteransJson],
+    ["newcomers", setInitialStatus, initialStatus],
+    ["beginners", setBeginnersStatus, beginnersStatus],
+    ["veterans", setVeteransStatus, veteransStatus],
   ])("should return the expected data for %s", async (_, setter, expected) => {
     await setter(account.id);
     const RemixStub = createRemixStub([
@@ -38,16 +39,18 @@ describe("Page", () => {
         RegExp(`researcher's rank: ${expected.laboratoryValue.researcherRank}`, "i"),
       ),
     );
-    expect(await screen.findByText(RegExp(`cash: ${expected.totalAssetsJson.cash}`, "i")));
-    expect(
-      await screen.findByText(
-        RegExp(`iron: ${expected.totalAssetsJson.ingredientStock[0][1]}`, "i"),
-      ),
-    );
+    expect(await screen.findByText(RegExp(`cash: ${expected.totalAssets.cash}`, "i")));
+    for (const ingredient of INGREDIENT_NAMES) {
+      expect(
+        await screen.findByText(
+          RegExp(`${ingredient}: ${expected.totalAssets.ingredientStock.get(ingredient)}`, "i"),
+        ),
+      );
+    }
     expect(
       await screen.findByText(
         RegExp(
-          `battery: ${expected.totalAssetsJson.battery} / ${expected.laboratoryValue.batteryCapacity}`,
+          `battery: ${expected.totalAssets.battery} / ${expected.laboratoryValue.batteryCapacity}`,
           "i",
         ),
       ),

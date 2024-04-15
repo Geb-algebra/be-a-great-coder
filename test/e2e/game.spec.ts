@@ -63,18 +63,35 @@ test.describe("game cycle", () => {
       loggedInPage.getByRole("heading", { name: /make and sell products/i }),
     ).toBeVisible();
     await expect(loggedInPage.getByText(/cash: 100/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 9/i)).toBeVisible();
+    await expect(
+      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 9/i),
+    ).toBeVisible();
 
-    await loggedInPage.getByRole("button", { name: /make sword/i }).click();
-    await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
-    await loggedInPage.getByRole("button", { name: /make sword/i }).click();
-    await expect(loggedInPage.getByText(/cash: 900/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 3/i)).toBeVisible();
-    await loggedInPage.getByRole("button", { name: /make sword/i }).click();
+    await loggedInPage
+      .getByRole("listitem", { name: /sword$/i })
+      .getByRole("button", { name: /make/i })
+      .click();
+    await expect(loggedInPage.getByText(/cash: 1100/i)).toBeVisible();
+    await expect(
+      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 6/i),
+    ).toBeVisible();
+    await loggedInPage
+      .getByRole("listitem", { name: /sword$/i })
+      .getByRole("button", { name: /make/i })
+      .click();
+    await expect(loggedInPage.getByText(/cash: 2100/i)).toBeVisible();
+    await expect(
+      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 3/i),
+    ).toBeVisible();
+    await loggedInPage
+      .getByRole("listitem", { name: /sword$/i })
+      .getByRole("button", { name: /make/i })
+      .click();
     await expect(loggedInPage.getByText(/not enough battery/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/cash: 900/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 3/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/cash: 2100/i)).toBeVisible();
+    await expect(
+      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 3/i),
+    ).toBeVisible();
     await loggedInPage.getByRole("button", { name: /finish making products/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /select a problem/i })).toBeVisible();
   });

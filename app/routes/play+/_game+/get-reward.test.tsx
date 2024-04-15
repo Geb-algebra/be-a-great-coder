@@ -13,12 +13,12 @@ import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/route
 import { prisma } from "~/db.server.ts";
 import { createRemixStub } from "@remix-run/testing";
 import {
-  beginnersJson,
-  initialJson,
+  beginnersStatus,
+  initialStatus,
   setBeginnersStatus,
   setInitialStatus,
   setVeteransStatus,
-  veteransJson,
+  veteransStatus,
 } from "~/routes/test/data.ts";
 import type { Account } from "~/accounts/models/account.ts";
 import userEvent from "@testing-library/user-event";
@@ -57,9 +57,9 @@ const RemixStub = createRemixStub([
 ]);
 
 describe.each([
-  ["newcomers", setInitialStatus, initialJson],
-  ["beginners", setBeginnersStatus, beginnersJson],
-  ["veterans", setVeteransStatus, veteransJson],
+  ["newcomers", setInitialStatus, initialStatus],
+  ["beginners", setBeginnersStatus, beginnersStatus],
+  ["veterans", setVeteransStatus, veteransStatus],
 ])("Page for %s", (_, statusSetter, status) => {
   let account: Account;
   beforeEach(async () => {
@@ -121,10 +121,10 @@ describe.each([
       await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
     }
     render(<RemixStub initialEntries={["/play/get-reward"]} />);
-    await screen.findByText(RegExp(`cash: ${status.totalAssetsJson.cash}`, "i"));
+    await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
     await screen.findByText(
       RegExp(
-        `battery: ${status.totalAssetsJson.battery} / ${status.laboratoryValue.batteryCapacity}`,
+        `battery: ${status.totalAssets.battery} / ${status.laboratoryValue.batteryCapacity}`,
         "i",
       ),
     );
@@ -134,7 +134,7 @@ describe.each([
     const getRewardButton = await screen.findByRole("button", { name: /get reward/i });
     const user = userEvent.setup();
     await user.click(getRewardButton);
-    await screen.findByText(RegExp(`cash: ${status.totalAssetsJson.cash}`, "i"));
+    await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
     const newCapa = status.laboratoryValue.batteryCapacity + (isSolved ? 3 : 0); // 3 is difficulty / 100
     await screen.findByText(RegExp(`battery: ${newCapa} / ${newCapa}`, "i")); // fully charged
     await screen.findByText(
@@ -147,10 +147,10 @@ describe.each([
     ["answerShown=True", true],
   ])("gives reward on click get reward for %s", async (_, isShown) => {
     render(<RemixStub initialEntries={["/play/get-reward"]} />);
-    await screen.findByText(RegExp(`cash: ${status.totalAssetsJson.cash}`, "i"));
+    await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
     await screen.findByText(
       RegExp(
-        `battery: ${status.totalAssetsJson.battery} / ${status.laboratoryValue.batteryCapacity}`,
+        `battery: ${status.totalAssets.battery} / ${status.laboratoryValue.batteryCapacity}`,
         "i",
       ),
     );
@@ -162,7 +162,7 @@ describe.each([
     await user.click(showAnswerbutton);
     const getRewardButton = await screen.findByRole("button", { name: /get reward/i });
     await user.click(getRewardButton);
-    await screen.findByText(RegExp(`cash: ${status.totalAssetsJson.cash}`, "i"));
+    await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
     const newCapa = status.laboratoryValue.batteryCapacity; // no change because the problem is not solved
     await screen.findByText(RegExp(`battery: ${newCapa} / ${newCapa}`, "i")); // fully charged
     await screen.findByText(
@@ -199,7 +199,7 @@ describe("action", () => {
     await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
 
     const oldLab = await LaboratoryRepository.get(account.id);
-    expect(oldLab.batteryCapacity).toBe(veteransJson.laboratoryValue.batteryCapacity);
+    expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
 
     const request = new Request("http://localhost:3000/play/get-reward", {
       method: "POST",
@@ -214,9 +214,9 @@ describe("action", () => {
     expect(latestResearch.batteryCapacityIncrement).toBe(3);
     expect(latestResearch.performanceIncrement).toBe(null);
     expect(updatedLaboratory.batteryCapacity).toBe(
-      veteransJson.laboratoryValue.batteryCapacity + 3,
+      veteransStatus.laboratoryValue.batteryCapacity + 3,
     );
-    expect(updatedLaboratory.performance).toBe(veteransJson.laboratoryValue.performance);
+    expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance);
   });
   it("gives performances if the explanation of the problem hasdisplayed", async () => {
     const laboratory = await LaboratoryRepository.get(account.id);
@@ -226,7 +226,7 @@ describe("action", () => {
     await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
 
     const oldLab = await LaboratoryRepository.get(account.id);
-    expect(oldLab.batteryCapacity).toBe(veteransJson.laboratoryValue.batteryCapacity);
+    expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
     expect(oldLab.getUnrewardedResearch()?.solvedAt).toBeDefined();
 
     const request = new Request("http://localhost:3000/play/get-reward", {
@@ -240,7 +240,7 @@ describe("action", () => {
     expect(solvedResearch.rewardReceivedAt).toBeDefined();
     expect(solvedResearch.batteryCapacityIncrement).toBe(null);
     expect(solvedResearch.performanceIncrement).toBe(3);
-    expect(updatedLaboratory.batteryCapacity).toBe(veteransJson.laboratoryValue.batteryCapacity);
-    expect(updatedLaboratory.performance).toBe(veteransJson.laboratoryValue.performance + 3);
+    expect(updatedLaboratory.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
+    expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance + 3);
   });
 });

@@ -14,8 +14,8 @@ export default function GameStatusDashboard(props: {
         </li>
         <li>robot performance: {props.laboratoryValue.performance}</li>
       </ul>
-      <h3>Ingredients</h3>
-      <ul>
+      <h3 id="ingredient-header">Ingredients</h3>
+      <ul aria-labelledby="ingredient-header">
         {Array.from(props.totalAssets.ingredientStock).map(([name, amount]) => (
           <li key={name}>
             {name}: {amount}
