@@ -25,7 +25,11 @@
   "organizeImports": { "enabled": true },
   "linter": {
     "enabled": true,
-    "rules": { "recommended": false, "style": { "useBlockStatements": "off" } },
+    "rules": {
+      "recommended": true,
+      "style": { "useBlockStatements": "off" },
+      "complexity": {"noStaticOnlyClass": "off"}
+    },
     "ignore": [
       "**/.vscode/",
       "**/.DS_Store",
@@ -39,5 +43,10 @@
       "./playwright-report/",
       "./playwright/.cache/"
     ]
+  },
+  "javascript": {
+    "formatter": {
+      "trailingComma": "all"
+    }
   }
 }
