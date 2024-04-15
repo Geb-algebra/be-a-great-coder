@@ -11,8 +11,9 @@
     "dev": "MOCKS=true tsx ./server/index.ts",
     "dev:unmock": "tsx ./server/index.ts",
     "start": "NODE_ENV=production node ./server-build/index.js",
-    "lint": "biome lint .",
-    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:apply": "biome check --apply .",
+    "check:apply-unsafe": "biome check --apply-unsafe .",
     "typecheck": "tsc",
     "test:unit": "run-s test:unit:reset-db-dev test:unit:watch",
     "test:unit:ci": "run-s test:unit:reset-db test:unit:run",
@@ -22,7 +23,7 @@
     "test:unit:run": "vitest run",
     "test:e2e": "start-server-and-test dev http://localhost:3000 \"npx playwright test\"",
     "test:e2e:ui": "start-server-and-test dev http://localhost:3000 \"npx playwright test --ui --ui-host=0.0.0.0 --ui-port=8888\"",
-    "validate": "run-s format lint typecheck test:unit:ci test:e2e"
+    "validate": "run-s check typecheck test:unit:ci test:e2e"
   },
   "eslintIgnore": [
     "/node_modules",
