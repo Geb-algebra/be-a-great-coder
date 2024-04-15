@@ -1,12 +1,12 @@
 import { prisma } from "~/db.server.ts";
+import { ObjectNotFoundError } from "~/errors.ts";
 import { INGREDIENTS, TotalAssets } from "../models/game.ts";
 import {
-  TotalAssetsRepository,
   LaboratoryRepository,
   ResearchFactory,
   TotalAssetsFactory,
+  TotalAssetsRepository,
 } from "./game.server.ts";
-import { ObjectNotFoundError } from "~/errors.ts";
 
 beforeEach(async () => {
   await prisma.user.create({

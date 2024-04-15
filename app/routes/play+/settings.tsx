@@ -1,18 +1,18 @@
-import type { LoaderFunctionArgs, SerializeFrom, MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useFetcher, Link } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
+import { AccountRepository } from "~/accounts/lifecycle/account.server";
+import type { Authenticator } from "~/accounts/models/account.ts";
+import AuthButton from "~/components/AuthButton.tsx";
 import AuthFormInput from "~/components/AuthFormInput.tsx";
 import Icon from "~/components/Icon.tsx";
 import Overlay from "~/components/Overlay.tsx";
-import type { Authenticator } from "~/accounts/models/account.ts";
-import { AccountRepository } from "~/accounts/lifecycle/account.server";
-import { authenticator } from "~/services/auth.server.ts";
-import AuthButton from "~/components/AuthButton.tsx";
 import PasskeyHero from "~/components/PasskeyHero.tsx";
+import { authenticator } from "~/services/auth.server.ts";
 
-import type { action as passkeyAction } from "~/routes/play+/settings.passkey";
 import { ObjectNotFoundError } from "~/errors";
+import type { action as passkeyAction } from "~/routes/play+/settings.passkey";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/" });

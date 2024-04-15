@@ -1,14 +1,14 @@
-import Layout, { loader as layoutLoader } from "./_layout.tsx";
-import Page, { action, loader } from "./sell-products.tsx";
-import { action as sellAction } from "./sell-products.$name.tsx";
-import { render, screen, within } from "@testing-library/react";
 import { createRemixStub } from "@remix-run/testing";
-import { authenticated, setupAccount } from "~/routes/test/utils.ts";
-import { setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.ts";
-import { TotalAssetsRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
-import type { Account } from "~/accounts/models/account.ts";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { Account } from "~/accounts/models/account.ts";
+import { TotalAssetsRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { INGREDIENTS, PRODUCTS, PRODUCT_NAMES, TURNS, TotalAssets } from "~/game/models/game.ts";
+import { setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.ts";
+import { authenticated, setupAccount } from "~/routes/test/utils.ts";
+import Layout, { loader as layoutLoader } from "./_layout.tsx";
+import { action as sellAction } from "./sell-products.$name.tsx";
+import Page, { action, loader } from "./sell-products.tsx";
 
 const RemixStub = createRemixStub([
   {

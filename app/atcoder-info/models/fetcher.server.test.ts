@@ -1,9 +1,9 @@
+import { server } from "mocks/mock-server.ts";
+import { http } from "msw";
+import type { MockInstance } from "vitest";
 import { prisma } from "~/db.server.ts";
 import { createFetchLog, fetchIfAllowed } from "./fetcher.server.ts";
 import { PROBLEM_UPDATE_INTERVAL } from "./problem.server.ts";
-import type { MockInstance } from "vitest";
-import { server } from "mocks/mock-server.ts";
-import { http } from "msw";
 
 describe("fetchIfAllowed", () => {
   let mockedFetch: MockInstance;

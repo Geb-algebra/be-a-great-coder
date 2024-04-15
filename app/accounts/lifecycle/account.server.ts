@@ -2,8 +2,8 @@ import { createId } from "@paralleldrive/cuid2";
 import { type User } from "@prisma/client";
 
 import { prisma } from "~/db.server.ts";
-import type { Account, Authenticator } from "../models/account.ts";
 import { isUsernameAvailable } from "~/services/auth.server.ts";
+import type { Account, Authenticator } from "../models/account.ts";
 
 export class AccountFactory {
   static async generateId() {

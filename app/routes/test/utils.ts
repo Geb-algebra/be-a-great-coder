@@ -1,6 +1,6 @@
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { AccountFactory, AccountRepository } from "~/accounts/lifecycle/account.server";
 import { getSession, sessionStorage } from "~/services/session.server";
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 
 /**
  * Sets up an account and add a session to the request.

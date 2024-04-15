@@ -1,14 +1,14 @@
 import { createRemixStub } from "@remix-run/testing";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { setInitialStatus, setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.ts";
-import Layout, { loader as layoutLoader } from "./_layout.tsx";
-import Page, { loader, action } from "./buy-ingredients.tsx";
-import { action as buyAction } from "./buy-ingredients.$name.tsx";
 import type { Account } from "~/accounts/models/account.ts";
 import { TotalAssetsRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { INGREDIENTS, INGREDIENT_NAMES, TURNS, TotalAssets } from "~/game/models/game.ts";
-import { setupAccount, authenticated } from "~/routes/test/utils.ts";
+import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data.ts";
+import { authenticated, setupAccount } from "~/routes/test/utils.ts";
+import Layout, { loader as layoutLoader } from "./_layout.tsx";
+import { action as buyAction } from "./buy-ingredients.$name.tsx";
+import Page, { loader, action } from "./buy-ingredients.tsx";
 
 const RemixStub = createRemixStub([
   {

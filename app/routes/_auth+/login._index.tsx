@@ -6,12 +6,12 @@ import {
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { handleFormSubmit } from "remix-auth-webauthn/browser";
 
-import { authenticator, webAuthnStrategy } from "~/services/auth.server.ts";
-import AuthContainer from "~/components/AuthContainer.tsx";
 import AuthButton from "~/components/AuthButton.tsx";
+import AuthContainer from "~/components/AuthContainer.tsx";
 import AuthErrorMessage from "~/components/AuthErrorMessage.tsx";
-import { sessionStorage } from "~/services/session.server.ts";
 import GoogleAuthButton from "~/components/GoogleAuthButton.tsx";
+import { authenticator, webAuthnStrategy } from "~/services/auth.server.ts";
+import { sessionStorage } from "~/services/session.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, { successRedirect: "/" });

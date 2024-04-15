@@ -1,17 +1,15 @@
+import { createId } from "@paralleldrive/cuid2";
+import { createRemixStub } from "@remix-run/testing";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import invariant from "tiny-invariant";
+import type { Account } from "~/accounts/models/account.ts";
+import { prisma } from "~/db.server.ts";
 import {
   LaboratoryRepository,
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import Component, { loader, action } from "./get-reward.tsx";
-import { action as showAnswerAction } from "./get-reward.show-answer.tsx";
-import Layout, { loader as layoutLoader } from "./_layout.tsx";
-import { loader as routerLoader } from "./router.tsx";
-import { loader as buyLoader } from "./buy-ingredients.tsx";
-import { render, screen } from "@testing-library/react";
-import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils.ts";
-import { prisma } from "~/db.server.ts";
-import { createRemixStub } from "@remix-run/testing";
 import {
   beginnersStatus,
   initialStatus,
@@ -20,10 +18,12 @@ import {
   setVeteransStatus,
   veteransStatus,
 } from "~/routes/test/data.ts";
-import type { Account } from "~/accounts/models/account.ts";
-import userEvent from "@testing-library/user-event";
-import invariant from "tiny-invariant";
-import { createId } from "@paralleldrive/cuid2";
+import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils.ts";
+import Layout, { loader as layoutLoader } from "./_layout.tsx";
+import { loader as buyLoader } from "./buy-ingredients.tsx";
+import { action as showAnswerAction } from "./get-reward.show-answer.tsx";
+import Component, { loader, action } from "./get-reward.tsx";
+import { loader as routerLoader } from "./router.tsx";
 
 const RemixStub = createRemixStub([
   {

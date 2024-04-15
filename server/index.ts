@@ -1,11 +1,11 @@
 import { createServer } from "http";
 
+import { createRequestHandler } from "@remix-run/express";
+import { installGlobals } from "@remix-run/node";
+import closeWithGrace from "close-with-grace";
 import compression from "compression";
 import express from "express";
 import morgan from "morgan";
-import closeWithGrace from "close-with-grace";
-import { createRequestHandler } from "@remix-run/express";
-import { installGlobals } from "@remix-run/node";
 
 installGlobals();
 

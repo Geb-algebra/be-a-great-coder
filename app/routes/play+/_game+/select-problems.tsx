@@ -1,14 +1,14 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, Form, useLoaderData } from "@remix-run/react";
-import { authenticator } from "~/services/auth.server.ts";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import {
   LaboratoryRepository,
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import { getNextTurn, getProblemsMatchUserRank } from "~/game/services/game.server.ts";
 import { Problem } from "~/game/models/game";
+import { getNextTurn, getProblemsMatchUserRank } from "~/game/services/game.server.ts";
+import { authenticator } from "~/services/auth.server.ts";
 import { getRequiredStringFromFormData } from "~/utils/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {

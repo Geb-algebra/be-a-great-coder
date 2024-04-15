@@ -1,5 +1,5 @@
-import { TotalAssets, Laboratory, type IngredientName } from "../models/game";
-import { TotalAssetsJsonifier, LaboratoryJsonifier } from "./jsonifier";
+import { type IngredientName, Laboratory, TotalAssets } from "../models/game";
+import { LaboratoryJsonifier, TotalAssetsJsonifier } from "./jsonifier";
 
 describe("TotalAssetsJsonifier", () => {
   const initialTotalAssets = new TotalAssets(

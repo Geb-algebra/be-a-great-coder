@@ -1,16 +1,16 @@
-import { verifyRegistrationResponse } from "~/utils/simplewebauthn.server.ts";
 import type { RegistrationResponseJSON } from "@simplewebauthn/typescript-types";
 import { Authenticator } from "remix-auth";
 import invariant from "tiny-invariant";
-import type { User } from "~/accounts/models/account.ts";
-import { UserRepository } from "~/accounts/lifecycle/user.server.ts";
 import { AccountFactory, AccountRepository } from "~/accounts/lifecycle/account.server";
+import { UserRepository } from "~/accounts/lifecycle/user.server.ts";
+import type { User } from "~/accounts/models/account.ts";
+import { verifyRegistrationResponse } from "~/utils/simplewebauthn.server.ts";
 
-import { getSession, sessionStorage } from "~/services/session.server.ts";
-import { getAuthenticatorById } from "~/accounts/lifecycle/authenticator.server.ts";
 import { GoogleStrategy } from "remix-auth-google";
 import { WebAuthnStrategy } from "remix-auth-webauthn";
+import { getAuthenticatorById } from "~/accounts/lifecycle/authenticator.server.ts";
 import { IntegrityError, ObjectNotFoundError, ValueError } from "~/errors.ts";
+import { getSession, sessionStorage } from "~/services/session.server.ts";
 
 export let authenticator = new Authenticator<User>(sessionStorage);
 

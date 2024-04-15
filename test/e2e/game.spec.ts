@@ -1,14 +1,14 @@
-import { test, expect } from "./fixtures.ts";
+import invariant from "tiny-invariant";
+import { UserRepository } from "~/accounts/lifecycle/user.server.ts";
+import { prisma } from "~/db.server.ts";
 import {
-  TotalAssetsRepository,
   LaboratoryRepository,
-  TurnRepository,
   ResearchFactory,
+  TotalAssetsRepository,
+  TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
 import { TotalAssets } from "~/game/models/game.ts";
-import { UserRepository } from "~/accounts/lifecycle/user.server.ts";
-import invariant from "tiny-invariant";
-import { prisma } from "~/db.server.ts";
+import { expect, test } from "./fixtures.ts";
 
 test.describe("game cycle", () => {
   test("start with buy-ingredients with initial game state", async ({ loggedInPage }) => {

@@ -1,19 +1,19 @@
-import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data";
-import Component, { loader, action } from "./solve-problems";
+import { createRemixStub } from "@remix-run/testing";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { server } from "mocks/mock-server";
+import { http } from "msw";
+import type { Account } from "~/accounts/models/account";
+import { prisma } from "~/db.server";
 import {
   LaboratoryRepository,
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server";
-import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils";
-import type { Account } from "~/accounts/models/account";
-import { prisma } from "~/db.server";
-import { createRemixStub } from "@remix-run/testing";
-import { server } from "mocks/mock-server";
-import { http } from "msw";
-import userEvent from "@testing-library/user-event";
 import { TURNS } from "~/game/models/game";
+import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data";
+import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils";
+import Component, { loader, action } from "./solve-problems";
 
 const RemixStub = createRemixStub([
   {
