@@ -1,7 +1,9 @@
 import { installGlobals } from "@remix-run/node";
 import { resetDB } from "test/utils.ts";
 import { server } from "mocks/mock-server.ts";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
+
+configure({ asyncUtilTimeout: 500 });
 
 installGlobals();
 

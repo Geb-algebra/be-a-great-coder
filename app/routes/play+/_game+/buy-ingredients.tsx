@@ -6,6 +6,7 @@ import { GameLogicViolated } from "~/errors";
 import { TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
 import type { action as detailAction } from "./buy-ingredients.$name.tsx";
+import { INGREDIENTS } from "~/game/models/game.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
@@ -34,16 +35,19 @@ export const meta: MetaFunction = () => {
 export default function Page() {
   const actionData = useActionData<typeof action>();
   const fetcher = useFetcher<typeof detailAction>();
-  const ingredientNames = ["iron"];
   return (
     <div>
-      <h1 className="font-bold text-2xl">Buy Ingredients</h1>
+      <h1 id="buy-ingredient-heading" className="font-bold text-2xl">
+        Buy Ingredients
+      </h1>
       <p>{actionData?.error.message ?? fetcher.data?.error.message}</p>
-      <ul>
-        {ingredientNames.map((ingredientName) => (
-          <li key={ingredientName}>
-            <fetcher.Form method="post" action={ingredientName}>
-              <h2 className="font-bold">{ingredientName}</h2>
+      <ul aria-labelledby="buy-ingredient-heading">
+        {INGREDIENTS.map((ingredient) => (
+          <li aria-labelledby={`ingredient-name-${ingredient.name}`} key={ingredient.name}>
+            <h2 id={`ingredient-name-${ingredient.name}`} className="font-bold">
+              {ingredient.name}
+            </h2>
+            <fetcher.Form method="post" action={ingredient.name}>
               <button type="submit" name="quantity" value="1">
                 buy 1
               </button>

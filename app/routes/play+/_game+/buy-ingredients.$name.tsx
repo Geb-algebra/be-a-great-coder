@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { GameLogicViolated, ValueError } from "~/errors";
 import { TotalAssetsRepository } from "~/game/lifecycle/game.server";
+import { isIngredientName } from "~/game/models/game";
 import { TotalAssetsUpdateService } from "~/game/services/game.server";
 import { authenticator } from "~/services/auth.server";
 import { getRequiredStringFromFormData } from "~/utils/utils";
@@ -10,6 +11,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   try {
     const ingredientName = params.name;
     if (!ingredientName) throw new ValueError("Ingredient name is required");
+    if (!isIngredientName(ingredientName)) throw new ValueError("Invalid ingredient name");
     const formData = await request.formData();
     const quantity = Number(getRequiredStringFromFormData(formData, "quantity"));
     const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);

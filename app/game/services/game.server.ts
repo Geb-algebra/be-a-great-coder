@@ -1,5 +1,12 @@
 import { GameLogicViolated, ObjectNotFoundError } from "~/errors.ts";
-import { TotalAssets, type Turn, TURNS } from "../models/game.ts";
+import {
+  TotalAssets,
+  type Turn,
+  TURNS,
+  type IngredientName,
+  INGREDIENTS,
+  type Product,
+} from "../models/game.ts";
 import type { User } from "~/accounts/models/account.ts";
 import {
   TurnFactory,
@@ -45,8 +52,16 @@ export async function getOrInitializeTotalAssets(userId: User["id"]) {
 }
 
 export class TotalAssetsUpdateService {
-  static buyIngredients(currentTotalAssets: TotalAssets, ingredientName: string, quantity: number) {
-    const cost = quantity * 100;
+  static buyIngredients(
+    currentTotalAssets: TotalAssets,
+    ingredientName: IngredientName,
+    quantity: number,
+  ) {
+    const ingredient = INGREDIENTS.find((ingredient) => ingredient.name === ingredientName);
+    if (!ingredient) {
+      throw new GameLogicViolated("Invalid ingredient name");
+    }
+    const cost = ingredient.price * quantity;
     if (currentTotalAssets.cash < cost) {
       throw new GameLogicViolated("Not enough money");
     }
@@ -62,21 +77,21 @@ export class TotalAssetsUpdateService {
     );
   }
 
-  static manufactureProducts(
-    currentTotalAssets: TotalAssets,
-    productName: string,
-    quantity: number,
-  ) {
+  static manufactureProducts(currentTotalAssets: TotalAssets, product: Product, quantity: number) {
     if (quantity > currentTotalAssets.battery) {
       throw new GameLogicViolated("Not enough battery");
     }
-    const consumedAmountOfIngredients = 3 * quantity;
-    if ((currentTotalAssets.ingredientStock.get("iron") ?? 0) < consumedAmountOfIngredients) {
-      throw new GameLogicViolated("Not enough ingredients");
+    for (const [ingredientName, amount] of product.ingredients) {
+      if ((currentTotalAssets.ingredientStock.get(ingredientName) ?? 0) < amount * quantity) {
+        throw new GameLogicViolated("Not enough ingredients");
+      }
     }
     const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
-    for (const [ingredientName, amount] of currentTotalAssets.ingredientStock) {
-      newIngredientStock.set(ingredientName, amount - consumedAmountOfIngredients);
+    for (const [ingredientName, amount] of product.ingredients) {
+      newIngredientStock.set(
+        ingredientName,
+        (newIngredientStock.get(ingredientName) || 0) - amount * quantity,
+      );
     }
     return {
       newTotalAssets: new TotalAssets(
@@ -88,9 +103,9 @@ export class TotalAssetsUpdateService {
     };
   }
 
-  static sellProducts(currentTotalAssets: TotalAssets, productStock: Map<string, number>) {
+  static sellProducts(currentTotalAssets: TotalAssets, productStock: Map<Product, number>) {
     const revenue = Array.from(productStock.entries()).reduce(
-      (total, [productName, quantity]) => total + quantity * 400,
+      (total, [product, quantity]) => total + quantity * product.price,
       0,
     );
     return new TotalAssets(

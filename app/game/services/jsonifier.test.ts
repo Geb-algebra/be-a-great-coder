@@ -1,23 +1,46 @@
-import { TotalAssets, Laboratory } from "../models/game";
+import { TotalAssets, Laboratory, type IngredientName } from "../models/game";
 import { TotalAssetsJsonifier, LaboratoryJsonifier } from "./jsonifier";
 
 describe("TotalAssetsJsonifier", () => {
-  const initialTotalAssets = new TotalAssets(1000, 10, new Map([["iron", 5]]));
+  const initialTotalAssets = new TotalAssets(
+    1000,
+    10,
+    new Map([
+      ["Iron", 5],
+      ["Copper", 3],
+      ["Silver", 0],
+      ["Gold", 0],
+      ["Platinum", 0],
+      ["Diamond", 1],
+    ] as [IngredientName, number][]),
+  );
 
   it("should convert to json", () => {
     const json = TotalAssetsJsonifier.toJson(initialTotalAssets);
-    expect(json).toEqual({
-      cash: 1000,
-      battery: 10,
-      ingredientStock: [["iron", 5]],
-    });
+    expect(json.cash).toBe(1000);
+    expect(json.battery).toBe(10);
+    expect(json.ingredientStock).toEqual([
+      ["Iron", 5],
+      ["Copper", 3],
+      ["Silver", 0],
+      ["Gold", 0],
+      ["Platinum", 0],
+      ["Diamond", 1],
+    ]);
   });
 
   it("should convert from json", () => {
     const json = {
       cash: 1000,
       battery: 10,
-      ingredientStock: [["iron", 5]] as [string, number][],
+      ingredientStock: [
+        ["Iron", 5],
+        ["Copper", 3],
+        ["Silver", 0],
+        ["Gold", 0],
+        ["Platinum", 0],
+        ["Diamond", 1],
+      ] as [IngredientName, number][],
     };
     const totalAssets = TotalAssetsJsonifier.fromJson(json);
     expect(totalAssets).toEqual(initialTotalAssets);
