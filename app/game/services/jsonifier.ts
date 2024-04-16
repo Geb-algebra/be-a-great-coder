@@ -1,9 +1,9 @@
 import {
+  INGREDIENTS,
   Laboratory,
   type Problem,
-  TotalAssets,
   type Research,
-  INGREDIENTS,
+  TotalAssets,
   isIngredientName,
 } from "../models/game";
 

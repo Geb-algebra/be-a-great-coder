@@ -1,4 +1,4 @@
-import { redirect, type ActionFunctionArgs } from "@remix-run/node";
+import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { ObjectNotFoundError } from "~/errors";
 import { LaboratoryRepository } from "~/game/lifecycle/game.server";
 import { authenticator } from "~/services/auth.server";

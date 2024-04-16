@@ -1,16 +1,16 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, Form, useLoaderData } from "@remix-run/react";
-import { authenticator } from "~/services/auth.server.ts";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { ObjectNotFoundError } from "~/errors.ts";
 import {
   LaboratoryRepository,
   TotalAssetsRepository,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
+import { calcRobotGrowthRate } from "~/game/services/config";
 import { TotalAssetsUpdateService, getNextTurn } from "~/game/services/game.server.ts";
 import { ResearchJsonifier } from "~/game/services/jsonifier";
-import { calcRobotGrowthRate } from "~/game/services/config";
+import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });

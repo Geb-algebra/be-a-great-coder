@@ -13,8 +13,7 @@ export default function Input(props: {
     <div className="w-full">
       <label htmlFor={props.name}>{props.label}</label>
       <input
-        className={"w-full border px-2 py-1 h-10 rounded-lg " + (props.className ?? "")}
-        autoFocus={props.autofocus ?? false}
+        className={`w-full border px-2 py-1 h-10 rounded-lg ${props.className ?? ""}`}
         name={props.name}
         id={props.id}
         type={props.type}

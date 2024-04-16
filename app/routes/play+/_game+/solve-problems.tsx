@@ -1,12 +1,12 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, Form, useLoaderData } from "@remix-run/react";
-import { authenticator } from "~/services/auth.server.ts";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { getProblemSolvedTime } from "~/atcoder-info/services/atcoder.server";
 import { ObjectNotFoundError } from "~/errors.ts";
 import { LaboratoryRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
 import { ResearchJsonifier } from "~/game/services/jsonifier";
-import { getProblemSolvedTime } from "~/atcoder-info/services/atcoder.server";
+import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
@@ -69,7 +69,9 @@ export default function Page() {
         <div className="flex">
           <p>{currentResearch.problem.title}</p>
           <a
-            href={`https://atcoder.jp/contests/${currentResearch.problem.id.split("_")[0]}/tasks/${currentResearch.problem.id}`}
+            href={`https://atcoder.jp/contests/${currentResearch.problem.id.split("_")[0]}/tasks/${
+              currentResearch.problem.id
+            }`}
           >
             Go to Problem Page!
           </a>

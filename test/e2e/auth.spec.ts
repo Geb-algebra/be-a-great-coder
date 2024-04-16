@@ -1,6 +1,6 @@
-import { test, expect } from "./fixtures.ts";
-import { username } from "./consts.ts";
 import { ignoreQueryRegExp } from "test/utils.ts";
+import { username } from "./consts.ts";
+import { expect, test } from "./fixtures.ts";
 
 test.describe("signup", () => {
   test("signup with existing username", async ({ pageWithUser }) => {

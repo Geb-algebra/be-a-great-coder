@@ -1,4 +1,4 @@
-import type { TotalAssets, LaboratoryValue } from "~/game/models/game";
+import type { LaboratoryValue, TotalAssets } from "~/game/models/game";
 
 export default function GameStatusDashboard(props: {
   totalAssets: TotalAssets;

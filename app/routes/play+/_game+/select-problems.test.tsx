@@ -1,14 +1,14 @@
-import Page, { action, loader } from "./select-problems.tsx";
-import { loader as routerLoader } from "./router.tsx";
-import solvePage, { loader as solveLoader } from "./solve-problems.tsx";
-import { render, screen } from "@testing-library/react";
 import { createRemixStub } from "@remix-run/testing";
-import { authenticated, setupAccount } from "~/routes/test/utils.ts";
-import { setInitialStatus, setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.ts";
-import { TurnRepository } from "~/game/lifecycle/game.server.ts";
-import type { Account } from "~/accounts/models/account.ts";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { Account } from "~/accounts/models/account.ts";
+import { TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { TURNS } from "~/game/models/game.ts";
+import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data.ts";
+import { authenticated, setupAccount } from "~/routes/test/utils.ts";
+import { loader as routerLoader } from "./router.tsx";
+import Page, { action, loader } from "./select-problems.tsx";
+import solvePage, { loader as solveLoader } from "./solve-problems.tsx";
 
 const RemixStub = createRemixStub([
   {

@@ -1,10 +1,10 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs, json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { authenticator } from "~/services/auth.server.ts";
 import GameStatusDashboard from "~/components/GameStatusDashboard";
-import { TotalAssetsJsonifier } from "~/game/services/jsonifier";
-import { getOrInitializeTotalAssets, getOrInitializeTurn } from "~/game/services/game.server";
 import { LaboratoryRepository } from "~/game/lifecycle/game.server";
+import { getOrInitializeTotalAssets, getOrInitializeTurn } from "~/game/services/game.server";
+import { TotalAssetsJsonifier } from "~/game/services/jsonifier";
+import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, {

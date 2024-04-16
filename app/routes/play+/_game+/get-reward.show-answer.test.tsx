@@ -1,13 +1,13 @@
+import invariant from "tiny-invariant";
+import type { Account } from "~/accounts/models/account";
+import { prisma } from "~/db.server";
 import {
   LaboratoryRepository,
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server";
-import { action } from "./get-reward.show-answer";
-import type { Account } from "~/accounts/models/account";
 import { addAuthenticationSessionTo, setupAccount } from "~/routes/test/utils";
-import invariant from "tiny-invariant";
-import { prisma } from "~/db.server";
+import { action } from "./get-reward.show-answer";
 
 describe("action", () => {
   let account: Account;

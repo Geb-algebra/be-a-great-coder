@@ -4,15 +4,15 @@ import { json } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import AuthFormInput from "~/components/AuthFormInput.tsx";
 
-import { authenticator, webAuthnStrategy } from "~/services/auth.server.ts";
-import { sessionStorage } from "~/services/session.server.ts";
-import AuthContainer from "~/components/AuthContainer.tsx";
+import { createId } from "@paralleldrive/cuid2";
+import { handleFormSubmit } from "remix-auth-webauthn/browser";
 import AuthButton from "~/components/AuthButton.tsx";
+import AuthContainer from "~/components/AuthContainer.tsx";
 import AuthErrorMessage from "~/components/AuthErrorMessage.tsx";
 import GoogleAuthButton from "~/components/GoogleAuthButton.tsx";
 import PasskeyHero from "~/components/PasskeyHero.tsx";
-import { handleFormSubmit } from "remix-auth-webauthn/browser";
-import { createId } from "@paralleldrive/cuid2";
+import { authenticator, webAuthnStrategy } from "~/services/auth.server.ts";
+import { sessionStorage } from "~/services/session.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, { successRedirect: "/play" });
@@ -32,9 +32,8 @@ export async function action({ request }: ActionFunctionArgs) {
     console.error(error);
     if (error instanceof Error) {
       return json({ errorMessage: error.message }, { status: 400 });
-    } else {
-      return json({ errorMessage: "unknown error" }, { status: 500 });
     }
+    return json({ errorMessage: "unknown error" }, { status: 500 });
   }
 }
 

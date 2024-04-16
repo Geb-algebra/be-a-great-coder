@@ -1,6 +1,6 @@
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { AccountFactory, AccountRepository } from "~/accounts/lifecycle/account.server";
 import { getSession, sessionStorage } from "~/services/session.server";
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 
 /**
  * Sets up an account and add a session to the request.
@@ -24,9 +24,9 @@ export async function addAuthenticationSessionTo(request: Request) {
 }
 
 export function authenticated(dataFunction: LoaderFunction | ActionFunction) {
-  return async function (
+  return async (
     args: Parameters<typeof dataFunction>[0],
-  ): Promise<Awaited<ReturnType<typeof dataFunction>>> {
+  ): Promise<Awaited<ReturnType<typeof dataFunction>>> => {
     await addAuthenticationSessionTo(args.request);
     return dataFunction(args);
   };

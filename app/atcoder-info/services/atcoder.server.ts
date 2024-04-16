@@ -30,7 +30,7 @@ export async function getProblemSolvedTime(
   const newSubmissions = await fetchNewSubmissions(startEpochSeconds, atCoderUsername);
   // newSubmissions is sorted by epoch_second in ascending order.
   const earliestSubmission = newSubmissions.find(
-    (submission: any) => submission.problem_id === problemId,
+    (submission) => submission.problem_id === problemId,
   );
   return earliestSubmission ? new Date(earliestSubmission.epoch_second * 1000) : null;
 }

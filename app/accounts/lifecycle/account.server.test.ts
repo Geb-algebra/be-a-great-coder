@@ -1,7 +1,7 @@
+import invariant from "tiny-invariant";
+import { prisma } from "~/db.server.ts";
 import { isUsernameAvailable } from "~/services/auth.server.ts";
 import { AccountFactory, AccountRepository } from "./account.server.ts";
-import { prisma } from "~/db.server.ts";
-import invariant from "tiny-invariant";
 
 describe("UserRepository", () => {
   describe("isNameAvaliable", () => {

@@ -1,8 +1,8 @@
 import { prisma } from "~/db.server.ts";
 
 import {
-  PROBLEM_UPDATE_INTERVAL,
   ENDPOINT,
+  PROBLEM_UPDATE_INTERVAL,
   insertNewProblems,
 } from "~/atcoder-info/models/problem.server.ts";
 import { createFetchLog } from "./fetcher.server.ts";

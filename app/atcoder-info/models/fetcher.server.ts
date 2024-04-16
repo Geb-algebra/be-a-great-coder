@@ -50,7 +50,6 @@ export const fetchIfAllowed = async (
     const res = await fetch(endpoint, { headers: [["ACCEPT-ENCODING", "gzip"]] });
     await createFetchLog(endpoint, res.status);
     return res;
-  } else {
-    return;
   }
+  return;
 };

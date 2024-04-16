@@ -1,18 +1,18 @@
 import { createRemixStub } from "@remix-run/testing";
 import { render, screen } from "@testing-library/react";
-import Page, { loader } from "./_layout";
-import { TurnRepository } from "~/game/lifecycle/game.server";
-import { authenticated, setupAccount } from "../../test/utils.ts";
 import type { Account } from "~/accounts/models/account";
+import { TurnRepository } from "~/game/lifecycle/game.server";
+import { INGREDIENT_NAMES } from "~/game/models/game.ts";
 import {
+  beginnersStatus,
+  initialStatus,
   setBeginnersStatus,
   setInitialStatus,
   setVeteransStatus,
-  initialStatus,
-  beginnersStatus,
   veteransStatus,
 } from "~/routes/test/data.ts";
-import { INGREDIENT_NAMES } from "~/game/models/game.ts";
+import { authenticated, setupAccount } from "../../test/utils.ts";
+import Page, { loader } from "./_layout";
 
 describe("Page", () => {
   let account: Account;
