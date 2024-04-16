@@ -32,9 +32,8 @@ export async function action({ request }: ActionFunctionArgs) {
     console.error(error);
     if (error instanceof Error) {
       return json({ errorMessage: error.message }, { status: 400 });
-    } else {
-      return json({ errorMessage: "unknown error" }, { status: 500 });
     }
+    return json({ errorMessage: "unknown error" }, { status: 500 });
   }
 }
 

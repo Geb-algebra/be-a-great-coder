@@ -40,7 +40,7 @@ export default function Index() {
         <Link to="/play">
           <h1 className="text-2xl font-bold mx-6">Be A Great Coder</h1>
         </Link>
-        <button className="px-6 h-full" onClick={() => setIsMenuOpen(true)}>
+        <button type="button" className="px-6 h-full" onClick={() => setIsMenuOpen(true)}>
           <h2>{user.name}</h2>
         </button>
       </nav>

@@ -46,10 +46,10 @@ function Passkey(props: { authenticator: SerializeFrom<Authenticator> }) {
             : "Unknown"}
         </p>
       </div>
-      <button onClick={() => setIsPasskeyEditing(true)}>
+      <button type="button" onClick={() => setIsPasskeyEditing(true)}>
         <Icon name="edit" />
       </button>
-      <button onClick={() => setIsPasskeyDeleting(true)}>
+      <button type="button" onClick={() => setIsPasskeyDeleting(true)}>
         <Icon name="delete" />
       </button>
       <Overlay isShown={isPasskeyEditing} setIsShown={setIsPasskeyEditing}>

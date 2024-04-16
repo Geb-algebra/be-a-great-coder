@@ -24,9 +24,9 @@ export async function addAuthenticationSessionTo(request: Request) {
 }
 
 export function authenticated(dataFunction: LoaderFunction | ActionFunction) {
-  return async function (
+  return async (
     args: Parameters<typeof dataFunction>[0],
-  ): Promise<Awaited<ReturnType<typeof dataFunction>>> {
+  ): Promise<Awaited<ReturnType<typeof dataFunction>>> => {
     await addAuthenticationSessionTo(args.request);
     return dataFunction(args);
   };

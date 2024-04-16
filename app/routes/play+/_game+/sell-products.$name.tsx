@@ -12,7 +12,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   try {
     const productName = params.name;
     const product = PRODUCTS.find((product) => product.name === productName);
-    if (!product) throw new ValueError("Invalid item name: " + productName);
+    if (!product) throw new ValueError(`Invalid item name: ${productName}`);
     const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const { newTotalAssets, quantity } = TotalAssetsUpdateService.manufactureProducts(
       totalAssets,

@@ -6,7 +6,7 @@ import {
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import { Problem } from "~/game/models/game";
+import type { Problem } from "~/game/models/game";
 import { getNextTurn, getProblemsMatchUserRank } from "~/game/services/game.server.ts";
 import { authenticator } from "~/services/auth.server.ts";
 import { getRequiredStringFromFormData } from "~/utils/utils";
@@ -54,7 +54,7 @@ export const meta: MetaFunction = () => {
   return [{ title: "" }];
 };
 
-function Problem(props: { problem: Problem }) {
+function ProblemCard(props: { problem: Problem }) {
   return (
     <div>
       <p>{props.problem.title}</p>
@@ -73,7 +73,7 @@ export default function Page() {
         <p>{actionData?.error.message}</p>
         {problems.map((problem) => (
           <button key={problem.id} type="submit" name="problemId" value={problem.id}>
-            <Problem key={problem.id} problem={problem} />
+            <ProblemCard key={problem.id} problem={problem} />
           </button>
         ))}
       </Form>

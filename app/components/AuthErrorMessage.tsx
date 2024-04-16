@@ -5,7 +5,6 @@ export default function AuthErrorMessage(props: { message?: string }) {
         <p className="text-red-500 h-6">{props.message}</p>
       </div>
     );
-  } else {
-    return null;
   }
+  return null;
 }

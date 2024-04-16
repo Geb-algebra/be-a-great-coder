@@ -1,4 +1,4 @@
-import { createServer } from "http";
+import { createServer } from "node:http";
 
 import { createRequestHandler } from "@remix-run/express";
 import { installGlobals } from "@remix-run/node";

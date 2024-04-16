@@ -12,7 +12,7 @@ import { getAuthenticatorById } from "~/accounts/lifecycle/authenticator.server.
 import { IntegrityError, ObjectNotFoundError, ValueError } from "~/errors.ts";
 import { getSession, sessionStorage } from "~/services/session.server.ts";
 
-export let authenticator = new Authenticator<User>(sessionStorage);
+export const authenticator = new Authenticator<User>(sessionStorage);
 
 export async function isUsernameAvailable(username: string) {
   const user = await UserRepository.getByName(username);
@@ -22,8 +22,9 @@ export async function isUsernameAvailable(username: string) {
 // we reuse them to add new passkeys to authenticated users
 export const WEBAUTHN_RP_NAME = "Be a great coder";
 // http://localhost:3000 -> localhost, https://8bitstack.com -> 8bitstack.com
-export const WEBAUTHN_RP_ID = process.env.APP_URL!.split("://")[1].split(":")[0];
-export const WEBAUTHN_ORIGIN = process.env.APP_URL!;
+invariant(process.env.APP_URL, "environment variable APP_URL is required");
+export const WEBAUTHN_RP_ID = process.env.APP_URL.split("://")[1].split(":")[0];
+export const WEBAUTHN_ORIGIN = process.env.APP_URL;
 
 export const webAuthnStrategy = new WebAuthnStrategy<User>(
   {
@@ -46,7 +47,10 @@ export const webAuthnStrategy = new WebAuthnStrategy<User>(
     },
     // Transform the user object into the shape expected by the strategy.
     // You can use a regular username, the users email address, or something else.
-    getUserDetails: (user) => ({ id: user!.id, username: user!.name }),
+    getUserDetails: (user) => {
+      invariant(user, "User is required.");
+      return { id: user.id, username: user.name };
+    },
     getUserByUsername: (username) => UserRepository.getByName(username),
     getAuthenticatorById: async (id) => {
       const authenticator = await getAuthenticatorById(id);
@@ -70,24 +74,33 @@ export const webAuthnStrategy = new WebAuthnStrategy<User>(
       });
       await AccountRepository.save({ authenticators, ...user });
       return user;
-    } else if (type === "authentication") {
+    }
+    if (type === "authentication") {
       if (!savedAuthenticator) throw new ObjectNotFoundError("Authenticator not found");
       const account = await AccountRepository.getById(savedAuthenticator.userId);
       if (!account) throw new ObjectNotFoundError("Account not found");
       const { authenticators, ...user } = account;
       return user;
-    } else {
-      throw new ValueError("Invalid verification type");
     }
+    throw new ValueError("Invalid verification type");
   },
 );
 
 authenticator.use(webAuthnStrategy, "webauthn");
 
-let googleStrategy = new GoogleStrategy(
+invariant(
+  process.env.GOOGLE_AUTH_CLIENT_ID,
+  "environment variable GOOGLE_AUTH_CLIENT_ID is required",
+);
+invariant(
+  process.env.GOOGLE_AUTH_CLIENT_SECRET,
+  "environment variable GOOGLE_AUTH_CLIENT_SECRET is required",
+);
+
+const googleStrategy = new GoogleStrategy(
   {
-    clientID: process.env.GOOGLE_AUTH_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET!,
+    clientID: process.env.GOOGLE_AUTH_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET,
     callbackURL: `${process.env.APP_URL}/google/callback`,
   },
   async ({ accessToken, refreshToken, extraParams, profile }) => {
@@ -96,15 +109,14 @@ let googleStrategy = new GoogleStrategy(
     if (account) {
       const { authenticators, ...user } = account;
       return user;
-    } else {
-      const newAccount = await AccountFactory.create({
-        name: profile.displayName,
-        googleProfileId: profile.id,
-      });
-      await AccountRepository.save(newAccount);
-      const { authenticators, ...user } = newAccount;
-      return user;
     }
+    const newAccount = await AccountFactory.create({
+      name: profile.displayName,
+      googleProfileId: profile.id,
+    });
+    await AccountRepository.save(newAccount);
+    const { authenticators, ...user } = newAccount;
+    return user;
   },
 );
 
@@ -146,7 +158,6 @@ export async function verifyNewAuthenticator(
       throw new IntegrityError("Authenticator has already been registered.");
     }
     return newAuthenticator;
-  } else {
-    throw new ValueError("Passkey verification failed.");
   }
+  throw new ValueError("Passkey verification failed.");
 }

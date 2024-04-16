@@ -28,7 +28,7 @@
     "rules": {
       "recommended": true,
       "style": { "useBlockStatements": "off" },
-      "complexity": {"noStaticOnlyClass": "off"}
+      "complexity": { "noStaticOnlyClass": "off" }
     },
     "ignore": [
       "**/.vscode/",

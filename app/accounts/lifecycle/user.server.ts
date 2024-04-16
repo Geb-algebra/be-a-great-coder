@@ -1,5 +1,5 @@
 import { prisma } from "~/db.server.ts";
-import { type User } from "../models/account.ts";
+import type { User } from "../models/account.ts";
 
 export class UserRepository {
   static async getById(id: User["id"]) {
