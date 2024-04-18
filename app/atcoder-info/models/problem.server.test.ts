@@ -1,11 +1,6 @@
 import { prisma } from "~/db.server.ts";
 
-import {
-  ENDPOINT,
-  PROBLEM_UPDATE_INTERVAL,
-  insertNewProblems,
-} from "~/atcoder-info/models/problem.server.ts";
-import { createFetchLog } from "./fetcher.server.ts";
+import { insertNewProblems } from "~/atcoder-info/models/problem.server.ts";
 
 describe("updateProblems", () => {
   const PROBLEMS = [
@@ -54,8 +49,6 @@ describe("updateProblems", () => {
     await prisma.problem.create({ data: { id: "xxxyyy", title: "old problem", difficulty: 200 } });
   });
   it("should add all new problems without deleting any record", async () => {
-    const lastFetchedTime = new Date(Date.now() - PROBLEM_UPDATE_INTERVAL * 1.1);
-    await createFetchLog(ENDPOINT, 200, lastFetchedTime);
     const oldProbs = await prisma.problem.findMany();
     expect(oldProbs).toHaveLength(1);
     expect(oldProbs[0].title).toEqual("old problem");
@@ -67,8 +60,6 @@ describe("updateProblems", () => {
     expect(newProbs[2].title).toEqual("B. Golden Coins");
   });
   it("should not overwrite existing problems", async () => {
-    const lastFetchedTime = new Date(Date.now() - PROBLEM_UPDATE_INTERVAL * 1.1);
-    await createFetchLog(ENDPOINT, 200, lastFetchedTime);
     for (const data of PROBLEMS) {
       await prisma.problem.create({
         data: {

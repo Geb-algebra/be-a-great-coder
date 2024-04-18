@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const solvedTime = await getProblemSolvedTime(
       currentResearch.problem.id,
       user.name,
-      currentResearch.createdAt.getTime() / 1000,
+      Math.ceil(currentResearch.createdAt.getTime() / 1000),
     );
     if (solvedTime) {
       currentResearch.solvedAt = solvedTime;
