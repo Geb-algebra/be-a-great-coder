@@ -23,11 +23,10 @@ CREATE TABLE "Authenticator" (
 );
 
 -- CreateTable
-CREATE TABLE "AtCoderAPIFetchLog" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "endpoint" TEXT NOT NULL,
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "status" INTEGER NOT NULL
+CREATE TABLE "AtCoderAPIETag" (
+    "endpoint" TEXT NOT NULL PRIMARY KEY,
+    "hash" TEXT NOT NULL,
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable

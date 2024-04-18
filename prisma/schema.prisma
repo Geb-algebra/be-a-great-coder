@@ -45,11 +45,10 @@ model Authenticator {
     updatedAt            DateTime @updatedAt
 }
 
-model AtCoderAPIFetchLog {
-    id        String   @id @default(cuid())
-    endpoint  String
-    timestamp DateTime @default(now())
-    status    Int
+model AtCoderAPIETag {
+    endpoint  String   @id
+    hash      String
+    updatedAt DateTime @updatedAt
 }
 
 model Problem {

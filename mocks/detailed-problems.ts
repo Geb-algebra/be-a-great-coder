@@ -1,8 +1,14 @@
 import { http } from "msw";
 
+export const mockedETag = "a5317ade45e2d5a37fcebb2f5d3f7186";
+
 export const detailedProblemsMock = http.get(
   "https://kenkoooo.com/atcoder/resources/merged-problems.json",
-  () => {
+  ({ request }) => {
+    const etag = request.headers.get("IF-NONE-MATCH");
+    if (etag === mockedETag) {
+      return new Response(null, { status: 304, headers: { ETag: mockedETag } });
+    }
     return new Response(
       JSON.stringify([
         {
@@ -2706,6 +2712,7 @@ export const detailedProblemsMock = http.get(
           solver_count: 670,
         },
       ]),
+      { status: 200, headers: { ETag: mockedETag } },
     );
   },
 );

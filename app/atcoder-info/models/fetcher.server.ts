@@ -1,38 +1,6 @@
-import type { AtCoderAPIFetchLog } from "@prisma/client";
+import type { AtCoderAPIETag } from "@prisma/client";
 
 import { prisma } from "~/db.server.ts";
-
-export type { AtCoderAPIFetchLog } from "@prisma/client";
-
-export const createFetchLog = async (
-  endpoint: string,
-  status = 200,
-  timestamp?: Date, // for test data creation
-): Promise<AtCoderAPIFetchLog> => {
-  const record = await prisma.atCoderAPIFetchLog.create({
-    data: { endpoint, status, timestamp },
-  });
-  return record;
-};
-
-export const getLatestFetchLog = async (
-  endpoint: string,
-  status = 200,
-): Promise<AtCoderAPIFetchLog> => {
-  const record = await prisma.atCoderAPIFetchLog.findMany({
-    where: {
-      AND: {
-        endpoint,
-        status,
-      },
-    },
-    orderBy: {
-      timestamp: "desc",
-    },
-    take: 1,
-  });
-  return record[0];
-};
 
 /**
  * fetch from the specified endpoint if the specified interval has passed since the last fetch
@@ -40,16 +8,23 @@ export const getLatestFetchLog = async (
  * @param interval: number - he required fetching interval in milliseconds
  * @returns Response | undefined: the response from the endpoint, or undefined if the interval has not passed
  */
-export const fetchIfAllowed = async (
-  endpoint: string,
-  interval: number,
-): Promise<Response | undefined> => {
-  const latestFetchLog = await getLatestFetchLog(endpoint);
-  const lastFetchTime = latestFetchLog ? latestFetchLog.timestamp.getTime() : 0;
-  if (Date.now() - lastFetchTime > interval) {
-    const res = await fetch(endpoint, { headers: [["ACCEPT-ENCODING", "gzip"]] });
-    await createFetchLog(endpoint, res.status);
-    return res;
+export const fetchFromAtcoderAPI = async (endpoint: string): Promise<Response | undefined> => {
+  const etag = await prisma.atCoderAPIETag.findUnique({ where: { endpoint } });
+  const res = await fetch(endpoint, {
+    headers: [
+      ["ACCEPT-ENCODING", "gzip"],
+      ["IF-NONE-MATCH", etag?.hash ?? ""],
+    ],
+  });
+  const status = res.status;
+  const hash = res.headers.get("ETAG");
+  console.log(`fetched from ${endpoint}, status: ${status}, hash: ${hash}`);
+  if (hash !== null) {
+    await prisma.atCoderAPIETag.upsert({
+      where: { endpoint },
+      update: { hash },
+      create: { endpoint, hash },
+    });
   }
-  return;
+  return res;
 };

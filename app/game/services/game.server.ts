@@ -1,6 +1,6 @@
 import type { User } from "~/accounts/models/account.ts";
 import {
-  insertNewProblemsIfAllowed,
+  insertNewProblemsIfNeeded,
   queryRandomProblemByDifficulty,
 } from "~/atcoder-info/models/problem.server.ts";
 import { GameLogicViolated, ObjectNotFoundError } from "~/errors.ts";
@@ -131,7 +131,7 @@ export function getDifficultiesMatchUserRank(rank: number) {
 
 export async function getProblemsMatchUserRank(rank: number) {
   const difficulties = getDifficultiesMatchUserRank(rank);
-  await insertNewProblemsIfAllowed();
+  await insertNewProblemsIfNeeded();
   return Promise.all(
     difficulties.map(async (difficulty) => {
       return await queryRandomProblemByDifficulty(difficulty, difficulty + 100, true);
