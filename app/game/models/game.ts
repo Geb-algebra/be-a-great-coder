@@ -16,7 +16,6 @@ export const INGREDIENT_NAMES = [
   "Diamond",
 ] as const;
 export type IngredientName = (typeof INGREDIENT_NAMES)[number];
-
 export function isIngredientName(name: string): name is IngredientName {
   return INGREDIENT_NAMES.includes(name as IngredientName);
 }
@@ -26,55 +25,18 @@ export type Ingredient = {
   price: number;
 };
 
-export const INGREDIENTS: Ingredient[] = [
-  { name: "Iron", price: 100 },
-  { name: "Copper", price: 200 },
-  { name: "Silver", price: 300 },
-  { name: "Gold", price: 400 },
-  { name: "Platinum", price: 500 },
-  { name: "Diamond", price: 600 },
-];
-
 export const PRODUCT_NAMES = ["Sword", "Shield", "Ring", "Necklace"] as const;
 export type ProductName = (typeof PRODUCT_NAMES)[number];
-
 export function isProductName(name: string): name is ProductName {
   return PRODUCT_NAMES.includes(name as ProductName);
 }
 
 export type Product = {
   name: string;
-  price: number;
+  priceAverage: number;
+  priceStd: number;
   ingredients: Map<IngredientName, number>;
 };
-
-export const PRODUCTS: Product[] = [
-  { name: "Sword", price: 1000, ingredients: new Map([["Iron", 3]]) },
-  {
-    name: "Shield",
-    price: 2000,
-    ingredients: new Map([
-      ["Iron", 2],
-      ["Copper", 1],
-    ]),
-  },
-  {
-    name: "Ring",
-    price: 3000,
-    ingredients: new Map([
-      ["Gold", 1],
-      ["Platinum", 1],
-    ]),
-  },
-  {
-    name: "Necklace",
-    price: 4000,
-    ingredients: new Map([
-      ["Gold", 2],
-      ["Diamond", 1],
-    ]),
-  },
-];
 
 export class TotalAssets {
   readonly cash: number;

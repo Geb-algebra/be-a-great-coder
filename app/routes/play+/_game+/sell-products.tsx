@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useFetcher } from "@remix-run/react";
 import { GameLogicViolated } from "~/errors.ts";
 import { TurnRepository } from "~/game/lifecycle/game.server.ts";
-import { PRODUCTS } from "~/game/models/game.ts";
+import { PRODUCTS } from "~/game/services/config.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
 import { authenticator } from "~/services/auth.server.ts";
 import type { action as makeItemsAction } from "./sell-products.$name.tsx";
@@ -39,7 +39,7 @@ export default function Page() {
   return (
     <div>
       <h1 className="font-bold text-2xl">Make and sell products</h1>
-      <p>{actionData?.error.message ?? fetcher.data?.error.message ?? ""}</p>
+      <p>{actionData?.error.message ?? fetcher.data?.error?.message ?? ""}</p>
       <ul>
         {PRODUCTS.map((product) => (
           <li aria-labelledby={`product-name-${product.name}`} key={product.name}>

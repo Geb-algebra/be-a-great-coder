@@ -3,7 +3,9 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Account } from "~/accounts/models/account.ts";
 import { TotalAssetsRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
-import { INGREDIENTS, PRODUCTS, PRODUCT_NAMES, TURNS, TotalAssets } from "~/game/models/game.ts";
+import { PRODUCT_NAMES, TURNS, TotalAssets } from "~/game/models/game.ts";
+import { INGREDIENTS, PRODUCTS } from "~/game/services/config.ts";
+import * as Config from "~/game/services/config.ts";
 import { setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.ts";
 import { authenticated, setupAccount } from "~/routes/test/utils.ts";
 import Layout, { loader as layoutLoader } from "./_layout.tsx";
@@ -52,6 +54,7 @@ describe.each([
   });
 
   it.each(PRODUCTS)("sells the item when the button is clicked", async (product) => {
+    const spyon = vi.spyOn(Config, "calcPrice").mockImplementation(() => 1000);
     await statusSetter(account.id);
     render(<RemixStub initialEntries={["/play/sell-products"]} />);
     await screen.findByText(RegExp(`cash: ${cash}`, "i"));
@@ -63,7 +66,8 @@ describe.each([
     const makeSwordButton = await within(item).findByRole("button", { name: /make/i });
     const user = userEvent.setup();
     await user.click(makeSwordButton);
-    await screen.findByText(RegExp(`cash: ${cash + product.price}`, "i"));
+    // expect(spyon).toHaveBeenCalled();
+    await screen.findByText(RegExp(`cash: ${cash + 1000}`, "i"));
     for (const [ingredient, quantity] of product.ingredients) {
       await screen.findByText(RegExp(`${ingredient}: ${initIngredientAmount - quantity}`, "i"));
     }

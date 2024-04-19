@@ -1,6 +1,7 @@
 import { prisma } from "~/db.server.ts";
 import { ObjectNotFoundError } from "~/errors.ts";
-import { INGREDIENTS, TotalAssets } from "../models/game.ts";
+import { TotalAssets } from "../models/game.ts";
+import { INGREDIENTS } from "../services/config.ts";
 import {
   LaboratoryRepository,
   ResearchFactory,

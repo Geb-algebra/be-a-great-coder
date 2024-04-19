@@ -6,8 +6,9 @@ import { createId } from "@paralleldrive/cuid2";
 import invariant from "tiny-invariant";
 import type { User } from "~/accounts/models/account.ts";
 import { ObjectNotFoundError } from "~/errors.ts";
-import { INGREDIENTS, Laboratory, TURNS, TotalAssets, isIngredientName } from "../models/game.ts";
+import { Laboratory, TURNS, TotalAssets, isIngredientName } from "../models/game.ts";
 import type { Problem, Research, Turn } from "../models/game.ts";
+import { INGREDIENTS } from "../services/config.ts";
 
 function getEmptyIngredientStock() {
   return new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0]));

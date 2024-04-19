@@ -5,7 +5,8 @@ import {
   TotalAssetsFactory,
   TotalAssetsRepository,
 } from "~/game/lifecycle/game.server.ts";
-import { INGREDIENTS, TotalAssets } from "~/game/models/game.ts";
+import { TotalAssets } from "~/game/models/game.ts";
+import { INGREDIENTS } from "~/game/services/config.ts";
 
 /**
  * Save the initial status to the database.

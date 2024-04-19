@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useFetcher } from "@remix-run/react";
 import { GameLogicViolated } from "~/errors";
 import { TurnRepository } from "~/game/lifecycle/game.server.ts";
-import { INGREDIENTS } from "~/game/models/game.ts";
+import { INGREDIENTS } from "~/game/services/config.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
 import { authenticator } from "~/services/auth.server.ts";
 import type { action as detailAction } from "./buy-ingredients.$name.tsx";

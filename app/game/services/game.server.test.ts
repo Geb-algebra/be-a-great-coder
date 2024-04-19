@@ -1,5 +1,7 @@
 import { GameLogicViolated } from "~/errors.ts";
-import { INGREDIENTS, PRODUCTS, TotalAssets } from "../models/game.ts";
+import { TotalAssets } from "../models/game.ts";
+import { INGREDIENTS, PRODUCTS } from "../services/config.ts";
+import * as Config from "../services/config.ts";
 import { TotalAssetsUpdateService, getDifficultiesMatchUserRank } from "./game.server.ts";
 
 describe("TotalAssetsUpdateService", () => {
@@ -27,36 +29,27 @@ describe("TotalAssetsUpdateService", () => {
     }).toThrow(GameLogicViolated);
   });
 
-  it.each(PRODUCTS)("should manufacture products", (product) => {
-    const { newTotalAssets, quantity } = TotalAssetsUpdateService.manufactureProducts(
+  it.each(PRODUCTS)("should make and sell products", (product) => {
+    const { newTotalAssets, price } = TotalAssetsUpdateService.makeAndSellProduct(
       initialTotalAssets,
       product,
-      1,
     );
-    expect(newTotalAssets.cash).toEqual(100000);
+    expect(newTotalAssets.cash).toEqual(100000 + price);
     for (const [ingredientName, amount] of product.ingredients) {
       expect(newTotalAssets.ingredientStock.get(ingredientName)).toEqual(10 - amount);
     }
-    expect(quantity).toEqual(1);
     expect(newTotalAssets.battery).toEqual(10 - 1);
   });
 
   it.each(PRODUCTS)("should not manufacture products if not enough ingredients", (product) => {
-    expect(() => {
-      TotalAssetsUpdateService.manufactureProducts(initialTotalAssets, product, 999);
-    }).toThrow(GameLogicViolated);
-  });
-
-  it.each(PRODUCTS)("should sell products", (product) => {
-    const newTotalAssets = TotalAssetsUpdateService.sellProducts(
-      initialTotalAssets,
-      new Map([[product, 1]]),
+    const emptyTotalAssets = new TotalAssets(
+      100000,
+      10,
+      new Map(INGREDIENTS.map((i) => [i.name, 0])),
     );
-    expect(newTotalAssets.cash).toEqual(100000 + product.price);
-    for (const [ingredientName] of product.ingredients) {
-      expect(newTotalAssets.ingredientStock.get(ingredientName)).toEqual(10);
-    }
-    expect(newTotalAssets.battery).toEqual(10);
+    expect(() => {
+      TotalAssetsUpdateService.makeAndSellProduct(emptyTotalAssets, product);
+    }).toThrow(GameLogicViolated);
   });
 
   it("should charge battery", () => {

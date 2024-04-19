@@ -15,6 +15,7 @@ beforeAll(async () => {
 afterEach(async () => {
   await resetDB();
   server.resetHandlers();
+  vi.restoreAllMocks();
   cleanup();
 });
 

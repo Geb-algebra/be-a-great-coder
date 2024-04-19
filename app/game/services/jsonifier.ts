@@ -1,11 +1,11 @@
 import {
-  INGREDIENTS,
   Laboratory,
   type Problem,
   type Research,
   TotalAssets,
   isIngredientName,
 } from "../models/game";
+import { INGREDIENTS } from "./config";
 
 export type TotalAssetsJson = {
   cash: number;
