@@ -247,7 +247,21 @@ test.describe("game cycle", () => {
         difficulty: 100,
       },
     });
-    const research = await ResearchFactory.create(user.id, "abc070_a");
+    // const research = await ResearchFactory.create(user.id, "abc070_a");
+    const research = {
+      id: "abc070_a",
+      problem: { id: "abc070_a", title: "A. Palindromic Number", difficulty: 100 },
+      userId: user.id,
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
+      updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
+      startedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
+      solvedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
+      finishedAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
+      answerShownAt: new Date(),
+      rewardReceivedAt: null,
+      batteryCapacityIncrement: 1,
+      performanceIncrement: 1,
+    };
     research.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
     research.solvedAt = new Date(Date.now() - 1000 * 60 * 60 * 23);
     research.finishedAt = new Date(Date.now() - 1000 * 60 * 60 * 22);

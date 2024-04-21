@@ -186,9 +186,20 @@ describe("action", () => {
         difficulty: 300,
       },
     });
-    const newResearch = await ResearchFactory.create(account.id, problem.id);
-    newResearch.startedAt = new Date();
-    newResearch.finishedAt = new Date();
+    const newResearch = {
+      id: createId(),
+      problem,
+      userId: account.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      startedAt: new Date(),
+      solvedAt: null,
+      finishedAt: new Date(),
+      answerShownAt: null,
+      rewardReceivedAt: null,
+      batteryCapacityIncrement: 3,
+      performanceIncrement: 3,
+    };
     const lab = await LaboratoryRepository.get(account.id);
     lab.researches.push(newResearch);
     await LaboratoryRepository.forceSaveAllForTesting(account.id, lab);

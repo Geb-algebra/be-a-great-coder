@@ -61,5 +61,13 @@ export const PRODUCTS: Product[] = [
 ];
 
 export function calcRobotGrowthRate(difficulty: number) {
-  return Math.round(difficulty / 100);
+  const ave = difficulty / 100;
+  const std = 1;
+  const mu = Math.log(ave) - std ** 2 / 2;
+  const r1 = Math.random();
+  const r2 = Math.random();
+  const lognormalRand = Math.exp(
+    mu + std * Math.sqrt(-2 * Math.log(r1)) * Math.cos(2 * Math.PI * r2),
+  );
+  return Math.round(lognormalRand);
 }
