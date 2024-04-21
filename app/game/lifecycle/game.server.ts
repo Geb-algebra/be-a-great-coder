@@ -5,9 +5,10 @@ import { prisma } from "~/db.server.ts";
 import { createId } from "@paralleldrive/cuid2";
 import invariant from "tiny-invariant";
 import type { User } from "~/accounts/models/account.ts";
-import { ObjectNotFoundError } from "~/errors.ts";
-import { INGREDIENTS, Laboratory, TURNS, TotalAssets, isIngredientName } from "../models/game.ts";
+import { GameLogicViolated, ObjectNotFoundError } from "~/errors.ts";
+import { Laboratory, TURNS, TotalAssets, isIngredientName } from "../models/game.ts";
 import type { Problem, Research, Turn } from "../models/game.ts";
+import { INGREDIENTS, calcRobotGrowthRate } from "../services/config.ts";
 
 function getEmptyIngredientStock() {
   return new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0]));
@@ -84,12 +85,13 @@ export class ResearchFactory {
       userId,
       createdAt: new Date(),
       updatedAt: new Date(),
+      startedAt: null,
       solvedAt: null,
       finishedAt: null,
       answerShownAt: null,
       rewardReceivedAt: null,
-      batteryCapacityIncrement: null,
-      performanceIncrement: null,
+      batteryCapacityIncrement: calcRobotGrowthRate(existingProblem.difficulty),
+      performanceIncrement: calcRobotGrowthRate(existingProblem.difficulty),
     };
   }
 }
@@ -104,52 +106,94 @@ export class LaboratoryRepository {
     return new Laboratory(researches);
   }
 
-  static async addResearch(userId: User["id"], research: Research) {
-    await prisma.research.create({
-      data: {
-        id: research.id,
-        problem: { connect: { id: research.problem.id } },
-        user: { connect: { id: userId } },
-        createdAt: research.createdAt,
-        solvedAt: research.solvedAt,
-        finishedAt: research.finishedAt,
-        answerShownAt: research.answerShownAt,
-        rewardReceivedAt: research.rewardReceivedAt,
-        batteryCapacityIncrement: research.batteryCapacityIncrement,
-        performanceIncrement: research.performanceIncrement,
-      },
+  /**
+   * Save all unrewarded research inserts and updates in laboratory
+   *
+   * this method has some restrictions to avoid updates of rewarded researches and reduce queries
+   * specifically, it
+   * - inserts new (included in the given laboratory but the not in the DB) unrewarded researches
+   * - updates existing unrewarded researches (included both in the given laboratory and the DB)
+   * - deletes unstarted researches that are not included in the given laboratory but in the DB
+   *
+   * in other words, it does NOT
+   * - update rewarded researches (rewardReceivedAt is not null in database)
+   * - insert rewarded researches (rewardReceivedAt is not null in laboratory)
+   * - delete started researches
+   */
+  static async save(userId: User["id"], laboratory: Laboratory) {
+    await prisma.$transaction(async (prisma) => {
+      const savedUnrewardedResearches = await prisma.research.findMany({
+        where: { userId, rewardReceivedAt: null },
+      });
+      const savedUnrewardedResearchesMap = new Map(
+        savedUnrewardedResearches.map((research) => [research.id, research]),
+      );
+      for (const research of laboratory.researches) {
+        const savedResearch = savedUnrewardedResearchesMap.get(research.id);
+
+        if (savedResearch) {
+          await prisma.research.update({
+            where: { id: research.id },
+            data: {
+              startedAt: research.startedAt,
+              solvedAt: research.solvedAt,
+              finishedAt: research.finishedAt,
+              answerShownAt: research.answerShownAt,
+              rewardReceivedAt: research.rewardReceivedAt,
+            },
+          });
+        } else {
+          if (research.rewardReceivedAt !== null) {
+            continue; // regard as a research that has alread been saved in DB and rewarded
+          }
+          await prisma.research.create({
+            data: {
+              id: research.id,
+              problem: { connect: { id: research.problem.id } },
+              user: { connect: { id: userId } },
+              createdAt: research.createdAt,
+              startedAt: research.startedAt,
+              solvedAt: research.solvedAt,
+              finishedAt: research.finishedAt,
+              answerShownAt: research.answerShownAt,
+              rewardReceivedAt: research.rewardReceivedAt,
+              batteryCapacityIncrement: research.batteryCapacityIncrement,
+              performanceIncrement: research.performanceIncrement,
+            },
+          });
+        }
+      }
+      for (const savedResearch of savedUnrewardedResearches) {
+        if (!laboratory.researches.some((research) => research.id === savedResearch.id)) {
+          if (savedResearch.startedAt !== null) {
+            throw new GameLogicViolated("Cannot delete started research");
+          }
+          await prisma.research.delete({ where: { id: savedResearch.id } });
+        }
+      }
     });
   }
 
-  static async updateUnrewardedResearch(userId: User["id"], laboratory: Laboratory) {
-    const d = await prisma.research.findMany({
-      where: { userId, rewardReceivedAt: null },
-    });
-    if (!d) {
-      throw new ObjectNotFoundError("Saved unrewarded research not found");
-    }
-    if (d.length !== 1) {
-      throw new Error("Multiple unrewarded researches found");
-    }
-    const savedUnrewardedResearch = d[0];
-    const updatedResearch = laboratory.researches.find(
-      (research) => research.id === savedUnrewardedResearch.id,
-    );
-    if (!updatedResearch) {
-      throw new ObjectNotFoundError(
-        `Research ${savedUnrewardedResearch.id} not found in laboratory`,
-      );
-    }
-    await prisma.research.update({
-      where: { id: updatedResearch.id },
-      data: {
-        solvedAt: updatedResearch.solvedAt,
-        finishedAt: updatedResearch.finishedAt,
-        answerShownAt: updatedResearch.answerShownAt,
-        rewardReceivedAt: updatedResearch.rewardReceivedAt,
-        batteryCapacityIncrement: updatedResearch.batteryCapacityIncrement,
-        performanceIncrement: updatedResearch.performanceIncrement,
-      },
+  static async forceSaveAllForTesting(userId: User["id"], laboratory: Laboratory) {
+    await prisma.$transaction(async (prisma) => {
+      await prisma.research.deleteMany({ where: { userId } });
+      for (const research of laboratory.researches) {
+        await prisma.research.create({
+          data: {
+            id: research.id,
+            problem: { connect: { id: research.problem.id } },
+            user: { connect: { id: userId } },
+            createdAt: research.createdAt,
+            startedAt: research.startedAt,
+            solvedAt: research.solvedAt,
+            finishedAt: research.finishedAt,
+            answerShownAt: research.answerShownAt,
+            rewardReceivedAt: research.rewardReceivedAt,
+            batteryCapacityIncrement: research.batteryCapacityIncrement,
+            performanceIncrement: research.performanceIncrement,
+          },
+        });
+      }
     });
   }
 }

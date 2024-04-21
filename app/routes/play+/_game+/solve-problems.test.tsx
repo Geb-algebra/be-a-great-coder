@@ -49,7 +49,10 @@ describe.each([
       },
     });
     const newResearch = await ResearchFactory.create(account.id, "testproblemid");
-    await LaboratoryRepository.addResearch(account.id, newResearch);
+    newResearch.startedAt = new Date("2022-01-01T00:00:00Z");
+    const lab = await LaboratoryRepository.get(account.id);
+    lab.researches.push(newResearch);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, lab);
     vi.useRealTimers();
   });
   it("renders the page with unsolved state", async () => {
@@ -138,7 +141,10 @@ describe("action", () => {
       },
     });
     const newResearch = await ResearchFactory.create(account.id, "testproblemid");
-    await LaboratoryRepository.addResearch(account.id, newResearch);
+    newResearch.startedAt = new Date("2022-01-01T00:00:00Z");
+    const lab = await LaboratoryRepository.get(account.id);
+    lab.researches.push(newResearch);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, lab);
     vi.useRealTimers();
   });
   it("finishes the research and redirects to /play/router", async () => {

@@ -27,7 +27,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
     if (solvedTime) {
       currentResearch.solvedAt = solvedTime;
-      await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
+      await LaboratoryRepository.save(user.id, laboratory);
     }
   }
 
@@ -43,7 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new ObjectNotFoundError("unfinished proposedProblem not found");
     }
     currentResearch.finishedAt = new Date();
-    await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
+    await LaboratoryRepository.save(user.id, laboratory);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect("/play/router");
   } catch (error) {

@@ -1,5 +1,3 @@
-import type { AtCoderAPIETag } from "@prisma/client";
-
 import { prisma } from "~/db.server.ts";
 
 /**
@@ -18,7 +16,7 @@ export const fetchFromAtcoderAPI = async (endpoint: string): Promise<Response | 
   });
   const status = res.status;
   const hash = res.headers.get("ETAG");
-  console.log(`fetched from ${endpoint}, status: ${status}, hash: ${hash}`);
+  console.info(`fetched from ${endpoint}, status: ${status}, hash: ${hash}`);
   if (hash !== null) {
     await prisma.atCoderAPIETag.upsert({
       where: { endpoint },

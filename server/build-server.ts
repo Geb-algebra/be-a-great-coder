@@ -1,6 +1,5 @@
 import esbuild from "esbuild";
 
-console.log();
 console.log("building...");
 
 esbuild

@@ -11,13 +11,13 @@ import {
   TurnRepository,
 } from "../lifecycle/game.server.ts";
 import {
-  INGREDIENTS,
   type IngredientName,
   type Product,
   TURNS,
   TotalAssets,
   type Turn,
 } from "../models/game.ts";
+import { INGREDIENTS, calcPrice } from "../services/config.ts";
 import { PROBLEM_DIFFICULTIES } from "./config.ts";
 
 export function getNextTurn(currentTurn: Turn): Turn {
@@ -77,12 +77,12 @@ export class TotalAssetsUpdateService {
     );
   }
 
-  static manufactureProducts(currentTotalAssets: TotalAssets, product: Product, quantity: number) {
-    if (quantity > currentTotalAssets.battery) {
+  static makeAndSellProduct(currentTotalAssets: TotalAssets, product: Product) {
+    if (currentTotalAssets.battery === 0) {
       throw new GameLogicViolated("Not enough battery");
     }
     for (const [ingredientName, amount] of product.ingredients) {
-      if ((currentTotalAssets.ingredientStock.get(ingredientName) ?? 0) < amount * quantity) {
+      if ((currentTotalAssets.ingredientStock.get(ingredientName) ?? 0) < amount) {
         throw new GameLogicViolated("Not enough ingredients");
       }
     }
@@ -90,29 +90,18 @@ export class TotalAssetsUpdateService {
     for (const [ingredientName, amount] of product.ingredients) {
       newIngredientStock.set(
         ingredientName,
-        (newIngredientStock.get(ingredientName) || 0) - amount * quantity,
+        (newIngredientStock.get(ingredientName) || 0) - amount,
       );
     }
+    const price = calcPrice(product.priceAverage, product.priceStd);
     return {
       newTotalAssets: new TotalAssets(
-        currentTotalAssets.cash,
-        currentTotalAssets.battery - quantity,
+        currentTotalAssets.cash + price,
+        currentTotalAssets.battery - 1,
         newIngredientStock,
       ),
-      quantity,
+      price,
     };
-  }
-
-  static sellProducts(currentTotalAssets: TotalAssets, productStock: Map<Product, number>) {
-    const revenue = Array.from(productStock.entries()).reduce(
-      (total, [product, quantity]) => total + quantity * product.price,
-      0,
-    );
-    return new TotalAssets(
-      currentTotalAssets.cash + revenue,
-      currentTotalAssets.battery,
-      currentTotalAssets.ingredientStock,
-    );
   }
 
   static chargeBattery(currentTotalAssets: TotalAssets, capacity: number) {

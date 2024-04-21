@@ -25,7 +25,9 @@ describe("action", () => {
     vi.setSystemTime(new Date("2022-01-01T00:00:00Z"));
     const newResearch = await ResearchFactory.create(account.id, "testproblemid");
     newResearch.finishedAt = new Date();
-    await LaboratoryRepository.addResearch(account.id, newResearch);
+    const lab = await LaboratoryRepository.get(account.id);
+    lab.researches.push(newResearch);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, lab);
     vi.useRealTimers();
   });
 
