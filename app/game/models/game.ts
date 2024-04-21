@@ -67,6 +67,7 @@ export type Research = {
   createdAt: Date;
   updatedAt: Date;
   startedAt: Date | null;
+  submittedAt: Date | null;
   solvedAt: Date | null;
   finishedAt: Date | null;
   answerShownAt: Date | null;
@@ -100,7 +101,7 @@ export class Laboratory {
 
   get performance() {
     return this.rewardedResearches
-      .filter((research) => research.answerShownAt !== null)
+      .filter((research) => research.answerShownAt !== null && research.submittedAt !== null)
       .reduce((acc, research) => acc + (research.performanceIncrement ?? 0), 1);
   }
 

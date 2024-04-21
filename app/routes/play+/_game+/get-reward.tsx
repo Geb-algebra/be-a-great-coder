@@ -69,6 +69,7 @@ export default function Page() {
         <p>{unrewardedResearch.problem.title}</p>
         <p>{unrewardedResearch.problem.difficulty}</p>
         <p>started at: {unrewardedResearch.createdAt.toISOString()}</p>
+        <p>Submitted?: {String(!!unrewardedResearch.submittedAt)}</p>
         <p>Cleared?: {String(!!unrewardedResearch.solvedAt)}</p>
         <p>{actionData?.error.message}</p>
         <Form method="post" action="show-answer">

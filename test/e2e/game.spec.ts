@@ -255,6 +255,7 @@ test.describe("game cycle", () => {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
       updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
       startedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
+      submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
       solvedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
       finishedAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
       answerShownAt: new Date(),
@@ -262,9 +263,6 @@ test.describe("game cycle", () => {
       batteryCapacityIncrement: 1,
       performanceIncrement: 1,
     };
-    research.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24);
-    research.solvedAt = new Date(Date.now() - 1000 * 60 * 60 * 23);
-    research.finishedAt = new Date(Date.now() - 1000 * 60 * 60 * 22);
     const lab = await LaboratoryRepository.get(user.id);
     lab.researches.push(research);
     await LaboratoryRepository.forceSaveAllForTesting(user.id, lab);
