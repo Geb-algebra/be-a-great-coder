@@ -5,8 +5,12 @@ import type { Account } from "~/accounts/models/account.ts";
 import { TotalAssetsRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { INGREDIENT_NAMES, TURNS, TotalAssets } from "~/game/models/game.ts";
 import { INGREDIENTS } from "~/game/services/config.ts";
-import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data.ts";
-import { authenticated, setupAccount } from "~/routes/test/utils.ts";
+import {
+  setBeginnersStatus,
+  setInitialStatus,
+  setVeteransStatus,
+} from "~/routes/test/data.server.ts";
+import { authenticated, setupAccount } from "~/routes/test/utils.server.ts";
 import Layout, { loader as layoutLoader } from "./_layout.tsx";
 import { action as buyAction } from "./buy-ingredients.$name.tsx";
 import Page, { loader, action } from "./buy-ingredients.tsx";

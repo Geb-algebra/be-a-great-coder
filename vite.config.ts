@@ -20,6 +20,7 @@ export default defineConfig({
           ignoredRouteFiles: [
             "**/.*",
             "**/*.test.{ts,tsx,js,jsx}",
+            "**/*.safetest.{ts,tsx,js,jsx}",
             "**/*.spec.{ts,tsx,js,jsx}",
             "**/test/**",
           ],

@@ -6,8 +6,8 @@ import { TotalAssetsRepository, TurnRepository } from "~/game/lifecycle/game.ser
 import { PRODUCT_NAMES, TURNS, TotalAssets } from "~/game/models/game.ts";
 import { INGREDIENTS, PRODUCTS } from "~/game/services/config.ts";
 import * as Config from "~/game/services/config.ts";
-import { setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.ts";
-import { authenticated, setupAccount } from "~/routes/test/utils.ts";
+import { setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.server.ts";
+import { authenticated, setupAccount } from "~/routes/test/utils.server.ts";
 import Layout, { loader as layoutLoader } from "./_layout.tsx";
 import { action as sellAction } from "./sell-products.$name.tsx";
 import Page, { action, loader } from "./sell-products.tsx";

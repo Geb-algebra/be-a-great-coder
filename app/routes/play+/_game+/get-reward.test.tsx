@@ -17,8 +17,12 @@ import {
   setInitialStatus,
   setVeteransStatus,
   veteransStatus,
-} from "~/routes/test/data.ts";
-import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils.ts";
+} from "~/routes/test/data.server.ts";
+import {
+  addAuthenticationSessionTo,
+  authenticated,
+  setupAccount,
+} from "~/routes/test/utils.server.ts";
 import Layout, { loader as layoutLoader } from "./_layout.tsx";
 import { loader as buyLoader } from "./buy-ingredients.tsx";
 import { action as showAnswerAction } from "./get-reward.show-answer.tsx";

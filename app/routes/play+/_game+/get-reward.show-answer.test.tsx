@@ -6,7 +6,7 @@ import {
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server";
-import { addAuthenticationSessionTo, setupAccount } from "~/routes/test/utils";
+import { addAuthenticationSessionTo, setupAccount } from "~/routes/test/utils.server";
 import { action } from "./get-reward.show-answer";
 
 describe("action", () => {

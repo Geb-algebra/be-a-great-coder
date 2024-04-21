@@ -10,8 +10,8 @@ import {
   setInitialStatus,
   setVeteransStatus,
   veteransStatus,
-} from "~/routes/test/data.ts";
-import { authenticated, setupAccount } from "../../test/utils.ts";
+} from "~/routes/test/data.server.ts";
+import { authenticated, setupAccount } from "../../test/utils.server.ts";
 import Page, { loader } from "./_layout";
 
 describe("Page", () => {

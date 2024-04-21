@@ -11,8 +11,12 @@ import {
   TurnRepository,
 } from "~/game/lifecycle/game.server";
 import { TURNS } from "~/game/models/game";
-import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data";
-import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils";
+import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data.server";
+import {
+  addAuthenticationSessionTo,
+  authenticated,
+  setupAccount,
+} from "~/routes/test/utils.server";
 import Component, { loader, action } from "./solve-problems";
 
 const RemixStub = createRemixStub([
