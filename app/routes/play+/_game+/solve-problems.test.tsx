@@ -62,6 +62,43 @@ describe.each([
     await screen.findByText("300");
     await screen.findByRole("link", { name: /go to problem page/i });
     await screen.findByText(/started at: 2022-01-01T00:00:00/i);
+    const submit = screen.queryByText(/submitted first at: 2022-01-01T00:00:00/i);
+    expect(submit).toBeNull();
+    const solved = screen.queryByText(/solved at: 2022-01-01T00:00:00/i);
+    expect(solved).toBeNull();
+    await screen.findByRole("button", { name: /finish/i });
+  });
+  it("renders the page with submitted but unsolved state", async () => {
+    server.use(
+      http.get("https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions", () => {
+        return new Response(
+          JSON.stringify([
+            {
+              id: 5870139,
+              epoch_second: new Date("2022-01-01T01:00:00Z").getTime() / 1000,
+              problem_id: "testproblemid",
+              contest_id: "fake",
+              user_id: "testuser",
+              language: "C# (Mono 4.6.2.0)",
+              point: 1024,
+              length: 754,
+              result: "WA",
+              execution_time: 143,
+            },
+          ]),
+          { status: 200 },
+        );
+      }),
+    );
+    render(<RemixStub initialEntries={["/play/solve-problems"]} />);
+    await screen.findByRole("heading", { name: /solve the problem/i });
+    await screen.findByText(/testproblemtitle/i);
+    await screen.findByText("300");
+    await screen.findByRole("link", { name: /go to problem page/i });
+    await screen.findByText(/started at: 2022-01-01T00:00:00/i);
+    await screen.findByText(/submitted first at: 2022-01-01T01:00:00/i);
+    const solved = screen.queryByText(/solved at: 2022-01-01T00:00:00/i);
+    expect(solved).toBeNull();
     await screen.findByRole("button", { name: /finish/i });
   });
   it("renders the page with solved state", async () => {
@@ -69,6 +106,18 @@ describe.each([
       http.get("https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions", () => {
         return new Response(
           JSON.stringify([
+            {
+              id: 5870139,
+              epoch_second: new Date("2022-01-01T00:30:00Z").getTime() / 1000,
+              problem_id: "testproblemid",
+              contest_id: "fake",
+              user_id: "testuser",
+              language: "C# (Mono 4.6.2.0)",
+              point: 1024,
+              length: 754,
+              result: "WA",
+              execution_time: 143,
+            },
             {
               id: 5870139,
               epoch_second: new Date("2022-01-01T01:00:00Z").getTime() / 1000,
@@ -92,6 +141,7 @@ describe.each([
     await screen.findByText("300");
     await screen.findByRole("link", { name: /go to problem page/i });
     await screen.findByText(/started at: 2022-01-01T00:00:00/i);
+    await screen.findByText(/submitted first at: 2022-01-01T00:30:00/i);
     await screen.findByText(/cleared at: 2022-01-01T01:00:00/i);
     await screen.findByRole("button", { name: /finish/i });
   });

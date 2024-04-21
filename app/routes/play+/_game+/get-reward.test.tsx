@@ -84,29 +84,25 @@ describe.each([
     vi.useRealTimers();
   });
 
-  it("renders the page with solved=False", async () => {
-    render(<RemixStub initialEntries={["/play/get-reward"]} />);
-    await screen.findByRole("heading", { name: /get reward/i });
-    await screen.findByText(/testproblemtitle/i);
-    await screen.findByText("300");
-    await screen.findByText(/started at: 2022-01-01T00:00:00/i);
-    await screen.findByText(/Cleared\?: false/i);
-    await screen.findByText(/Show answer/i);
-    await screen.findByRole("button", { name: /get reward/i });
-  });
-
-  it("renders the page with solved=True", async () => {
+  it.each([
+    [false, false],
+    [true, false],
+    [true, true],
+  ])("renders the page with submitted=%s and solved=%s", async (submitted, solved) => {
     const laboratory = await LaboratoryRepository.get(account.id);
     const unrewardedResearch = laboratory.getUnrewardedResearch();
     invariant(unrewardedResearch, "unrewardedResearch should be defined");
-    unrewardedResearch.solvedAt = new Date();
+    if (submitted) unrewardedResearch.submittedAt = new Date();
+    if (solved) unrewardedResearch.solvedAt = new Date();
     await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
+
     render(<RemixStub initialEntries={["/play/get-reward"]} />);
     await screen.findByRole("heading", { name: /get reward/i });
     await screen.findByText(/testproblemtitle/i);
     await screen.findByText("300");
     await screen.findByText(/started at: 2022-01-01T00:00:00/i);
-    await screen.findByText(/Cleared\?: true/i);
+    await screen.findByText(RegExp(`Submitted\\?: ${submitted}`, "i"));
+    await screen.findByText(RegExp(`Cleared\\?: ${solved}`, "i"));
     await screen.findByText(/Show answer/i);
     await screen.findByRole("button", { name: /get reward/i });
   });
@@ -193,6 +189,7 @@ describe("action", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       startedAt: new Date(),
+      submittedAt: null,
       solvedAt: null,
       finishedAt: new Date(),
       answerShownAt: null,
@@ -208,6 +205,7 @@ describe("action", () => {
     const laboratory = await LaboratoryRepository.get(account.id);
     const unrewardedResearch = laboratory.getUnrewardedResearch();
     invariant(unrewardedResearch, "unrewardedResearch should be defined");
+    unrewardedResearch.submittedAt = new Date();
     unrewardedResearch.solvedAt = new Date();
     await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
 
@@ -229,10 +227,12 @@ describe("action", () => {
     );
     expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance);
   });
-  it("gives performances if the explanation of the problem has displayed", async () => {
+
+  it("gives performances if submitted and the explanation of the problem has displayed", async () => {
     const laboratory = await LaboratoryRepository.get(account.id);
     const unrewardedResearch = laboratory.getUnrewardedResearch();
     invariant(unrewardedResearch, "unrewardedResearch should be defined");
+    unrewardedResearch.submittedAt = new Date();
     unrewardedResearch.answerShownAt = new Date();
     await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
 
@@ -252,5 +252,31 @@ describe("action", () => {
     expect(solvedResearch.rewardReceivedAt).toBeDefined();
     expect(updatedLaboratory.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
     expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance + 3);
+  });
+
+  it("doesnt give performances if not submitted", async () => {
+    const laboratory = await LaboratoryRepository.get(account.id);
+    const unrewardedResearch = laboratory.getUnrewardedResearch();
+    invariant(unrewardedResearch, "unrewardedResearch should be defined");
+    // not submitted
+    unrewardedResearch.answerShownAt = new Date();
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
+
+    const oldLab = await LaboratoryRepository.get(account.id);
+    expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
+    expect(oldLab.getUnrewardedResearch()?.solvedAt).toBeDefined();
+
+    const request = new Request("http://localhost:3000/play/get-reward", {
+      method: "POST",
+    });
+    await addAuthenticationSessionTo(request);
+    await action({ request, params: {}, context: {} });
+
+    const updatedLaboratory = await LaboratoryRepository.get(account.id);
+    const solvedResearch = updatedLaboratory.researches.find((r) => r.id === unrewardedResearch.id);
+    invariant(solvedResearch, "solvedResearch should be defined");
+    expect(solvedResearch.rewardReceivedAt).toBeDefined();
+    expect(updatedLaboratory.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
+    expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance);
   });
 });

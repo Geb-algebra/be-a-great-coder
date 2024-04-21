@@ -66,6 +66,7 @@ CREATE TABLE "Research" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "startedAt" DATETIME,
+    "submittedAt" DATETIME,
     "solvedAt" DATETIME,
     "finishedAt" DATETIME,
     "answerShownAt" DATETIME,

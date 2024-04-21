@@ -22,7 +22,7 @@ export async function fetchNewSubmissions(
   return (await res.json()) as submissionDatum[];
 }
 
-export async function getProblemSolvedTime(
+export async function getProblemSubmittedAndSolvedTime(
   problemId: string,
   atCoderUsername: string,
   startEpochSeconds: number,
@@ -32,5 +32,11 @@ export async function getProblemSolvedTime(
   const earliestSubmission = newSubmissions.find(
     (submission) => submission.problem_id === problemId,
   );
-  return earliestSubmission ? new Date(earliestSubmission.epoch_second * 1000) : null;
+  const earliestAC = newSubmissions.find(
+    (submission) => submission.problem_id === problemId && submission.result === "AC",
+  );
+  return {
+    firstSubmittedAt: earliestSubmission ? new Date(earliestSubmission.epoch_second * 1000) : null,
+    firstACAt: earliestAC ? new Date(earliestAC.epoch_second * 1000) : null,
+  };
 }
