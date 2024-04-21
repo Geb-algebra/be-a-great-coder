@@ -78,7 +78,9 @@ describe.each([
     });
     const newResearch = await ResearchFactory.create(account.id, problem.id);
     newResearch.finishedAt = new Date();
-    await LaboratoryRepository.addResearch(account.id, newResearch);
+    const lab = await LaboratoryRepository.get(account.id);
+    lab.researches.push(newResearch);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, lab);
     vi.useRealTimers();
   });
 
@@ -98,7 +100,7 @@ describe.each([
     const unrewardedResearch = laboratory.getUnrewardedResearch();
     invariant(unrewardedResearch, "unrewardedResearch should be defined");
     unrewardedResearch.solvedAt = new Date();
-    await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
     render(<RemixStub initialEntries={["/play/get-reward"]} />);
     await screen.findByRole("heading", { name: /get reward/i });
     await screen.findByText(/testproblemtitle/i);
@@ -118,7 +120,7 @@ describe.each([
       const unrewardedResearch = laboratory.getUnrewardedResearch();
       invariant(unrewardedResearch, "unrewardedResearch should be defined");
       unrewardedResearch.solvedAt = new Date();
-      await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
+      await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
     }
     render(<RemixStub initialEntries={["/play/get-reward"]} />);
     await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
@@ -185,18 +187,18 @@ describe("action", () => {
       },
     });
     const newResearch = await ResearchFactory.create(account.id, problem.id);
+    newResearch.startedAt = new Date();
     newResearch.finishedAt = new Date();
-    await LaboratoryRepository.addResearch(account.id, newResearch);
-  });
-  afterEach(() => {
-    // restoring date after each test run
+    const lab = await LaboratoryRepository.get(account.id);
+    lab.researches.push(newResearch);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, lab);
   });
   it("gives batteries if the problem is solved", async () => {
     const laboratory = await LaboratoryRepository.get(account.id);
     const unrewardedResearch = laboratory.getUnrewardedResearch();
     invariant(unrewardedResearch, "unrewardedResearch should be defined");
     unrewardedResearch.solvedAt = new Date();
-    await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
 
     const oldLab = await LaboratoryRepository.get(account.id);
     expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
@@ -208,22 +210,20 @@ describe("action", () => {
     await action({ request, params: {}, context: {} });
 
     const updatedLaboratory = await LaboratoryRepository.get(account.id);
-    const latestResearch = updatedLaboratory.getLatestResearch();
+    const latestResearch = updatedLaboratory.researches.find((r) => r.id === unrewardedResearch.id);
     invariant(latestResearch, "solvedResearch should be defined");
     expect(latestResearch.rewardReceivedAt).toBeDefined();
-    expect(latestResearch.batteryCapacityIncrement).toBe(3);
-    expect(latestResearch.performanceIncrement).toBe(null);
     expect(updatedLaboratory.batteryCapacity).toBe(
       veteransStatus.laboratoryValue.batteryCapacity + 3,
     );
     expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance);
   });
-  it("gives performances if the explanation of the problem hasdisplayed", async () => {
+  it("gives performances if the explanation of the problem has displayed", async () => {
     const laboratory = await LaboratoryRepository.get(account.id);
     const unrewardedResearch = laboratory.getUnrewardedResearch();
     invariant(unrewardedResearch, "unrewardedResearch should be defined");
     unrewardedResearch.answerShownAt = new Date();
-    await LaboratoryRepository.updateUnrewardedResearch(account.id, laboratory);
+    await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
 
     const oldLab = await LaboratoryRepository.get(account.id);
     expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
@@ -236,10 +236,9 @@ describe("action", () => {
     await action({ request, params: {}, context: {} });
 
     const updatedLaboratory = await LaboratoryRepository.get(account.id);
-    const solvedResearch = updatedLaboratory.getLatestResearch();
+    const solvedResearch = updatedLaboratory.researches.find((r) => r.id === unrewardedResearch.id);
+    invariant(solvedResearch, "solvedResearch should be defined");
     expect(solvedResearch.rewardReceivedAt).toBeDefined();
-    expect(solvedResearch.batteryCapacityIncrement).toBe(null);
-    expect(solvedResearch.performanceIncrement).toBe(3);
     expect(updatedLaboratory.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
     expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance + 3);
   });

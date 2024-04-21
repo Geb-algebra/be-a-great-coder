@@ -8,6 +8,7 @@ import {
 } from "~/game/lifecycle/game.server.ts";
 import type { Problem } from "~/game/models/game";
 import { getNextTurn, getProblemsMatchUserRank } from "~/game/services/game.server.ts";
+import { ResearchJsonifier } from "~/game/services/jsonifier";
 import { authenticator } from "~/services/auth.server.ts";
 import { getRequiredStringFromFormData } from "~/utils/utils";
 
@@ -22,10 +23,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (currentResearch) {
     return redirect("/play/solve-problems");
   }
+  {
+    const candidateResearches = laboratory.getCandidateResearches();
+    if (candidateResearches.length > 0) {
+      return json(candidateResearches.map(ResearchJsonifier.toJson));
+    }
+  }
   const problems = await getProblemsMatchUserRank(laboratory.researcherRank);
-  return json({
-    problems,
-  });
+  for (const problem of problems) {
+    const research = await ResearchFactory.create(user.id, problem.id);
+    laboratory.researches.push(research);
+  }
+  await LaboratoryRepository.save(user.id, laboratory);
+  const candidateResearches = laboratory.getCandidateResearches();
+  return json(candidateResearches.map(ResearchJsonifier.toJson));
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -37,9 +48,17 @@ export async function action({ request }: ActionFunctionArgs) {
       return redirect("/play/solve-problems");
     }
     const formData = await request.formData();
-    const problemId = getRequiredStringFromFormData(formData, "problemId");
-    const newResearch = await ResearchFactory.create(user.id, problemId);
-    await LaboratoryRepository.addResearch(user.id, newResearch);
+    const acceptedResearchId = getRequiredStringFromFormData(formData, "researchId");
+    const acceptedResearch = laboratory.researches.find((r) => r.id === acceptedResearchId);
+    if (!acceptedResearch) {
+      throw new Response("Research not found", { status: 404 });
+    }
+    acceptedResearch.startedAt = new Date();
+    laboratory.researches = laboratory.researches.filter(
+      (r) => r.id !== acceptedResearchId || r.startedAt !== null,
+    );
+
+    await LaboratoryRepository.save(user.id, laboratory);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect("/play/router");
   } catch (error) {
@@ -64,16 +83,17 @@ function ProblemCard(props: { problem: Problem }) {
 }
 
 export default function Page() {
-  const { problems } = useLoaderData<typeof loader>();
+  const researchJsons = useLoaderData<typeof loader>();
+  const researches = researchJsons.map(ResearchJsonifier.fromJson);
   const actionData = useActionData<typeof action>();
   return (
     <div>
       <h1 className="font-bold text-2xl">Select A Problem to solve</h1>
       <Form method="post" className="flex">
         <p>{actionData?.error.message}</p>
-        {problems.map((problem) => (
-          <button key={problem.id} type="submit" name="problemId" value={problem.id}>
-            <ProblemCard key={problem.id} problem={problem} />
+        {researches.map((research) => (
+          <button key={research.id} type="submit" name="researchId" value={research.id}>
+            <ProblemCard key={research.id} problem={research.problem} />
           </button>
         ))}
       </Form>

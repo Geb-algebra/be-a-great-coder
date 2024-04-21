@@ -14,7 +14,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
   if (currentResearch.answerShownAt === null) {
     currentResearch.answerShownAt = new Date();
-    await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
+    await LaboratoryRepository.save(user.id, laboratory);
   }
   return redirect("/play/router");
 }

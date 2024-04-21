@@ -64,12 +64,13 @@ export async function setBeginnersStatus(userId: string) {
         difficulty,
       },
     });
-    await LaboratoryRepository.addResearch(userId, {
+    laboratory.researches.push({
       id: createId(),
       problem,
       userId,
       createdAt: new Date(),
       updatedAt: new Date(),
+      startedAt: new Date(),
       solvedAt: new Date(),
       finishedAt: new Date(),
       answerShownAt: new Date(),
@@ -78,6 +79,7 @@ export async function setBeginnersStatus(userId: string) {
       performanceIncrement: 1,
     });
   }
+  await LaboratoryRepository.forceSaveAllForTesting(userId, laboratory);
   return { totalAssets, laboratory };
 }
 
@@ -128,12 +130,13 @@ export async function setVeteransStatus(userId: string) {
           difficulty,
         },
       });
-      await LaboratoryRepository.addResearch(userId, {
+      laboratory.researches.push({
         id: createId(),
         problem,
         userId,
         createdAt: new Date(),
         updatedAt: new Date(),
+        startedAt: new Date(),
         solvedAt: new Date(),
         finishedAt: new Date(),
         answerShownAt: new Date(),
@@ -143,6 +146,7 @@ export async function setVeteransStatus(userId: string) {
       });
     }
   }
+  await LaboratoryRepository.forceSaveAllForTesting(userId, laboratory);
   return { totalAssets, laboratory };
 }
 

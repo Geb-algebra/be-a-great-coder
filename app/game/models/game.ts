@@ -66,6 +66,7 @@ export type Research = {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+  startedAt: Date | null;
   solvedAt: Date | null;
   finishedAt: Date | null;
   answerShownAt: Date | null;
@@ -84,7 +85,7 @@ export class Laboratory {
   public researches: Research[];
 
   constructor(researches: Research[] = []) {
-    this.researches = researches;
+    this.researches = researches.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   }
 
   private get rewardedResearches() {
@@ -92,21 +93,19 @@ export class Laboratory {
   }
 
   get batteryCapacity() {
-    return this.rewardedResearches.reduce(
-      (acc, research) => acc + (research.batteryCapacityIncrement ?? 0),
-      1,
-    );
+    return this.rewardedResearches
+      .filter((research) => research.solvedAt !== null)
+      .reduce((acc, research) => acc + (research.batteryCapacityIncrement ?? 0), 1);
   }
 
   get performance() {
-    return this.rewardedResearches.reduce(
-      (acc, research) => acc + (research.performanceIncrement ?? 0),
-      1,
-    );
+    return this.rewardedResearches
+      .filter((research) => research.answerShownAt !== null)
+      .reduce((acc, research) => acc + (research.performanceIncrement ?? 0), 1);
   }
 
   get researcherRank() {
-    return this.researches
+    return this.rewardedResearches
       .filter((research) => research.solvedAt !== null)
       .slice(-5)
       .reduce(
@@ -123,22 +122,19 @@ export class Laboratory {
     };
   }
 
+  getCandidateResearches() {
+    return this.researches.filter((research) => research.startedAt === null);
+  }
+
   getUnfinishedResearch() {
-    return this.researches.find((research) => research.finishedAt === null);
+    return this.researches.find(
+      (research) => research.startedAt !== null && research.finishedAt === null,
+    );
   }
 
   getUnrewardedResearch() {
     return this.researches.find(
       (research) => research.finishedAt !== null && research.rewardReceivedAt === null,
     );
-  }
-
-  getLatestResearch() {
-    return this.researches.reduce((latest, research) => {
-      if (latest === null) {
-        return research;
-      }
-      return research.createdAt > latest.createdAt ? research : latest;
-    });
   }
 }

@@ -38,6 +38,7 @@ export type ResearchJson = {
   userId: string;
   createdAt: string;
   updatedAt: string;
+  startedAt: string | null;
   solvedAt: string | null;
   finishedAt: string | null;
   answerShownAt: string | null;
@@ -54,6 +55,7 @@ export class ResearchJsonifier {
       userId: research.userId,
       createdAt: research.createdAt.toISOString(),
       updatedAt: research.updatedAt.toISOString(),
+      startedAt: research.startedAt?.toISOString() ?? null,
       solvedAt: research.solvedAt?.toISOString() ?? null,
       finishedAt: research.finishedAt?.toISOString() ?? null,
       answerShownAt: research.answerShownAt?.toISOString() ?? null,
@@ -68,6 +70,7 @@ export class ResearchJsonifier {
       ...json,
       createdAt: new Date(json.createdAt),
       updatedAt: new Date(json.updatedAt),
+      startedAt: json.startedAt ? new Date(json.startedAt) : null,
       solvedAt: json.solvedAt ? new Date(json.solvedAt) : null,
       finishedAt: json.finishedAt ? new Date(json.finishedAt) : null,
       answerShownAt: json.answerShownAt ? new Date(json.answerShownAt) : null,

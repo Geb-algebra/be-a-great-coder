@@ -35,18 +35,8 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!currentResearch) {
       throw new ObjectNotFoundError("unrewarded proposedProblem not found");
     }
-    if (currentResearch.solvedAt !== null) {
-      currentResearch.batteryCapacityIncrement = calcRobotGrowthRate(
-        currentResearch.problem.difficulty,
-      );
-    }
-    if (currentResearch.answerShownAt !== null) {
-      currentResearch.performanceIncrement = calcRobotGrowthRate(
-        currentResearch.problem.difficulty,
-      );
-    }
     currentResearch.rewardReceivedAt = new Date();
-    await LaboratoryRepository.updateUnrewardedResearch(user.id, laboratory);
+    await LaboratoryRepository.save(user.id, laboratory);
     const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const newAssets = TotalAssetsUpdateService.chargeBattery(
       totalAssets,
