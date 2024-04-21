@@ -1,4 +1,3 @@
-import { n } from "vitest/dist/reporters-P7C2ytIv.js";
 import { Laboratory } from "./game.ts";
 
 describe("Laboratory with no research", () => {
