@@ -1,8 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useFetcher } from "@remix-run/react";
+import ErrorDisplay from "~/components/ErrorDisplay.tsx";
+import TurnHeader from "~/components/TurnHeader.tsx";
 import { GameLogicViolated } from "~/errors.ts";
 import { TurnRepository } from "~/game/lifecycle/game.server.ts";
+import type { Product } from "~/game/models/game.ts";
 import { PRODUCTS } from "~/game/services/config.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
 import { authenticator } from "~/services/auth.server.ts";
@@ -30,37 +33,50 @@ export const meta: MetaFunction = () => {
   return [{ title: "" }];
 };
 
+function ProductInfo(props: { product: Product }) {
+  return (
+    <div className="w-36 bg-factory-card rounded-lg">
+      <div className=" w-full h-48 border border-factory-border rounded-t-lg p-2">
+        <h2 id={`product-name-${props.product}`} className="font-bold text-center">
+          {props.product.name}
+        </h2>
+        <p>Ave: $ {props.product.priceAverage}</p>
+        <p>Std: {props.product.priceStd}</p>
+        <ul>
+          {Array.from(props.product.ingredients).map((ingredient) => (
+            <li key={ingredient[0]}>
+              {ingredient[1]} {ingredient[0]}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <button
+        type="submit"
+        className="h-12 border border-factory-border w-full rounded-b-lg hover:bg-factory-accent-1 hover:text-factory-text-light transition-colors duration-300"
+      >
+        Make
+      </button>
+    </div>
+  );
+}
+
 export default function Page() {
   const actionData = useActionData<typeof action>();
   const fetcher = useFetcher<typeof makeItemsAction>();
 
   return (
     <div>
-      <h1 className="font-bold text-2xl">Make and sell products</h1>
-      <p>{actionData?.error.message ?? fetcher.data?.error?.message ?? ""}</p>
-      <ul>
+      <TurnHeader title="Make and Sell Products" finishButtonName="Finish Making Products" />
+      <ErrorDisplay message={actionData?.error.message ?? fetcher.data?.error?.message ?? ""} />
+      <ul aria-labelledby="buy-ingredient-heading" className="flex gap-6">
         {PRODUCTS.map((product) => (
-          <li aria-labelledby={`product-name-${product.name}`} key={product.name}>
+          <li key={product.name}>
             <fetcher.Form method="post" action={product.name}>
-              <h3 id={`product-name-${product.name}`} className="text-bold">
-                {product.name}
-              </h3>
-              <p>Ingredients:</p>
-              <ul>
-                {Array.from(product.ingredients).map(([ingredient, quantity]) => (
-                  <li key={ingredient}>
-                    {ingredient}: {quantity}
-                  </li>
-                ))}
-              </ul>
-              <button type="submit">Make</button>
+              <ProductInfo product={product} />
             </fetcher.Form>
           </li>
         ))}
       </ul>
-      <Form method="post">
-        <button type="submit">Finish Making Products</button>
-      </Form>
     </div>
   );
 }

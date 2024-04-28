@@ -88,7 +88,11 @@ export default function Page() {
   const fetcher = useFetcher<typeof detailAction>();
   return (
     <>
-      <TurnHeader title="Buy Ingredients" finishButtonName="Finish Buying" />
+      <TurnHeader
+        title="Buy Ingredients"
+        titleId="buy-ingredient-heading"
+        finishButtonName="Finish Buying"
+      />
       <ErrorDisplay message={actionData?.error.message ?? fetcher.data?.error.message} />
       <ul aria-labelledby="buy-ingredient-heading" className="flex gap-6">
         {INGREDIENTS.map((ingredient) => (

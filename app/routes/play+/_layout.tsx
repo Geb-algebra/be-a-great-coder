@@ -23,7 +23,7 @@ export default function Index() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <ThemeContext.Provider
-      value={["buy-ingredients", "solve-problems"].includes(turn) ? "factory" : "laboratory"}
+      value={["buy-ingredients", "sell-products"].includes(turn) ? "factory" : "lab"}
     >
       <div className="w-full h-screen bg-factory-accent-1">
         <Overlay isShown={isMenuOpen} setIsShown={setIsMenuOpen}>
