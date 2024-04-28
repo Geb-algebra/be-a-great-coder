@@ -14,10 +14,6 @@ import { getRequiredStringFromFormData } from "~/utils/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
-  const turn = await TurnRepository.getOrThrow(user.id);
-  if (turn !== "select-problems") {
-    return redirect("/play/router");
-  }
   const laboratory = await LaboratoryRepository.get(user.id);
   const currentResearch = laboratory.getUnfinishedResearch();
   if (currentResearch) {

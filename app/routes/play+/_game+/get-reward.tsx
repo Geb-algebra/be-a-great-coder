@@ -15,10 +15,6 @@ import { authenticator } from "~/services/auth.server.ts";
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   const laboratory = await LaboratoryRepository.get(user.id);
-  const turn = await TurnRepository.getOrThrow(user.id);
-  if (turn !== "get-reward") {
-    return redirect("/play/router");
-  }
   const unrewardedResearch = laboratory.getUnrewardedResearch();
   if (!unrewardedResearch) {
     TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));

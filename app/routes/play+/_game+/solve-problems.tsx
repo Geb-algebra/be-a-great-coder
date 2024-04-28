@@ -66,28 +66,26 @@ export default function Page() {
   const currentResearch = ResearchJsonifier.fromJson(currentResearchJson);
   const actionData = useActionData<typeof action>();
   return (
-    <>
-      <div>
-        <h1 className="font-bold text-2xl">Solve The Problem</h1>
-        <div className="flex">
-          <p>{currentResearch.problem.title}</p>
-          <a
-            href={`https://atcoder.jp/contests/${currentResearch.problem.id.split("_")[0]}/tasks/${
-              currentResearch.problem.id
-            }`}
-          >
-            Go to Problem Page!
-          </a>
-        </div>
-        <p>{currentResearch.problem.difficulty}</p>
-        <p>Started at: {currentResearch.createdAt.toISOString()}</p>
-        <p>Submitted first at: {currentResearch.submittedAt?.toISOString() ?? null}</p>
-        <p>Cleared at: {currentResearch.solvedAt?.toISOString() ?? null}</p>
-        <p>{actionData?.error.message}</p>
-        <Form method="post">
-          <button type="submit">Finish</button>
-        </Form>
+    <div className="bg-lab-base">
+      <h1 className="font-bold text-2xl">Solve The Problem</h1>
+      <div className="flex">
+        <p>{currentResearch.problem.title}</p>
+        <a
+          href={`https://atcoder.jp/contests/${currentResearch.problem.id.split("_")[0]}/tasks/${
+            currentResearch.problem.id
+          }`}
+        >
+          Go to Problem Page!
+        </a>
       </div>
-    </>
+      <p>{currentResearch.problem.difficulty}</p>
+      <p>Started at: {currentResearch.createdAt.toISOString()}</p>
+      <p>Submitted first at: {currentResearch.submittedAt?.toISOString() ?? null}</p>
+      <p>Cleared at: {currentResearch.solvedAt?.toISOString() ?? null}</p>
+      <p>{actionData?.error.message}</p>
+      <Form method="post">
+        <button type="submit">Finish</button>
+      </Form>
+    </div>
   );
 }

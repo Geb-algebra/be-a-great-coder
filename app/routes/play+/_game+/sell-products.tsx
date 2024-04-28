@@ -10,8 +10,6 @@ import type { action as makeItemsAction } from "./sell-products.$name.tsx";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
-  const turn = await TurnRepository.getOrThrow(user.id);
-  if (turn !== "sell-products") return redirect("/play/router");
   return json({});
 }
 
