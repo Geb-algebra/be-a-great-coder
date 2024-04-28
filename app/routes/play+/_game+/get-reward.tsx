@@ -1,6 +1,10 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import ErrorDisplay from "~/components/ErrorDisplay";
+import { ResearchInfo } from "~/components/ResearchInfo";
+import { ResearchStatus } from "~/components/ResearchStatus";
+import TurnHeader from "~/components/TurnHeader";
 import { ObjectNotFoundError } from "~/errors.ts";
 import {
   LaboratoryRepository,
@@ -57,23 +61,38 @@ export default function Page() {
   const { unrewardedResearchJson } = useLoaderData<typeof loader>();
   const unrewardedResearch = ResearchJsonifier.fromJson(unrewardedResearchJson);
   const actionData = useActionData<typeof action>();
+  const hasAnswerRead = !!unrewardedResearch.answerShownAt;
 
   return (
     <>
-      <div>
-        <h1 className="font-bold text-2xl">Get Reward</h1>
-        <p>{unrewardedResearch.problem.title}</p>
-        <p>{unrewardedResearch.problem.difficulty}</p>
-        <p>started at: {unrewardedResearch.createdAt.toISOString()}</p>
-        <p>Submitted?: {String(!!unrewardedResearch.submittedAt)}</p>
-        <p>Cleared?: {String(!!unrewardedResearch.solvedAt)}</p>
-        <p>{actionData?.error.message}</p>
-        <Form method="post" action="show-answer">
-          <button type="submit">Show Answer</button>
-        </Form>
-        <Form method="post">
-          <button type="submit">Get Reward</button>
-        </Form>
+      <TurnHeader title="Get Reward" />
+      <div className="flex gap-12">
+        <div>
+          <ErrorDisplay message={actionData?.error?.message ?? ""} />
+          <ResearchInfo research={unrewardedResearch} />
+          <ResearchStatus research={unrewardedResearch} />
+        </div>
+        <div>
+          <Form method="post" action="show-answer">
+            <button
+              type="submit"
+              disabled={hasAnswerRead}
+              className="h-12 w-96 m-12 bg-lab-accent-1 hover:bg-lab-accent-3 text-lab-text-light rounded-lg transition-colors duration-300 disabled:bg-gray-400 disabled:text-lab-text-dark"
+            >
+              {hasAnswerRead ? "Answer has read" : "Read an Answer to earn performance"}
+            </button>
+          </Form>
+          <Form method="post">
+            <button
+              type="submit"
+              className="
+            h-20 w-96 m-12 bg-lab-accent-1 hover:bg-lab-accent-3 text-lab-text-light rounded-lg transition-colors duration-300 font-bold text-2xl
+            "
+            >
+              Get Reward
+            </button>
+          </Form>
+        </div>
       </div>
     </>
   );
