@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs, type MetaFunction, json } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
-import { createContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import Overlay from "~/components/Overlay.tsx";
 import { TurnRepository } from "~/game/lifecycle/game.server";
 import { authenticator } from "~/services/auth.server.ts";
@@ -21,11 +21,10 @@ export const meta: MetaFunction = () => {
 export default function Index() {
   const { user, turn } = useLoaderData<typeof loader>();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const theme = ["buy-ingredients", "sell-products"].includes(turn) ? "factory" : "lab";
   return (
-    <ThemeContext.Provider
-      value={["buy-ingredients", "sell-products"].includes(turn) ? "factory" : "lab"}
-    >
-      <div className="w-full h-screen bg-factory-accent-1">
+    <ThemeContext.Provider value={theme}>
+      <div className={`w-full h-screen bg-${theme}-accent-1`}>
         <Overlay isShown={isMenuOpen} setIsShown={setIsMenuOpen}>
           <div className="absolute right-6 top-20 w-64 bg-header-base text-header-text-dark rounded-lg overflow-hidden z-10">
             <Link

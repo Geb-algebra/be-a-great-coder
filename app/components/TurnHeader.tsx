@@ -5,7 +5,7 @@ import { ThemeContext } from "~/Contexts";
 export default function TurnHeader(props: {
   title: string;
   titleId?: string;
-  finishButtonName: string;
+  finishButtonName?: string;
 }) {
   const theme = useContext(ThemeContext);
   return (
@@ -14,12 +14,14 @@ export default function TurnHeader(props: {
         {props.title}
       </h1>
       <Form method="post">
-        <button
-          type="submit"
-          className={`h-12 px-4 rounded-lg bg-${theme}-accent-1 text-${theme}-text-light hover:bg-${theme}-accent-3 transition-colors duration-300`}
-        >
-          {props.finishButtonName}
-        </button>
+        {!props.finishButtonName ? null : (
+          <button
+            type="submit"
+            className={`h-12 px-4 rounded-lg bg-${theme}-accent-1 text-${theme}-text-light hover:bg-${theme}-accent-3 transition-colors duration-300`}
+          >
+            {props.finishButtonName}
+          </button>
+        )}
       </Form>
     </div>
   );
