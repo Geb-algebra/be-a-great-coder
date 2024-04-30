@@ -25,6 +25,9 @@ export default defineConfig({
           ],
         });
       },
+      future: {
+        unstable_singleFetch: true,
+      },
     }),
     tsconfigPaths(),
   ],
