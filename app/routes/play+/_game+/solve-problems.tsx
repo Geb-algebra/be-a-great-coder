@@ -2,6 +2,10 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remi
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { getProblemSubmittedAndSolvedTime } from "~/atcoder-info/services/atcoder.server";
+import ErrorDisplay from "~/components/ErrorDisplay";
+import { ResearchInfo } from "~/components/ResearchInfo";
+import { ResearchStatus } from "~/components/ResearchStatus";
+import TurnHeader from "~/components/TurnHeader";
 import { ObjectNotFoundError } from "~/errors.ts";
 import { LaboratoryRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
@@ -61,33 +65,31 @@ export const meta: MetaFunction = () => {
   return [{ title: "" }];
 };
 
+export function StatusText(props: { prefix: string; time: Date | null; fallBackMessage: string }) {
+  function timeToText(time: Date) {
+    return `${time.getFullYear()}/${
+      time.getMonth() + 1
+    }/${time.getDate()} ${time.toLocaleTimeString()}`;
+  }
+  return (
+    <p>
+      {props.time?.toISOString()
+        ? `${props.prefix}: ${timeToText(props.time)}`
+        : props.fallBackMessage}
+    </p>
+  );
+}
+
 export default function Page() {
   const { currentResearchJson } = useLoaderData<typeof loader>();
   const currentResearch = ResearchJsonifier.fromJson(currentResearchJson);
   const actionData = useActionData<typeof action>();
   return (
-    <>
-      <div>
-        <h1 className="font-bold text-2xl">Solve The Problem</h1>
-        <div className="flex">
-          <p>{currentResearch.problem.title}</p>
-          <a
-            href={`https://atcoder.jp/contests/${currentResearch.problem.id.split("_")[0]}/tasks/${
-              currentResearch.problem.id
-            }`}
-          >
-            Go to Problem Page!
-          </a>
-        </div>
-        <p>{currentResearch.problem.difficulty}</p>
-        <p>Started at: {currentResearch.createdAt.toISOString()}</p>
-        <p>Submitted first at: {currentResearch.submittedAt?.toISOString() ?? null}</p>
-        <p>Cleared at: {currentResearch.solvedAt?.toISOString() ?? null}</p>
-        <p>{actionData?.error.message}</p>
-        <Form method="post">
-          <button type="submit">Finish</button>
-        </Form>
-      </div>
-    </>
+    <div className="bg-lab-base">
+      <ErrorDisplay message={actionData?.error.message ?? ""} />
+      <TurnHeader title="Solve The Problem" finishButtonName="Finish" />
+      <ResearchInfo research={currentResearch} />
+      <ResearchStatus research={currentResearch} />
+    </div>
   );
 }

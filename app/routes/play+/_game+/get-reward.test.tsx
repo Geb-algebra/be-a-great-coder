@@ -18,7 +18,7 @@ import {
   setVeteransStatus,
   veteransStatus,
 } from "~/routes/test/data.ts";
-import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils.ts";
+import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils.tsx";
 import Layout, { loader as layoutLoader } from "./_layout.tsx";
 import { loader as buyLoader } from "./buy-ingredients.tsx";
 import { action as showAnswerAction } from "./get-reward.show-answer.tsx";
@@ -77,6 +77,7 @@ describe.each([
       },
     });
     const newResearch = await ResearchFactory.create(account.id, problem.id);
+    newResearch.startedAt = new Date();
     newResearch.finishedAt = new Date();
     const lab = await LaboratoryRepository.get(account.id);
     lab.researches.push(newResearch);
@@ -92,18 +93,29 @@ describe.each([
     const laboratory = await LaboratoryRepository.get(account.id);
     const unrewardedResearch = laboratory.getUnrewardedResearch();
     invariant(unrewardedResearch, "unrewardedResearch should be defined");
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2022-01-01T00:00:00Z"));
     if (submitted) unrewardedResearch.submittedAt = new Date();
     if (solved) unrewardedResearch.solvedAt = new Date();
     await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
+    vi.useRealTimers();
 
     render(<RemixStub initialEntries={["/play/get-reward"]} />);
     await screen.findByRole("heading", { name: /get reward/i });
     await screen.findByText(/testproblemtitle/i);
-    await screen.findByText("300");
-    await screen.findByText(/started at: 2022-01-01T00:00:00/i);
-    await screen.findByText(RegExp(`Submitted\\?: ${submitted}`, "i"));
-    await screen.findByText(RegExp(`Cleared\\?: ${solved}`, "i"));
-    await screen.findByText(/Show answer/i);
+    await screen.findByText(/difficulty: 300/i);
+    await screen.findByText(/started at: 2022\/1\/1 9:00:00/i);
+    if (submitted) {
+      await screen.findByText(/submitted first at: 2022\/1\/1 9:00:00/i);
+    } else {
+      await screen.findByText(/not submitted yet/i);
+    }
+    if (solved) {
+      await screen.findByText(/solved at: 2022\/1\/1 9:00:00/i);
+    } else {
+      await screen.findByText(/not solved yet/i);
+    }
+    await screen.findByText(/read an answer/i);
     await screen.findByRole("button", { name: /get reward/i });
   });
 
@@ -155,7 +167,7 @@ describe.each([
     await screen.findByText(
       RegExp(`robot performance: ${status.laboratoryValue.performance}`, "i"),
     );
-    const showAnswerbutton = await screen.findByRole("button", { name: /show answer/i });
+    const showAnswerbutton = await screen.findByRole("button", { name: /read an answer/i });
     const user = userEvent.setup();
     await user.click(showAnswerbutton);
     const getRewardButton = await screen.findByRole("button", { name: /get reward/i });

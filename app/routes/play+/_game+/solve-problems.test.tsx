@@ -55,18 +55,19 @@ describe.each([
     await LaboratoryRepository.forceSaveAllForTesting(account.id, lab);
     vi.useRealTimers();
   });
-  it("renders the page with unsolved state", async () => {
+  it("renders essential info", async () => {
     render(<RemixStub initialEntries={["/play/solve-problems"]} />);
     await screen.findByRole("heading", { name: /solve the problem/i });
     await screen.findByText(/testproblemtitle/i);
-    await screen.findByText("300");
+    await screen.findByText(/Difficulty: 300/i);
     await screen.findByRole("link", { name: /go to problem page/i });
-    await screen.findByText(/started at: 2022-01-01T00:00:00/i);
-    const submit = screen.queryByText(/submitted first at: 2022-01-01T00:00:00/i);
-    expect(submit).toBeNull();
-    const solved = screen.queryByText(/solved at: 2022-01-01T00:00:00/i);
-    expect(solved).toBeNull();
     await screen.findByRole("button", { name: /finish/i });
+  });
+  it("renders the page with unsolved state", async () => {
+    render(<RemixStub initialEntries={["/play/solve-problems"]} />);
+    await screen.findByText(/started at: 2022\/1\/1 9:00:00/i);
+    await screen.findByText(/not submitted yet/i);
+    await screen.findByText(/not solved yet/i);
   });
   it("renders the page with submitted but unsolved state", async () => {
     server.use(
@@ -91,15 +92,9 @@ describe.each([
       }),
     );
     render(<RemixStub initialEntries={["/play/solve-problems"]} />);
-    await screen.findByRole("heading", { name: /solve the problem/i });
-    await screen.findByText(/testproblemtitle/i);
-    await screen.findByText("300");
-    await screen.findByRole("link", { name: /go to problem page/i });
-    await screen.findByText(/started at: 2022-01-01T00:00:00/i);
-    await screen.findByText(/submitted first at: 2022-01-01T01:00:00/i);
-    const solved = screen.queryByText(/solved at: 2022-01-01T00:00:00/i);
-    expect(solved).toBeNull();
-    await screen.findByRole("button", { name: /finish/i });
+    await screen.findByText(/started at: 2022\/1\/1 9:00:00/i);
+    await screen.findByText(/submitted first at: 2022\/1\/1 10:00:00/i);
+    await screen.findByText(/not solved yet/i);
   });
   it("renders the page with solved state", async () => {
     server.use(
@@ -136,14 +131,9 @@ describe.each([
       }),
     );
     render(<RemixStub initialEntries={["/play/solve-problems"]} />);
-    await screen.findByRole("heading", { name: /solve the problem/i });
-    await screen.findByText(/testproblemtitle/i);
-    await screen.findByText("300");
-    await screen.findByRole("link", { name: /go to problem page/i });
-    await screen.findByText(/started at: 2022-01-01T00:00:00/i);
-    await screen.findByText(/submitted first at: 2022-01-01T00:30:00/i);
-    await screen.findByText(/cleared at: 2022-01-01T01:00:00/i);
-    await screen.findByRole("button", { name: /finish/i });
+    await screen.findByText(/started at: 2022\/1\/1 9:00:00/i);
+    await screen.findByText(/submitted first at: 2022\/1\/1 9:30:00/i);
+    await screen.findByText(/solved at: 2022\/1\/1 10:00:00/i);
   });
   it("redirects to /play/router on click of the finish button", async () => {
     render(<RemixStub initialEntries={["/play/solve-problems"]} />);
@@ -153,25 +143,6 @@ describe.each([
     await user.click(finishButton);
     await screen.findByText(/test succeeded/i);
   });
-  it.each(TURNS.filter((v) => v !== "solve-problems"))(
-    "redirects to /play/router if the turn is %s",
-    async (turn) => {
-      await TurnRepository.save(account.id, turn);
-      const RemixStub = createRemixStub([
-        {
-          path: "/play/solve-problems",
-          loader: authenticated(loader),
-          Component,
-        },
-        {
-          path: "/play/router",
-          Component: () => <div>Test Succeeded 😆</div>,
-        },
-      ]);
-      render(<RemixStub initialEntries={["/play/solve-problems"]} />);
-      await screen.findByText(/test succeeded/i);
-    },
-  );
 });
 
 describe("action", () => {

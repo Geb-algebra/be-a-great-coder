@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import invariant from "tiny-invariant";
 import { UserRepository } from "~/accounts/lifecycle/user.server.ts";
 import { prisma } from "~/db.server.ts";
@@ -7,16 +8,28 @@ import {
   TotalAssetsRepository,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import { TotalAssets } from "~/game/models/game.ts";
+import { INGREDIENT_NAMES, type IngredientName, TotalAssets } from "~/game/models/game.ts";
 import { expect, test } from "./fixtures.ts";
+
+async function assertNumIngredients(page: Page, ingredientName: IngredientName, num: number) {
+  await expect(
+    page
+      .getByRole("list", { name: /ingredient stock/i })
+      .getByRole("listitem", { name: RegExp(`${ingredientName}`, "i") })
+      .getByText(String(num)),
+  ).toBeVisible();
+}
 
 test.describe("game cycle", () => {
   test("start with buy-ingredients with initial game state", async ({ loggedInPage }) => {
     await loggedInPage.goto("/play");
     await loggedInPage.getByRole("button", { name: /start game/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /buy ingredients/i })).toBeVisible();
-    await expect(loggedInPage.getByText(/cash: 1000/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 0/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/\$ 1000/i)).toBeVisible();
+
+    for (const ingredientName of INGREDIENT_NAMES) {
+      await assertNumIngredients(loggedInPage, ingredientName, 0);
+    }
     await expect(loggedInPage.getByText(/battery: 1 \/ 1/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 1/i)).toBeVisible();
   });
@@ -30,20 +43,21 @@ test.describe("game cycle", () => {
     await loggedInPage.getByRole("button", { name: /start game/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /buy ingredients/i })).toBeVisible();
     await loggedInPage
+      .getByRole("list", { name: /buy ingredients/i })
       .getByRole("listitem", { name: /iron$/i })
-      .getByRole("button", { name: /buy 1$/i })
+      .getByRole("button", { name: /\+ 1$/i })
       .click();
-    await expect(loggedInPage.getByText(/cash: 1000/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 1/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/\$ 1000/i)).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 1);
     await loggedInPage
       .getByRole("listitem", { name: /iron$/i })
-      .getByRole("button", { name: /buy 10$/i })
+      .getByRole("button", { name: /\+ 10$/i })
       .click();
-    await expect(loggedInPage.getByText(/cash: 0/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 11/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/\$ 0/i)).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 11);
     await loggedInPage
       .getByRole("listitem", { name: /iron$/i })
-      .getByRole("button", { name: /buy 1$/i })
+      .getByRole("button", { name: /\+ 1$/i })
       .click();
     await expect(loggedInPage.getByText(/not enough money/i)).toBeVisible();
     await loggedInPage.getByRole("button", { name: /finish buying/i }).click();
@@ -52,7 +66,8 @@ test.describe("game cycle", () => {
     ).toBeVisible();
   });
   test("make and sell products", async ({ loggedInPage }) => {
-    const totalAssets = new TotalAssets(100, 2, new Map([["Iron", 9]]));
+    // I set cash to 101, not 100, because the text "$ 100" hits twice in the page.
+    const totalAssets = new TotalAssets(101, 2, new Map([["Iron", 9]]));
     const user = await UserRepository.getByName("TestUser012");
     invariant(user, "user not found");
     await TotalAssetsRepository.save(user.id, totalAssets);
@@ -62,10 +77,8 @@ test.describe("game cycle", () => {
     await expect(
       loggedInPage.getByRole("heading", { name: /make and sell products/i }),
     ).toBeVisible();
-    await expect(loggedInPage.getByText(/cash: 100/i)).toBeVisible();
-    await expect(
-      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 9/i),
-    ).toBeVisible();
+    await expect(loggedInPage.getByText(/\$ 101/i)).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 9);
 
     await loggedInPage
       .getByRole("listitem", { name: /sword$/i })
@@ -73,26 +86,20 @@ test.describe("game cycle", () => {
       .click();
     // TODO: test something about cash increase. currently we can't test it because it's random.
     // await expect(loggedInPage.getByText(/cash: 1100/i)).toBeVisible();
-    await expect(
-      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 6/i),
-    ).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 6);
     await loggedInPage
       .getByRole("listitem", { name: /sword$/i })
       .getByRole("button", { name: /make/i })
       .click();
     // await expect(loggedInPage.getByText(/cash: 2100/i)).toBeVisible();
-    await expect(
-      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 3/i),
-    ).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 3);
     await loggedInPage
       .getByRole("listitem", { name: /sword$/i })
       .getByRole("button", { name: /make/i })
       .click();
     await expect(loggedInPage.getByText(/not enough battery/i)).toBeVisible();
     // await expect(loggedInPage.getByText(/cash: 2100/i)).toBeVisible();
-    await expect(
-      loggedInPage.getByRole("list", { name: /ingredients/i }).getByText(/iron: 3/i),
-    ).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 3);
     await loggedInPage.getByRole("button", { name: /finish making products/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /select a problem/i })).toBeVisible();
   });
@@ -105,12 +112,12 @@ test.describe("game cycle", () => {
 
     await loggedInPage.goto("/play/router");
     await expect(loggedInPage.getByRole("heading", { name: /select a problem/i })).toBeVisible();
-    await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
-    await expect(loggedInPage.getByRole("button", { name: /100/i })).toBeVisible();
-    await expect(loggedInPage.getByRole("button", { name: /200/i })).toBeVisible();
-    await expect(loggedInPage.getByRole("button", { name: /300/i })).toBeVisible();
-    await loggedInPage.getByRole("button", { name: /200/i }).click();
+    await expect(loggedInPage.getByText(/\$ 500/i)).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 6);
+    await expect(loggedInPage.getByRole("button", { name: /difficulty: 100/i })).toBeVisible();
+    await expect(loggedInPage.getByRole("button", { name: /difficulty: 200/i })).toBeVisible();
+    await expect(loggedInPage.getByRole("button", { name: /difficulty: 300/i })).toBeVisible();
+    await loggedInPage.getByRole("button", { name: /difficulty: 200/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /solve the problem/i })).toBeVisible();
   });
   test("finish unsolved problems", async ({ loggedInPage }) => {
@@ -156,11 +163,11 @@ test.describe("game cycle", () => {
 
     await loggedInPage.goto("/play/router");
     await expect(loggedInPage.getByRole("heading", { name: /solve the problem/i })).toBeVisible();
-    await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/\$ 500/i)).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 6);
     await loggedInPage.getByRole("button", { name: /finish/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /get reward/i })).toBeVisible();
-    await expect(loggedInPage.getByText(/cleared\?: false/i)).toBeVisible();
+    await expect(loggedInPage.getByText(/not solved yet/i)).toBeVisible();
   });
   // test('finish solved problems', async ({ loggedInPage }) => {
   //   // target problem:
@@ -258,7 +265,7 @@ test.describe("game cycle", () => {
       submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
       solvedAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
       finishedAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
-      answerShownAt: new Date(),
+      answerShownAt: null,
       rewardReceivedAt: null,
       batteryCapacityIncrement: 1,
       performanceIncrement: 1,
@@ -269,15 +276,14 @@ test.describe("game cycle", () => {
 
     await loggedInPage.goto("/play/router");
     await expect(loggedInPage.getByRole("heading", { name: /get reward/i })).toBeVisible();
-    await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 6);
     await expect(loggedInPage.getByText(/battery: 1 \/ 1/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 1/i)).toBeVisible();
-    await loggedInPage.getByRole("button", { name: /show answer/i }).click();
+    await loggedInPage.getByRole("button", { name: /read an answer/i }).click();
+    await expect(loggedInPage.getByRole("button", { name: /answer has read/i })).toBeVisible();
     await loggedInPage.getByRole("button", { name: /get reward/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /buy ingredients/i })).toBeVisible();
-    await expect(loggedInPage.getByText(/cash: 500/i)).toBeVisible();
-    await expect(loggedInPage.getByText(/iron: 6/i)).toBeVisible();
+    await assertNumIngredients(loggedInPage, "Iron", 6);
     await expect(loggedInPage.getByText(/battery: 2 \/ 2/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 2/i)).toBeVisible();
   });

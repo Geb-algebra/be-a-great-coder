@@ -1,16 +1,29 @@
-import { type LoaderFunctionArgs, json } from "@remix-run/node";
+import { type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
+import { useContext } from "react";
 import GameStatusDashboard from "~/components/GameStatusDashboard";
 import { LaboratoryRepository } from "~/game/lifecycle/game.server";
 import { getOrInitializeTotalAssets, getOrInitializeTurn } from "~/game/services/game.server";
 import { TotalAssetsJsonifier } from "~/game/services/jsonifier";
 import { authenticator } from "~/services/auth.server.ts";
+import { ThemeContext } from "../../../Contexts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/",
   });
-  await getOrInitializeTurn(user.id);
+  const turn = await getOrInitializeTurn(user.id);
+  const urlSegments = request.url.split("/");
+  if (
+    urlSegments[urlSegments.length - 2] === "play" &&
+    urlSegments[urlSegments.length - 1] !== "router"
+  ) {
+    // if the user is at one of the turn pages
+    const pageTurn = urlSegments[urlSegments.length - 1];
+    if (pageTurn !== turn) {
+      throw redirect("/play/router");
+    }
+  }
   const totalAssets = await getOrInitializeTotalAssets(user.id);
   const laboratory = await LaboratoryRepository.get(user.id);
   return json({
@@ -22,10 +35,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function Page() {
   const { totalAssetsJson, laboratoryValue } = useLoaderData<typeof loader>();
   const totalAssets = TotalAssetsJsonifier.fromJson(totalAssetsJson);
+  const theme = useContext(ThemeContext);
   return (
-    <>
-      <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratoryValue} />
-      <Outlet />
-    </>
+    <div className="h-full flex flex-col">
+      <GameStatusDashboard
+        totalAssets={totalAssets}
+        laboratoryValue={laboratoryValue}
+        theme={theme}
+      />
+      <div className="bg-factory-base rounded-t-[24px_12px] py-4 px-6 grow overflow-auto">
+        <Outlet />
+      </div>
+    </div>
   );
 }
