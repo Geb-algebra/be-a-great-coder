@@ -7,7 +7,7 @@ import compression from "compression";
 import express from "express";
 import morgan from "morgan";
 
-installGlobals();
+installGlobals({ nativeFetch: true });
 
 const viteDevServer =
   process.env.NODE_ENV === "production"

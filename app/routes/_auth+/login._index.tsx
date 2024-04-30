@@ -11,7 +11,7 @@ import { sessionStorage } from "~/services/session.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, { successRedirect: "/" });
-  return webAuthnStrategy.generateOptions(request, sessionStorage, null);
+  return await webAuthnStrategy.generateOptions(request, sessionStorage, null);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
