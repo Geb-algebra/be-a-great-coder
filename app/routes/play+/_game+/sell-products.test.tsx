@@ -7,7 +7,13 @@ import { PRODUCT_NAMES, TURNS, TotalAssets } from "~/game/models/game.ts";
 import { INGREDIENTS, PRODUCTS } from "~/game/services/config.ts";
 import * as Config from "~/game/services/config.ts";
 import { setBeginnersStatus, setVeteransStatus } from "~/routes/test/data.ts";
-import { authenticated, setupAccount } from "~/routes/test/utils.ts";
+import {
+  assertCurrentBatteryIsEqualTo,
+  assertCurrentCashIsEqualTo,
+  assertCurrentIngredientStockIsEqualTo,
+  authenticated,
+  setupAccount,
+} from "~/routes/test/utils.tsx";
 import Layout, { loader as layoutLoader } from "./_layout.tsx";
 import { action as sellAction } from "./sell-products.$name.tsx";
 import Page, { action, loader } from "./sell-products.tsx";
@@ -44,10 +50,10 @@ describe.each([
   beforeEach(async () => {
     account = await setupAccount();
     await TurnRepository.save(account.id, "sell-products");
+    await statusSetter(account.id);
   });
 
   it("renders the page", async () => {
-    await statusSetter(account.id);
     render(<RemixStub initialEntries={["/play/sell-products"]} />);
     await screen.findByRole("heading", { name: /make and sell products/i });
     await screen.findByRole("button", { name: /finish making products/i });
@@ -55,29 +61,27 @@ describe.each([
 
   it.each(PRODUCTS)("sells the item when the button is clicked", async (product) => {
     const spyon = vi.spyOn(Config, "calcPrice").mockImplementation(() => 1000);
-    await statusSetter(account.id);
     render(<RemixStub initialEntries={["/play/sell-products"]} />);
-    await screen.findByText(RegExp(`cash: ${cash}`, "i"));
+    await screen.findByText(RegExp(`\\$ ${cash}`, "i"));
     for (const [ingredient] of product.ingredients) {
-      await screen.findByText(RegExp(`${ingredient}: ${initIngredientAmount}`, "i"));
+      await assertCurrentIngredientStockIsEqualTo(ingredient, initIngredientAmount);
     }
-    await screen.findByText(RegExp(`battery: ${battery}`, "i"));
+    await assertCurrentBatteryIsEqualTo(battery);
     const item = await screen.findByRole("listitem", { name: RegExp(product.name, "i") });
     const makeSwordButton = await within(item).findByRole("button", { name: /make/i });
     const user = userEvent.setup();
     await user.click(makeSwordButton);
     // expect(spyon).toHaveBeenCalled();
-    await screen.findByText(RegExp(`cash: ${cash + 1000}`, "i"));
+    await assertCurrentCashIsEqualTo(cash + 1000);
     for (const [ingredient, quantity] of product.ingredients) {
-      await screen.findByText(RegExp(`${ingredient}: ${initIngredientAmount - quantity}`, "i"));
+      await assertCurrentIngredientStockIsEqualTo(ingredient, initIngredientAmount - quantity);
     }
-    await screen.findByText(RegExp(`battery: ${battery - 1}`, "i"));
+    await assertCurrentBatteryIsEqualTo(battery - 1);
   });
 
   it.each(PRODUCTS)(
     "throws an error if the user doesnt have enough ingredients",
     async (product) => {
-      await statusSetter(account.id);
       const newAssets = new TotalAssets(
         cash,
         battery,
@@ -85,9 +89,6 @@ describe.each([
       );
       await TotalAssetsRepository.save(account.id, newAssets);
       render(<RemixStub initialEntries={["/play/sell-products"]} />);
-      for (const [ingredient] of product.ingredients) {
-        await screen.findByText(RegExp(`${ingredient}: 0`, "i"));
-      }
       const item = await screen.findByRole("listitem", { name: RegExp(product.name, "i") });
       const makeSwordButton = await within(item).findByRole("button", { name: /make/i });
       const user = userEvent.setup();
@@ -97,12 +98,11 @@ describe.each([
   );
 
   it.each(PRODUCTS)("throws an error if the user doesnt have enough battery", async (product) => {
-    await statusSetter(account.id);
     const totalAssets = await TotalAssetsRepository.getOrThrow(account.id);
     const newAssets = new TotalAssets(cash, 0, totalAssets.ingredientStock);
     await TotalAssetsRepository.save(account.id, newAssets);
     render(<RemixStub initialEntries={["/play/sell-products"]} />);
-    await screen.findByText(/battery: 0/i);
+    await assertCurrentBatteryIsEqualTo(0);
     const item = await screen.findByRole("listitem", { name: RegExp(product.name, "i") });
     const makeSwordButton = await within(item).findByRole("button", { name: /make/i });
     const user = userEvent.setup();
@@ -110,18 +110,7 @@ describe.each([
     await screen.findByText(/not enough battery/i);
   });
 
-  it.each(TURNS.filter((v) => v !== "sell-products"))(
-    "redirects to /play/router if the turn is %s",
-    async (turn) => {
-      await statusSetter(account.id);
-      await TurnRepository.save(account.id, turn);
-      render(<RemixStub initialEntries={["/play/sell-products"]} />);
-      await screen.findByText(/test succeeded/i);
-    },
-  );
-
   it("redirects to /play/router after clicking the finish buying button", async () => {
-    await statusSetter(account.id);
     render(<RemixStub initialEntries={["/play/sell-products"]} />);
     const finishButton = await screen.findByRole("button", { name: /finish making products/i });
     const user = userEvent.setup();

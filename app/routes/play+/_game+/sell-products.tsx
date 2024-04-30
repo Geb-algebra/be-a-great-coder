@@ -37,7 +37,7 @@ function ProductInfo(props: { product: Product }) {
   return (
     <div className="w-36 bg-factory-card rounded-lg">
       <div className=" w-full h-48 border border-factory-border rounded-t-lg p-2">
-        <h2 id={`product-name-${props.product}`} className="font-bold text-center">
+        <h2 id={`product-${props.product.name}`} className="font-bold text-center">
           {props.product.name}
         </h2>
         <p>Ave: $ {props.product.priceAverage}</p>
@@ -70,7 +70,7 @@ export default function Page() {
       <ErrorDisplay message={actionData?.error.message ?? fetcher.data?.error?.message ?? ""} />
       <ul aria-labelledby="buy-ingredient-heading" className="flex gap-6">
         {PRODUCTS.map((product) => (
-          <li key={product.name}>
+          <li aria-labelledby={`product-${product.name}`} key={product.name}>
             <fetcher.Form method="post" action={product.name}>
               <ProductInfo product={product} />
             </fetcher.Form>

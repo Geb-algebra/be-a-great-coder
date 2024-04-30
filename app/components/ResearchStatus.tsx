@@ -10,7 +10,7 @@ export function ResearchStatus(props: { research: Research }) {
         fallBackMessage="Not started yet"
       />
       <StatusText
-        prefix="Submitted At"
+        prefix="Submitted First At"
         time={props.research.submittedAt}
         fallBackMessage="Not submitted yet"
       />

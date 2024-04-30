@@ -10,8 +10,11 @@ function CashBoard(props: { amount: number }) {
 
 function IngredientStock(props: { name: string; amount: number }) {
   return (
-    <li className={"w-24 h-16 py-2 text-center align-middle"}>
-      <p>{props.name}</p>
+    <li
+      aria-labelledby={`stocked-ingredient-${props.name}`}
+      className={"w-24 h-16 py-2 text-center align-middle"}
+    >
+      <p id={`stocked-ingredient-${props.name}`}>{props.name}</p>
       <p>{props.amount}</p>
     </li>
   );
@@ -49,11 +52,11 @@ export default function GameStatusDashboard(props: {
   theme: string;
 }) {
   return (
-    <div className={`bg-${props.theme}-card rounded-xl mx-6 my-4`}>
+    <div aria-label="player's status" className={`bg-${props.theme}-card rounded-xl mx-6 my-4`}>
       <div className="flex gap-6">
         <CashBoard amount={props.totalAssets.cash} />
         <ul
-          aria-label="ingredients"
+          aria-label="ingredient stock"
           className={`flex bg-${props.theme}-card text-${props.theme}-text-dark rounded-lg gap-2`}
         >
           {Array.from(props.totalAssets.ingredientStock).map(([name, amount]) => (

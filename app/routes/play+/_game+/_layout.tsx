@@ -13,9 +13,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     failureRedirect: "/",
   });
   const turn = await getOrInitializeTurn(user.id);
-  const pageTurn = request.url.split("/").pop();
-  if (pageTurn !== turn) {
-    throw redirect("/play/router");
+  const urlSegments = request.url.split("/");
+  if (
+    urlSegments[urlSegments.length - 2] === "play" &&
+    urlSegments[urlSegments.length - 1] !== "router"
+  ) {
+    // if the user is at one of the turn pages
+    const pageTurn = urlSegments[urlSegments.length - 1];
+    if (pageTurn !== turn) {
+      throw redirect("/play/router");
+    }
   }
   const totalAssets = await getOrInitializeTotalAssets(user.id);
   const laboratory = await LaboratoryRepository.get(user.id);

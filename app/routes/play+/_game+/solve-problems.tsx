@@ -69,7 +69,7 @@ export function StatusText(props: { prefix: string; time: Date | null; fallBackM
   function timeToText(time: Date) {
     return `${time.getFullYear()}/${
       time.getMonth() + 1
-    }/${time.getDate()} ${time.getHours()}:${time.getMinutes()}`;
+    }/${time.getDate()} ${time.toLocaleTimeString()}`;
   }
   return (
     <p>

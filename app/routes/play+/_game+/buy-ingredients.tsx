@@ -37,7 +37,7 @@ function IngredientSeller(props: { ingredient: Ingredient }) {
   return (
     <div className="w-36 bg-factory-card rounded-lg">
       <div className=" w-full h-24 border border-factory-border rounded-t-lg p-2">
-        <h2 id={`ingredient-name-${props.ingredient}`} className="font-bold text-center">
+        <h2 id={`buy-${props.ingredient.name}`} className="font-bold text-center">
           {props.ingredient.name}
         </h2>
         <p>$ {props.ingredient.price}</p>
@@ -93,10 +93,10 @@ export default function Page() {
         titleId="buy-ingredient-heading"
         finishButtonName="Finish Buying"
       />
-      <ErrorDisplay message={actionData?.error.message ?? fetcher.data?.error.message} />
+      <ErrorDisplay message={actionData?.error.message ?? fetcher.data?.error.message ?? ""} />
       <ul aria-labelledby="buy-ingredient-heading" className="flex gap-6">
         {INGREDIENTS.map((ingredient) => (
-          <li aria-labelledby={`ingredient-name-${ingredient.name}`} key={ingredient.name}>
+          <li aria-labelledby={`buy-${ingredient.name}`} key={ingredient.name}>
             <fetcher.Form method="post" action={ingredient.name}>
               <IngredientSeller ingredient={ingredient} />
             </fetcher.Form>

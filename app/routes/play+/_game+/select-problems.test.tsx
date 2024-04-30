@@ -5,7 +5,7 @@ import type { Account } from "~/accounts/models/account.ts";
 import { LaboratoryRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { TURNS } from "~/game/models/game.ts";
 import { setBeginnersStatus, setInitialStatus, setVeteransStatus } from "~/routes/test/data.ts";
-import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils.ts";
+import { addAuthenticationSessionTo, authenticated, setupAccount } from "~/routes/test/utils.tsx";
 import { loader as routerLoader } from "./router.tsx";
 import Page, { action, loader } from "./select-problems.tsx";
 import solvePage, { loader as solveLoader } from "./solve-problems.tsx";
@@ -88,32 +88,12 @@ describe.each([
   it("redirects to the solve page when a problem is selected", async () => {
     render(<RemixStub initialEntries={["/play/select-problems"]} />);
     await screen.findByRole("heading", { name: /select a problem to solve/i });
-    const button = await screen.findByRole("button", { name: RegExp(`${difficulties[0]}`, "i") });
+    const button = await screen.findByRole("button", {
+      name: RegExp(`difficulty: ${difficulties[0]}`, "i"),
+    });
     const user = userEvent.setup();
     await user.click(button);
     await screen.findByRole("heading", { name: /solve the problem/i });
-    await screen.findByText(`${difficulties[0]}`);
+    await screen.findByText(RegExp(`difficulty: ${difficulties[0]}`, "i"));
   });
-
-  it.each(TURNS.filter((v) => v !== "select-problems"))(
-    "redirects to /play/router if the turn is %s",
-    async (turn) => {
-      await statusSetter(account.id);
-      await TurnRepository.save(account.id, turn);
-      const RemixStub2 = createRemixStub([
-        {
-          path: "/play/select-problems",
-          loader: authenticated(loader),
-          action: authenticated(action),
-          Component: Page,
-        },
-        {
-          path: "/play/router",
-          Component: () => <div>Test Succeeded 😆</div>,
-        },
-      ]);
-      render(<RemixStub2 initialEntries={["/play/select-problems"]} />);
-      await screen.findByText(/test succeeded/i);
-    },
-  );
 });

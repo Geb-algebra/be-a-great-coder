@@ -3,6 +3,7 @@ import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import { createContext, useContext, useState } from "react";
 import Overlay from "~/components/Overlay.tsx";
 import { TurnRepository } from "~/game/lifecycle/game.server";
+import type { Turn } from "~/game/models/game";
 import { authenticator } from "~/services/auth.server.ts";
 import { ThemeContext } from "../../Contexts";
 
@@ -10,7 +11,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/",
   });
-  const turn = await TurnRepository.getOrThrow(user.id);
+  let turn: Turn;
+  try {
+    turn = await TurnRepository.getOrThrow(user.id);
+  } catch {
+    turn = "buy-ingredients";
+  }
   return json({ user, turn });
 }
 
