@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import TurnHeader from "~/components/TurnHeader";
 import {
@@ -7,9 +7,8 @@ import {
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import type { Problem, Research } from "~/game/models/game";
+import type { Research } from "~/game/models/game";
 import { getNextTurn, getProblemsMatchUserRank } from "~/game/services/game.server.ts";
-import { ResearchJsonifier } from "~/game/services/jsonifier";
 import { authenticator } from "~/services/auth.server.ts";
 import { getRequiredStringFromFormData } from "~/utils/utils";
 
@@ -18,12 +17,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const laboratory = await LaboratoryRepository.get(user.id);
   const currentResearch = laboratory.getUnfinishedResearch();
   if (currentResearch) {
-    return redirect("/play/solve-problems");
+    throw redirect("/play/solve-problems");
   }
   {
     const candidateResearches = laboratory.getCandidateResearches();
     if (candidateResearches.length > 0) {
-      return json(candidateResearches.map(ResearchJsonifier.toJson));
+      return candidateResearches;
     }
   }
   const problems = await getProblemsMatchUserRank(laboratory.researcherRank);
@@ -33,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
   await LaboratoryRepository.save(user.id, laboratory);
   const candidateResearches = laboratory.getCandidateResearches();
-  return json(candidateResearches.map(ResearchJsonifier.toJson));
+  return candidateResearches;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -42,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const laboratory = await LaboratoryRepository.get(user.id);
     const currentResearch = laboratory.getUnfinishedResearch();
     if (currentResearch) {
-      return redirect("/play/solve-problems");
+      throw redirect("/play/solve-problems");
     }
     const formData = await request.formData();
     const acceptedResearchId = getRequiredStringFromFormData(formData, "researchId");
@@ -55,7 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await LaboratoryRepository.save(user.id, laboratory);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
-    return redirect("/play/router");
+    throw redirect("/play/router");
   } catch (error) {
     if (error instanceof Response && error.status >= 400) {
       return { error: (await error.json()) as { message: string } };
@@ -85,8 +84,7 @@ function ResearchSelector(props: { research: Research }) {
 }
 
 export default function Page() {
-  const researchJsons = useLoaderData<typeof loader>();
-  const researches = researchJsons.map(ResearchJsonifier.fromJson);
+  const researches = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   return (
     <div>
