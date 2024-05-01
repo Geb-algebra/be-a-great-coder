@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { redirect } from "@remix-run/node";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { getProblemSubmittedAndSolvedTime } from "~/atcoder-info/services/atcoder.server";
 import ErrorDisplay from "~/components/ErrorDisplay";
 import { ResearchInfo } from "~/components/ResearchInfo";
@@ -9,14 +9,13 @@ import TurnHeader from "~/components/TurnHeader";
 import { ObjectNotFoundError } from "~/errors.ts";
 import { LaboratoryRepository, TurnRepository } from "~/game/lifecycle/game.server.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
-import { ResearchJsonifier } from "~/game/services/jsonifier";
 import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   const turn = await TurnRepository.getOrThrow(user.id);
   if (turn !== "solve-problems") {
-    return redirect("/play/router");
+    throw redirect("/play/router");
   }
   const laboratory = await LaboratoryRepository.get(user.id);
   const currentResearch = laboratory.getUnfinishedResearch();
@@ -24,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new ObjectNotFoundError("unfinished research not found");
   }
   if (currentResearch.solvedAt && currentResearch.startedAt) {
-    return json({ currentResearchJson: ResearchJsonifier.toJson(currentResearch) });
+    return currentResearch;
   }
   const { firstSubmittedAt, firstACAt } = await getProblemSubmittedAndSolvedTime(
     currentResearch.problem.id,
@@ -38,7 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     currentResearch.solvedAt = firstACAt;
   }
   await LaboratoryRepository.save(user.id, laboratory);
-  return json({ currentResearchJson: ResearchJsonifier.toJson(currentResearch) });
+  return currentResearch;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -81,8 +80,7 @@ export function StatusText(props: { prefix: string; time: Date | null; fallBackM
 }
 
 export default function Page() {
-  const { currentResearchJson } = useLoaderData<typeof loader>();
-  const currentResearch = ResearchJsonifier.fromJson(currentResearchJson);
+  const currentResearch = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   return (
     <div className="bg-lab-base">

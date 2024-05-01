@@ -5,7 +5,7 @@ import { resetDB } from "test/utils.ts";
 
 configure({ asyncUtilTimeout: 500 });
 
-installGlobals();
+installGlobals({ nativeFetch: true });
 
 beforeAll(async () => {
   server.listen({ onUnhandledRequest: "warn" });

@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import ErrorDisplay from "~/components/ErrorDisplay";
 import { ResearchInfo } from "~/components/ResearchInfo";
@@ -11,9 +11,7 @@ import {
   TotalAssetsRepository,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import { calcRobotGrowthRate } from "~/game/services/config";
 import { TotalAssetsUpdateService, getNextTurn } from "~/game/services/game.server.ts";
-import { ResearchJsonifier } from "~/game/services/jsonifier";
 import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -22,9 +20,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const unrewardedResearch = laboratory.getUnrewardedResearch();
   if (!unrewardedResearch) {
     TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
-    return redirect("/play/router");
+    throw redirect("/play/router");
   }
-  return json({ unrewardedResearchJson: ResearchJsonifier.toJson(unrewardedResearch) });
+  return unrewardedResearch;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -58,8 +56,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Page() {
-  const { unrewardedResearchJson } = useLoaderData<typeof loader>();
-  const unrewardedResearch = ResearchJsonifier.fromJson(unrewardedResearchJson);
+  const unrewardedResearch = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const hasAnswerRead = !!unrewardedResearch.answerShownAt;
 

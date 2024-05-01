@@ -1,6 +1,6 @@
-import { type LoaderFunctionArgs, type MetaFunction, json } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import Overlay from "~/components/Overlay.tsx";
 import { TurnRepository } from "~/game/lifecycle/game.server";
 import type { Turn } from "~/game/models/game";
@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch {
     turn = "buy-ingredients";
   }
-  return json({ user, turn });
+  return { user, turn };
 }
 
 export const meta: MetaFunction = () => {
