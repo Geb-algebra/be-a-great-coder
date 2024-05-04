@@ -1,8 +1,9 @@
-import { prisma } from "~/db.server.ts";
+// import { prisma as globalPrisma } from "~/db.server.ts";
 
+import type { PrismaClient } from "@prisma/client";
 import config from "../playwright.config.ts";
 
-export async function resetDB() {
+export async function resetDB(prisma: PrismaClient) {
   const tables = await prisma.$queryRaw<
     { name: string }[]
   >`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_prisma_migrations';`;

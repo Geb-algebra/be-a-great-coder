@@ -18,7 +18,7 @@ export const test = base.extend({
     });
     await AccountRepository.save(account);
     await use(page);
-    await resetDB();
+    await resetDB(prisma);
   },
   loggedInPage: async ({ page, baseURL }, use) => {
     // referred to https://github.com/kentcdodds/kentcdodds.com/blob/main/e2e/utils.ts
@@ -45,17 +45,17 @@ export const test = base.extend({
       },
     ]);
     await use(page);
-    await resetDB();
+    await resetDB(prisma);
     // I wanna logout here
   },
 });
 
 test.beforeEach(async () => {
-  await resetDB();
+  await resetDB(prisma);
 });
 
 test.afterAll(async () => {
-  await resetDB();
+  await resetDB(prisma);
   await prisma.$disconnect();
 });
 
