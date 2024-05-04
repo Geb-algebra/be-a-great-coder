@@ -77,7 +77,7 @@ export default function Page() {
             <button
               type="submit"
               disabled={hasAnswerRead}
-              className="h-12 w-96 m-12 bg-lab-accent-1 hover:bg-lab-accent-3 text-lab-text-light rounded-lg transition-colors duration-300 disabled:bg-gray-400 disabled:text-lab-text-dark"
+              className="h-12 w-96 m-12 bg-accent-1 hover:bg-accent-3 text-text-light rounded-lg transition-colors duration-300 disabled:bg-gray-400 disabled:text-text-dark"
             >
               {hasAnswerRead ? "Answer has read" : "Read an Answer to earn performance"}
             </button>
@@ -86,7 +86,7 @@ export default function Page() {
             <button
               type="submit"
               className="
-            h-20 w-96 m-12 bg-lab-accent-1 hover:bg-lab-accent-3 text-lab-text-light rounded-lg transition-colors duration-300 font-bold text-2xl
+            h-20 w-96 m-12 bg-accent-1 hover:bg-accent-3 text-text-light rounded-lg transition-colors duration-300 font-bold text-2xl
             "
             >
               Get Reward

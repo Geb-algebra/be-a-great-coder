@@ -35,8 +35,8 @@ export const meta: MetaFunction = () => {
 
 function IngredientSeller(props: { ingredient: Ingredient }) {
   return (
-    <div className="w-36 bg-factory-card rounded-lg">
-      <div className=" w-full h-24 border border-factory-border rounded-t-lg p-2">
+    <div className="w-36 bg-card rounded-lg">
+      <div className=" w-full h-24 border border-border rounded-t-lg p-2">
         <h2 id={`buy-${props.ingredient.name}`} className="font-bold text-center">
           {props.ingredient.name}
         </h2>
@@ -47,7 +47,7 @@ function IngredientSeller(props: { ingredient: Ingredient }) {
           type="submit"
           name="quantity"
           value="1"
-          className="border border-factory-border w-full rounded-bl-lg hover:bg-factory-accent-1 hover:text-factory-text-light transition-colors duration-300"
+          className="border border-border w-full rounded-bl-lg hover:bg-accent-1 hover:text-text-light transition-colors duration-300"
         >
           + 1
         </button>
@@ -55,7 +55,7 @@ function IngredientSeller(props: { ingredient: Ingredient }) {
           type="submit"
           name="quantity"
           value="10"
-          className="border border-factory-border w-full rounded-br-lg hover:bg-factory-accent-1 hover:text-factory-text-light transition-colors duration-300"
+          className="border border-border w-full rounded-br-lg hover:bg-accent-1 hover:text-text-light transition-colors duration-300"
         >
           + 10
         </button>
@@ -66,7 +66,7 @@ function IngredientSeller(props: { ingredient: Ingredient }) {
 
 function RecipeDisplayer(props: { product: Product }) {
   return (
-    <div className="w-36 h-24 bg-factory-base rounded-lg">
+    <div className="w-36 h-24 bg-base rounded-lg">
       <div className=" w-full rounded-t-lg p-2">
         <h2 id={`product-name-${props.product}`} className="font-bold">
           {props.product.name}
