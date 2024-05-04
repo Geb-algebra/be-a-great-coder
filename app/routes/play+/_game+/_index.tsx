@@ -1,5 +1,6 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
+import Button from "~/components/Button";
 import { authenticator } from "~/services/auth.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -18,10 +19,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Page() {
   return (
-    <>
-      <Form method="post">
-        <button type="submit">Start Game</button>
-      </Form>
-    </>
+    <Form method="post">
+      <Button type="submit">Start Game</Button>
+    </Form>
   );
 }

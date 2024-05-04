@@ -1,4 +1,5 @@
 import type { Research } from "~/game/models/game";
+import Button from "./Button";
 
 export function ResearchInfo(props: { research: Research }) {
   return (
@@ -15,9 +16,11 @@ export function ResearchInfo(props: { research: Research }) {
         }`}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-4 mt-4 -ml-36 self-start rounded-lg bg-accent-1 text-text-light hover:bg-accent-2 transition-colors duration-300"
+        className="mt-4 -ml-36 self-start"
       >
-        Go to Problem Page!
+        <Button type="button" className="p-4">
+          Go to Problem Page!
+        </Button>
       </a>
     </div>
   );

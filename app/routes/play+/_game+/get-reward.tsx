@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import Button from "~/components/Button";
 import ErrorDisplay from "~/components/ErrorDisplay";
 import { ResearchInfo } from "~/components/ResearchInfo";
 import { ResearchStatus } from "~/components/ResearchStatus";
@@ -74,23 +75,14 @@ export default function Page() {
         </div>
         <div>
           <Form method="post" action="show-answer">
-            <button
-              type="submit"
-              disabled={hasAnswerRead}
-              className="h-12 w-96 m-12 bg-accent-1 hover:bg-accent-3 text-text-light rounded-lg transition-colors duration-300 disabled:bg-gray-400 disabled:text-text-dark"
-            >
+            <Button type="submit" disabled={hasAnswerRead} className="h-12 w-96 m-12 py-0">
               {hasAnswerRead ? "Answer has read" : "Read an Answer to earn performance"}
-            </button>
+            </Button>
           </Form>
           <Form method="post">
-            <button
-              type="submit"
-              className="
-            h-20 w-96 m-12 bg-accent-1 hover:bg-accent-3 text-text-light rounded-lg transition-colors duration-300 font-bold text-2xl
-            "
-            >
+            <Button type="submit" className="h-20 w-96 m-12 font-bold text-2xl">
               Get Reward
-            </button>
+            </Button>
           </Form>
         </div>
       </div>

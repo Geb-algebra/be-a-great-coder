@@ -1,4 +1,5 @@
 import { Form } from "@remix-run/react";
+import Button from "./Button";
 
 export default function TurnHeader(props: {
   title: string;
@@ -12,12 +13,9 @@ export default function TurnHeader(props: {
       </h1>
       <Form method="post">
         {!props.finishButtonName ? null : (
-          <button
-            type="submit"
-            className="h-12 px-4 rounded-lg bg-accent-1 text-text-light hover:bg-accent-3 transition-colors duration-300"
-          >
+          <Button type="submit" className="px-4 h-12">
             {props.finishButtonName}
-          </button>
+          </Button>
         )}
       </Form>
     </div>
