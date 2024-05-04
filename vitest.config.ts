@@ -12,13 +12,8 @@ export default defineConfig({
     globals: true,
     environment: "happy-dom",
     setupFiles: ["./test/unit/setup-test-env.ts"],
+    globalSetup: "./test/unit/global-setup.ts",
     restoreMocks: true,
-    pool: "forks",
-    poolOptions: {
-      forks: {
-        singleFork: true, // set this to avoid multiple tests trying to interact DB at the same time.
-      },
-    },
     sequence: {
       shuffle: true,
     },
