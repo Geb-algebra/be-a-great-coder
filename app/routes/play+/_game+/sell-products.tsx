@@ -35,8 +35,8 @@ export const meta: MetaFunction = () => {
 
 function ProductInfo(props: { product: Product }) {
   return (
-    <div className="w-36 bg-factory-card rounded-lg">
-      <div className=" w-full h-48 border border-factory-border rounded-t-lg p-2">
+    <div className="w-36 bg-card rounded-lg">
+      <div className=" w-full h-48 border border-border rounded-t-lg p-2">
         <h2 id={`product-${props.product.name}`} className="font-bold text-center">
           {props.product.name}
         </h2>
@@ -52,7 +52,7 @@ function ProductInfo(props: { product: Product }) {
       </div>
       <button
         type="submit"
-        className="h-12 border border-factory-border w-full rounded-b-lg hover:bg-factory-accent-1 hover:text-factory-text-light transition-colors duration-300"
+        className="h-12 border border-border w-full rounded-b-lg hover:bg-accent-1 hover:text-text-light transition-colors duration-300"
       >
         Make
       </button>

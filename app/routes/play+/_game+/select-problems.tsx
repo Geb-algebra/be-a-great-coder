@@ -74,7 +74,7 @@ function ResearchSelector(props: { research: Research }) {
       type="submit"
       name="researchId"
       value={props.research.id}
-      className="w-48 h-48 p-4 bg-lab-card rounded-lg hover:bg-lab-accent-1 hover:text-lab-text-light transition-colors duration-300 text-left"
+      className="w-48 h-48 p-4 bg-card rounded-lg  hover:bg-accent-1 hover:text-text-light transition-colors duration-300 text-left"
     >
       <p className="w-full text-center font-bold mb-8">{props.research.problem.title}</p>
       <p>Difficulty: {props.research.problem.difficulty}</p>
