@@ -1,12 +1,13 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useFetcher } from "@remix-run/react";
+import { useActionData, useFetcher } from "@remix-run/react";
+import Button from "~/components/Button.tsx";
 import ErrorDisplay from "~/components/ErrorDisplay.tsx";
 import TurnHeader from "~/components/TurnHeader.tsx";
 import { GameLogicViolated } from "~/errors.ts";
 import { TurnRepository } from "~/game/lifecycle/game.server.ts";
-import type { Ingredient, Sword } from "~/game/models";
-import { BASE_METALS, GEMS, SWORDS } from "~/game/services/config.ts";
+import type { Ingredient } from "~/game/models";
+import { BASE_METALS, GEMS } from "~/game/services/config.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
 import { authenticator } from "~/services/auth.server.ts";
 import type { action as makeItemsAction } from "./forge-swords.forge.tsx";
@@ -41,8 +42,8 @@ function IngredientSelector(props: {
   // radio buttons for each ingredient
   return (
     <div className="w-48">
-      <h3 className="w-full p-4">{props.header}</h3>
-      <fieldset className="w-full p-4 bg-lab-card rounded-lg flex flex-col gap-2">
+      <h3 className="w-full p-4 font-bold">{props.header}</h3>
+      <fieldset className="w-full p-4 bg-card rounded-lg flex flex-col gap-2">
         {Array.from(props.ingredients.values()).map((ingredient) => (
           <label
             key={ingredient.id}
@@ -74,9 +75,9 @@ export default function Page() {
           />
           <IngredientSelector header="Gem" ingredients={GEMS} radioName="gemId" />
         </div>
-        <button type="submit" className="bg-lab-accent-1 text-lab-text-light p-4 rounded-lg">
+        <Button type="submit" className="px-8 py-4 h-fit my-auto">
           Forge Sword
-        </button>
+        </Button>
       </fetcher.Form>
     </div>
   );
