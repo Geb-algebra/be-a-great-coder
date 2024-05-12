@@ -1,10 +1,4 @@
-import {
-  Laboratory,
-  type Problem,
-  type Research,
-  TotalAssets,
-  isIngredientName,
-} from "../models/game";
+import { Laboratory, type Problem, type Research, TotalAssets } from "../models/game";
 import { INGREDIENTS } from "./config";
 
 export type TotalAssetsJson = {
@@ -23,10 +17,10 @@ export class TotalAssetsJsonifier {
   }
 
   static fromJson(json: TotalAssetsJson) {
-    const ingredientStock = new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0]));
-    for (const [name, amount] of json.ingredientStock) {
-      if (!isIngredientName(name)) throw new Error(`Invalid ingredient name: ${name}`);
-      ingredientStock.set(name, amount);
+    const ingredientStock = new Map([...INGREDIENTS.keys()].map((id) => [id, 0]));
+    for (const [id, amount] of json.ingredientStock) {
+      if (!INGREDIENTS.has(id)) throw new Error(`Invalid ingredient name: ${id}`);
+      ingredientStock.set(id, amount);
     }
     return new TotalAssets(json.cash, json.battery, ingredientStock);
   }

@@ -26,7 +26,7 @@ describe("TotalAssetsRepository", () => {
     const totalAssets = new TotalAssets(
       1000,
       1,
-      new Map(INGREDIENTS.map((ingredient, index) => [ingredient.name, index])),
+      new Map([...INGREDIENTS.keys()].map((id, index) => [id, index])),
     );
     await TotalAssetsRepository.save(userId, totalAssets);
     const savedTotalAssets = await TotalAssetsRepository.getOrThrow(userId);
@@ -50,13 +50,13 @@ describe("TotalAssetsRepository", () => {
     const totalAssets = new TotalAssets(
       1000,
       1,
-      new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0])),
+      new Map([...INGREDIENTS.keys()].map((id) => [id, 0])),
     );
     await TotalAssetsRepository.save(userId, totalAssets);
     const updatedTotalAssets = new TotalAssets(
       2000,
       2,
-      new Map(INGREDIENTS.map((ingredient, index) => [ingredient.name, index])),
+      new Map([...INGREDIENTS.keys()].map((id, index) => [id, index])),
     );
     await TotalAssetsRepository.save(userId, updatedTotalAssets);
     const savedTotalAssets = await TotalAssetsRepository.getOrThrow(userId);

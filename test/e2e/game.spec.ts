@@ -8,10 +8,14 @@ import {
   TotalAssetsRepository,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import { INGREDIENT_NAMES, type IngredientName, TotalAssets } from "~/game/models/game.ts";
+import { TotalAssets } from "~/game/models/game.ts";
+import { INGREDIENTS } from "~/game/services/config.ts";
 import { expect, test } from "./fixtures.ts";
 
-async function assertNumIngredients(page: Page, ingredientName: IngredientName, num: number) {
+const targetBaseMetalName = INGREDIENTS.get("baseMetal1")?.name ?? "test broken";
+const targetGemName = INGREDIENTS.get("gemFire")?.name ?? "test broken";
+
+async function assertNumIngredients(page: Page, ingredientName: string, num: number) {
   await expect(
     page
       .getByRole("list", { name: /ingredient stock/i })
@@ -27,14 +31,21 @@ test.describe("game cycle", () => {
     await expect(loggedInPage.getByRole("heading", { name: /buy ingredients/i })).toBeVisible();
     await expect(loggedInPage.getByText(/\$ 1000/i)).toBeVisible();
 
-    for (const ingredientName of INGREDIENT_NAMES) {
-      await assertNumIngredients(loggedInPage, ingredientName, 0);
+    for (const ingredient of INGREDIENTS.values()) {
+      await assertNumIngredients(loggedInPage, ingredient.name, 0);
     }
     await expect(loggedInPage.getByText(/battery: 1 \/ 1/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 1/i)).toBeVisible();
   });
   test("buy ingredients", async ({ loggedInPage }) => {
-    const totalAssets = new TotalAssets(1100, 1, new Map([["Iron", 0]]));
+    const totalAssets = new TotalAssets(
+      1100,
+      1,
+      new Map([
+        ["baseMetal1", 0],
+        ["gemFire", 0],
+      ]),
+    );
     const user = await UserRepository.getByName("TestUser012");
     invariant(user, "user not found");
     await TotalAssetsRepository.save(user.id, totalAssets);
@@ -44,67 +55,84 @@ test.describe("game cycle", () => {
     await expect(loggedInPage.getByRole("heading", { name: /buy ingredients/i })).toBeVisible();
     await loggedInPage
       .getByRole("list", { name: /buy ingredients/i })
-      .getByRole("listitem", { name: /iron$/i })
+      .getByRole("listitem", { name: RegExp(targetBaseMetalName, "i") })
       .getByRole("button", { name: /\+ 1$/i })
       .click();
     await expect(loggedInPage.getByText(/\$ 1000/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 1);
+    await assertNumIngredients(loggedInPage, targetBaseMetalName, 1);
     await loggedInPage
-      .getByRole("listitem", { name: /iron$/i })
+      .getByRole("list", { name: /buy ingredients/i })
+      .getByRole("listitem", { name: RegExp(targetBaseMetalName, "i") })
       .getByRole("button", { name: /\+ 10$/i })
       .click();
     await expect(loggedInPage.getByText(/\$ 0/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 11);
+    await assertNumIngredients(loggedInPage, targetBaseMetalName, 11);
     await loggedInPage
-      .getByRole("listitem", { name: /iron$/i })
+      .getByRole("list", { name: /buy ingredients/i })
+      .getByRole("listitem", { name: RegExp(targetBaseMetalName, "i") })
       .getByRole("button", { name: /\+ 1$/i })
       .click();
     await expect(loggedInPage.getByText(/not enough money/i)).toBeVisible();
     await loggedInPage.getByRole("button", { name: /finish buying/i }).click();
     await expect(
-      loggedInPage.getByRole("heading", { name: /make and sell products/i }),
+      loggedInPage.getByRole("heading", { name: /forge and sell sword/i }),
     ).toBeVisible();
   });
   test("make and sell products", async ({ loggedInPage }) => {
     // I set cash to 101, not 100, because the text "$ 100" hits twice in the page.
-    const totalAssets = new TotalAssets(101, 2, new Map([["Iron", 9]]));
+    const totalAssets = new TotalAssets(
+      101,
+      2,
+      new Map([
+        ["baseMetal1", 9],
+        ["gemFire", 2],
+      ]),
+    );
     const user = await UserRepository.getByName("TestUser012");
     invariant(user, "user not found");
     await TotalAssetsRepository.save(user.id, totalAssets);
-    await TurnRepository.save(user.id, "sell-products");
+    await TurnRepository.save(user.id, "forge-swords");
 
     await loggedInPage.goto("/play/router");
     await expect(
-      loggedInPage.getByRole("heading", { name: /make and sell products/i }),
+      loggedInPage.getByRole("heading", { name: /forge and sell sword/i }),
     ).toBeVisible();
     await expect(loggedInPage.getByText(/\$ 101/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 9);
+    await assertNumIngredients(loggedInPage, targetBaseMetalName, 9);
 
     await loggedInPage
-      .getByRole("listitem", { name: /sword$/i })
-      .getByRole("button", { name: /make/i })
+      .getByRole("main", { name: "game controller" })
+      .getByLabel(RegExp(targetBaseMetalName, "i"))
       .click();
+    await loggedInPage
+      .getByRole("main", { name: "game controller" })
+      .getByLabel(RegExp(targetGemName, "i"))
+      .click();
+    await loggedInPage.getByRole("button", { name: /forge/i }).click();
     // TODO: test something about cash increase. currently we can't test it because it's random.
     // await expect(loggedInPage.getByText(/cash: 1100/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 6);
-    await loggedInPage
-      .getByRole("listitem", { name: /sword$/i })
-      .getByRole("button", { name: /make/i })
-      .click();
+    await assertNumIngredients(loggedInPage, targetBaseMetalName, 8);
+    await assertNumIngredients(loggedInPage, targetGemName, 1);
+
+    await loggedInPage.getByRole("radio", { name: RegExp(targetBaseMetalName, "i") }).click();
+    await loggedInPage.getByRole("radio", { name: RegExp(targetGemName, "i") }).click();
+    await loggedInPage.getByRole("button", { name: /forge/i }).click();
     // await expect(loggedInPage.getByText(/cash: 2100/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 3);
-    await loggedInPage
-      .getByRole("listitem", { name: /sword$/i })
-      .getByRole("button", { name: /make/i })
-      .click();
+    await assertNumIngredients(loggedInPage, targetBaseMetalName, 7);
+    await assertNumIngredients(loggedInPage, targetGemName, 0);
+
+    await loggedInPage.getByRole("radio", { name: RegExp(targetBaseMetalName, "i") }).click();
+    await loggedInPage.getByRole("radio", { name: RegExp(targetGemName, "i") }).click();
+    await loggedInPage.getByRole("button", { name: /forge/i }).click();
     await expect(loggedInPage.getByText(/not enough battery/i)).toBeVisible();
     // await expect(loggedInPage.getByText(/cash: 2100/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 3);
-    await loggedInPage.getByRole("button", { name: /finish making products/i }).click();
+    await assertNumIngredients(loggedInPage, targetBaseMetalName, 7);
+    await assertNumIngredients(loggedInPage, targetGemName, 0);
+    await loggedInPage.getByRole("button", { name: /finish forging/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /select a problem/i })).toBeVisible();
   });
   test("select problems", async ({ loggedInPage }) => {
-    const totalAssets = new TotalAssets(500, 6, new Map([["Iron", 6]]));
+    const totalAssets = new TotalAssets(500, 6, new Map([]));
     const user = await UserRepository.getByName("TestUser012");
     invariant(user, "user not found");
     await TotalAssetsRepository.save(user.id, totalAssets);
@@ -113,7 +141,6 @@ test.describe("game cycle", () => {
     await loggedInPage.goto("/play/router");
     await expect(loggedInPage.getByRole("heading", { name: /select a problem/i })).toBeVisible();
     await expect(loggedInPage.getByText(/\$ 500/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 6);
     await expect(loggedInPage.getByRole("button", { name: /difficulty: 100/i })).toBeVisible();
     await expect(loggedInPage.getByRole("button", { name: /difficulty: 200/i })).toBeVisible();
     await expect(loggedInPage.getByRole("button", { name: /difficulty: 300/i })).toBeVisible();
@@ -142,7 +169,7 @@ test.describe("game cycle", () => {
     //   point: 100.0,
     //   solver_count: 9848,
     // },
-    const totalAssets = new TotalAssets(500, 6, new Map([["Iron", 6]]));
+    const totalAssets = new TotalAssets(500, 6, new Map([]));
     const user = await UserRepository.getByName("TestUser012");
     invariant(user, "user not found");
     await TotalAssetsRepository.save(user.id, totalAssets);
@@ -164,7 +191,6 @@ test.describe("game cycle", () => {
     await loggedInPage.goto("/play/router");
     await expect(loggedInPage.getByRole("heading", { name: /solve the problem/i })).toBeVisible();
     await expect(loggedInPage.getByText(/\$ 500/i)).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 6);
     await loggedInPage.getByRole("button", { name: /finish/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /get reward/i })).toBeVisible();
     await expect(loggedInPage.getByText(/not solved yet/i)).toBeVisible();
@@ -242,7 +268,7 @@ test.describe("game cycle", () => {
   //   await expect(loggedInPage.getByText(/cleared\?: true/i)).toBeVisible();
   // });
   test("get reward", async ({ loggedInPage }) => {
-    const totalAssets = new TotalAssets(500, 1, new Map([["Iron", 6]]));
+    const totalAssets = new TotalAssets(500, 1, new Map([]));
     const user = await UserRepository.getByName("TestUser012");
     invariant(user, "user not found");
     await TotalAssetsRepository.save(user.id, totalAssets);
@@ -276,14 +302,12 @@ test.describe("game cycle", () => {
 
     await loggedInPage.goto("/play/router");
     await expect(loggedInPage.getByRole("heading", { name: /get reward/i })).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 6);
     await expect(loggedInPage.getByText(/battery: 1 \/ 1/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 1/i)).toBeVisible();
     await loggedInPage.getByRole("button", { name: /read an answer/i }).click();
     await expect(loggedInPage.getByRole("button", { name: /answer has read/i })).toBeVisible();
     await loggedInPage.getByRole("button", { name: /get reward/i }).click();
     await expect(loggedInPage.getByRole("heading", { name: /buy ingredients/i })).toBeVisible();
-    await assertNumIngredients(loggedInPage, "Iron", 6);
     await expect(loggedInPage.getByText(/battery: 2 \/ 2/i)).toBeVisible();
     await expect(loggedInPage.getByText(/robot performance: 2/i)).toBeVisible();
   });

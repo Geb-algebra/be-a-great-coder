@@ -2,7 +2,8 @@ import { createRemixStub } from "@remix-run/testing";
 import { render, screen, within } from "@testing-library/react";
 import type { Account } from "~/accounts/models/account";
 import { TurnRepository } from "~/game/lifecycle/game.server";
-import { INGREDIENT_NAMES, TURNS } from "~/game/models/game.ts";
+import { TURNS } from "~/game/models/game.ts";
+import { INGREDIENTS } from "~/game/services/config";
 import {
   beginnersStatus,
   initialStatus,
@@ -38,13 +39,13 @@ describe("Page", () => {
       await screen.findByText(RegExp(`rank: ${expected.laboratoryValue.researcherRank}`, "i")),
     );
     expect(await screen.findByText(RegExp(`\\$ ${expected.totalAssets.cash}`, "i")));
-    for (const ingredient of INGREDIENT_NAMES) {
+    for (const ingredient of INGREDIENTS.values()) {
       const stock = await screen.findByRole("listitem", {
-        name: RegExp(ingredient, "i"),
+        name: RegExp(ingredient.name, "i"),
       });
-      await within(stock).findByText(RegExp(ingredient, "i"));
+      await within(stock).findByText(RegExp(ingredient.name, "i"));
       await within(stock).findByText(
-        RegExp(`${expected.totalAssets.ingredientStock.get(ingredient)}`, "i"),
+        RegExp(`${expected.totalAssets.ingredientStock.get(ingredient.id)}`, "i"),
       );
     }
     expect(

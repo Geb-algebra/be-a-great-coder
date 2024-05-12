@@ -22,7 +22,7 @@ export const initialStatus = {
   totalAssets: {
     cash: 1000,
     battery: 1,
-    ingredientStock: new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0])),
+    ingredientStock: new Map([...INGREDIENTS.keys()].map((id) => [id, 0])),
   },
   laboratoryValue: {
     batteryCapacity: 1,
@@ -44,7 +44,7 @@ export async function setBeginnersStatus(userId: string) {
   const totalAssets = new TotalAssets(
     1200,
     3,
-    new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 16])),
+    new Map([...INGREDIENTS.keys()].map((id) => [id, 16])),
   );
   await TotalAssetsRepository.save(userId, totalAssets);
   const laboratory = await LaboratoryRepository.get(userId);
@@ -88,7 +88,7 @@ export const beginnersStatus = {
   totalAssets: {
     cash: 1200,
     battery: 3,
-    ingredientStock: new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 16])),
+    ingredientStock: new Map([...INGREDIENTS.keys()].map((id) => [id, 16])),
   },
   laboratoryValue: {
     batteryCapacity: 4,
@@ -110,7 +110,7 @@ export async function setVeteransStatus(userId: string) {
   const totalAssets = new TotalAssets(
     32768,
     136,
-    new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 128])),
+    new Map([...INGREDIENTS.keys()].map((id) => [id, 128])),
   );
   await TotalAssetsRepository.save(userId, totalAssets);
   const laboratory = await LaboratoryRepository.get(userId);
@@ -156,7 +156,7 @@ export const veteransStatus = {
   totalAssets: {
     cash: 32768,
     battery: 136,
-    ingredientStock: new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 128])),
+    ingredientStock: new Map([...INGREDIENTS.keys()].map((id) => [id, 128])),
   },
   laboratoryValue: {
     batteryCapacity: 136,

@@ -36,7 +36,11 @@ export default function Page() {
   return (
     <div className="h-full flex flex-col">
       <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratoryValue} />
-      <div className="bg-base rounded-t-[24px_12px] py-4 px-6 grow overflow-auto">
+      <div
+        className="bg-base rounded-t-[24px_12px] py-4 px-6 grow overflow-auto"
+        aria-label="game controller"
+        role="main"
+      >
         <Outlet />
       </div>
     </div>
