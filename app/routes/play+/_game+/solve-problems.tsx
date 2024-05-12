@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { useActionData, useFetcher, useLoaderData } from "@remix-run/react";
 import { getProblemSubmittedAndSolvedTime } from "~/atcoder-info/services/atcoder.server";
 import ErrorDisplay from "~/components/ErrorDisplay";
 import { ResearchInfo } from "~/components/ResearchInfo";
@@ -23,22 +23,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!currentResearch) {
     throw new ObjectNotFoundError("unfinished research not found");
   }
-  if (currentResearch.solvedAt && currentResearch.startedAt) {
-    return json({ currentResearchJson: ResearchJsonifier.toJson(currentResearch) });
+  if (!currentResearch.solvedAt || !currentResearch.submittedAt) {
+    const { firstSubmittedAt, firstACAt } = await getProblemSubmittedAndSolvedTime(
+      currentResearch.problem.id,
+      user.name,
+      Math.ceil(currentResearch.createdAt.getTime() / 1000),
+    );
+    if (currentResearch.submittedAt === null && firstSubmittedAt) {
+      currentResearch.submittedAt = firstSubmittedAt;
+    }
+    if (currentResearch.solvedAt === null && firstACAt) {
+      currentResearch.solvedAt = firstACAt;
+    }
+    await LaboratoryRepository.save(user.id, laboratory);
   }
-  const { firstSubmittedAt, firstACAt } = await getProblemSubmittedAndSolvedTime(
-    currentResearch.problem.id,
-    user.name,
-    Math.ceil(currentResearch.createdAt.getTime() / 1000),
-  );
-  if (currentResearch.submittedAt === null && firstSubmittedAt) {
-    currentResearch.submittedAt = firstSubmittedAt;
-  }
-  if (currentResearch.solvedAt === null && firstACAt) {
-    currentResearch.solvedAt = firstACAt;
-  }
-  await LaboratoryRepository.save(user.id, laboratory);
-  return json({ currentResearchJson: ResearchJsonifier.toJson(currentResearch) });
+  return json({
+    currentResearchJson: ResearchJsonifier.toJson(currentResearch),
+    isDev: process.env.NODE_ENV === "development",
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -81,15 +83,26 @@ export function StatusText(props: { prefix: string; time: Date | null; fallBackM
 }
 
 export default function Page() {
-  const { currentResearchJson } = useLoaderData<typeof loader>();
+  const { currentResearchJson, isDev } = useLoaderData<typeof loader>();
   const currentResearch = ResearchJsonifier.fromJson(currentResearchJson);
   const actionData = useActionData<typeof action>();
+  const fetcher = useFetcher();
   return (
     <div className="bg-base">
       <ErrorDisplay message={actionData?.error.message ?? ""} />
       <TurnHeader title="Solve The Problem" finishButtonName="Finish" />
       <ResearchInfo research={currentResearch} />
       <ResearchStatus research={currentResearch} />
+      {isDev ? (
+        <fetcher.Form method="post" action="dev-solve">
+          <button type="submit" name="intent" value="submit">
+            submit
+          </button>
+          <button type="submit" name="intent" value="solve">
+            solve
+          </button>
+        </fetcher.Form>
+      ) : null}
     </div>
   );
 }
