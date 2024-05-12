@@ -1,10 +1,10 @@
 import type { Ingredient } from "~/game/models";
-import type { LaboratoryValue, TotalAssets, Turn } from "~/game/models/game";
+import type { LaboratoryValue, TotalAssets } from "~/game/models/game";
 import { INGREDIENTS } from "~/game/services/config";
 
 function CashBoard(props: { amount: number }) {
   return (
-    <div className={"p-4 w-96 h-16 text-right text-2xl font-bold rounded-xl"}>
+    <div className="p-4 w-96 h-16 text-right text-2xl font-bold rounded-xl">
       <span>$ {props.amount}</span>
     </div>
   );
@@ -14,7 +14,7 @@ function IngredientStock(props: { ingredient: Ingredient; amount: number }) {
   return (
     <li
       aria-labelledby={`stocked-ingredient-${props.ingredient.id}`}
-      className={"w-24 h-16 py-2 text-center align-middle"}
+      className="w-24 h-16 py-2 text-center align-middle"
     >
       <p id={`stocked-ingredient-${props.ingredient.id}`}>{props.ingredient.name}</p>
       <p>{props.amount}</p>
@@ -24,7 +24,7 @@ function IngredientStock(props: { ingredient: Ingredient; amount: number }) {
 
 function RankBoard(props: { rank: number }) {
   return (
-    <div className={"p-4 bg-factory-accent rounded-lg w-96 h-16 text-right text-2xl font-bold"}>
+    <div className="p-4 bg-accent rounded-lg w-96 h-16 text-right text-2xl font-bold">
       <span>Rank: {props.rank}</span>
     </div>
   );
@@ -38,7 +38,7 @@ function RobotStatus(props: {
   return (
     <ul
       aria-label="robot-status"
-      className={"p-4 w-auto h-16 text-center flex gap-6 bg-white bg-opacity-5 rounded-lg"}
+      className="p-4 w-auto h-16 text-center flex gap-6 bg-white bg-opacity-5 rounded-lg"
     >
       <li>
         battery: {props.battery} / {props.batteryCapacity}
@@ -51,16 +51,12 @@ function RobotStatus(props: {
 export default function GameStatusDashboard(props: {
   totalAssets: TotalAssets;
   laboratoryValue: LaboratoryValue;
-  theme: string;
 }) {
   return (
-    <div aria-label="player's status" className={`bg-${props.theme}-card rounded-xl mx-6 my-4`}>
+    <div aria-label="player's status" className="bg-card rounded-xl mx-6 my-4">
       <div className="flex gap-6">
         <CashBoard amount={props.totalAssets.cash} />
-        <ul
-          aria-label="ingredient stock"
-          className={`flex bg-${props.theme}-card text-${props.theme}-text-dark rounded-lg gap-2`}
-        >
+        <ul aria-label="ingredient stock" className="flex bg-card text-text-dark rounded-lg gap-2">
           {Array.from(props.totalAssets.ingredientStock).map(([id, amount]) => {
             const ingredient = INGREDIENTS.get(id);
             if (!ingredient) {

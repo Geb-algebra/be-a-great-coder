@@ -85,7 +85,7 @@ export default function Page() {
   const currentResearch = ResearchJsonifier.fromJson(currentResearchJson);
   const actionData = useActionData<typeof action>();
   return (
-    <div className="bg-lab-base">
+    <div className="bg-base">
       <ErrorDisplay message={actionData?.error.message ?? ""} />
       <TurnHeader title="Solve The Problem" finishButtonName="Finish" />
       <ResearchInfo research={currentResearch} />
