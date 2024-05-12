@@ -43,7 +43,11 @@ export default function Page() {
         laboratoryValue={laboratoryValue}
         theme={theme}
       />
-      <div className="bg-factory-base rounded-t-[24px_12px] py-4 px-6 grow overflow-auto">
+      <div
+        className="bg-factory-base rounded-t-[24px_12px] py-4 px-6 grow overflow-auto"
+        aria-label="game controller"
+        role="main"
+      >
         <Outlet />
       </div>
     </div>

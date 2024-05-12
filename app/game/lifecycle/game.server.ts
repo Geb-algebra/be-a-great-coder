@@ -6,12 +6,12 @@ import { createId } from "@paralleldrive/cuid2";
 import invariant from "tiny-invariant";
 import type { User } from "~/accounts/models/account.ts";
 import { GameLogicViolated, ObjectNotFoundError } from "~/errors.ts";
-import { Laboratory, TURNS, TotalAssets, isIngredientName } from "../models/game.ts";
+import { Laboratory, TURNS, TotalAssets } from "../models";
 import type { Problem, Research, Turn } from "../models/game.ts";
 import { INGREDIENTS, calcRobotGrowthRate } from "../services/config.ts";
 
 function getEmptyIngredientStock() {
-  return new Map(INGREDIENTS.map((ingredient) => [ingredient.name, 0]));
+  return new Map([...INGREDIENTS.keys()].map((id) => [id, 0]));
 }
 
 export class TotalAssetsFactory {
@@ -29,10 +29,10 @@ export class TotalAssetsRepository {
         cash,
         battery,
         ingredientStock.reduce((map, stock) => {
-          if (!isIngredientName(stock.ingredientName)) {
-            throw new Error(`Invalid ingredient name: ${stock.ingredientName}`);
+          if (!INGREDIENTS.has(stock.ingredientId)) {
+            throw new Error(`Invalid ingredient ID: ${stock.ingredientId}`);
           }
-          return map.set(stock.ingredientName, stock.amount);
+          return map.set(stock.ingredientId, stock.amount);
         }, getEmptyIngredientStock()),
       );
     } catch (error) {
@@ -55,9 +55,9 @@ export class TotalAssetsRepository {
         },
       });
       const ingredientStock = Array.from(totalAssets.ingredientStock.entries()).map(
-        ([ingredientName, amount]) => ({
+        ([ingredientId, amount]) => ({
           user: { connect: { id: userId } },
-          ingredientName,
+          ingredientId,
           amount,
         }),
       );

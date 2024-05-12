@@ -27,7 +27,7 @@ export const meta: MetaFunction = () => {
 export default function Index() {
   const { user, turn } = useLoaderData<typeof loader>();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const theme = ["buy-ingredients", "sell-products"].includes(turn) ? "factory" : "lab";
+  const theme = ["buy-ingredients", "forge-swords"].includes(turn) ? "factory" : "lab";
   return (
     <ThemeContext.Provider value={theme}>
       <div className={`w-full h-screen bg-${theme}-accent-1`}>

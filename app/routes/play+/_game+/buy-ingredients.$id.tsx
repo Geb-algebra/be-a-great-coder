@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { GameLogicViolated, ValueError } from "~/errors";
 import { TotalAssetsRepository } from "~/game/lifecycle/game.server";
-import { isIngredientName } from "~/game/models/game";
+import { INGREDIENTS } from "~/game/services/config";
 import { TotalAssetsUpdateService } from "~/game/services/game.server";
 import { authenticator } from "~/services/auth.server";
 import { getRequiredStringFromFormData } from "~/utils/utils";
@@ -9,15 +9,16 @@ import { getRequiredStringFromFormData } from "~/utils/utils";
 export async function action({ request, params }: ActionFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
   try {
-    const ingredientName = params.name;
-    if (!ingredientName) throw new ValueError("Ingredient name is required");
-    if (!isIngredientName(ingredientName)) throw new ValueError("Invalid ingredient name");
+    const ingredientId = params.id;
+    if (!ingredientId) throw new ValueError("Ingredient id is required");
+    if (!INGREDIENTS.has(ingredientId))
+      throw new ValueError(`Invalid ingredient id: ${ingredientId}`);
     const formData = await request.formData();
     const quantity = Number(getRequiredStringFromFormData(formData, "quantity"));
     const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const newTotalAssets = TotalAssetsUpdateService.buyIngredients(
       totalAssets,
-      ingredientName,
+      ingredientId,
       quantity,
     );
     await TotalAssetsRepository.save(user.id, newTotalAssets);

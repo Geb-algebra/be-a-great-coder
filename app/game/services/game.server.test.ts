@@ -1,62 +1,71 @@
 import { GameLogicViolated } from "~/errors.ts";
 import { TotalAssets } from "../models/game.ts";
-import { INGREDIENTS, PRODUCTS } from "../services/config.ts";
-import * as Config from "../services/config.ts";
+import { BASE_METALS, GEMS, INGREDIENTS } from "../services/config.ts";
 import { TotalAssetsUpdateService, getDifficultiesMatchUserRank } from "./game.server.ts";
+
+const allPairsOfBaseMetalsAndGems = Array.from(BASE_METALS.values()).flatMap((baseMetal) =>
+  Array.from(GEMS.values()).map((gem) => [baseMetal, gem] as [typeof baseMetal, typeof gem]),
+);
 
 describe("TotalAssetsUpdateService", () => {
   const initialTotalAssets = new TotalAssets(
     100000,
     10,
-    new Map(INGREDIENTS.map((i) => [i.name, 10])),
+    new Map([...INGREDIENTS.keys()].map((i) => [i, 10])),
   );
 
-  it.each(INGREDIENTS)("should buy ingredients", (ingredient) => {
+  it.each([...INGREDIENTS.values()])("should buy ingredients", (ingredient) => {
     const newTotalAssets = TotalAssetsUpdateService.buyIngredients(
       initialTotalAssets,
-      ingredient.name,
+      ingredient.id,
       5,
     );
     expect(newTotalAssets.cash).toEqual(100000 - ingredient.price * 5);
-    expect(newTotalAssets.ingredientStock.get(ingredient.name)).toEqual(10 + 5);
+    expect(newTotalAssets.ingredientStock.get(ingredient.id)).toEqual(10 + 5);
     expect(newTotalAssets.battery).toEqual(10);
   });
 
-  it.each(INGREDIENTS)("should not buy ingredients if not enough money", (ingredient) => {
-    const ta = new TotalAssets(1000, 10, new Map(INGREDIENTS.map((i) => [i.name, 5])));
-    expect(() => {
-      TotalAssetsUpdateService.buyIngredients(ta, ingredient.name, 11);
-    }).toThrow(GameLogicViolated);
-  });
+  it.each([...INGREDIENTS.values()])(
+    "should not buy ingredients if not enough money",
+    (ingredient) => {
+      const ta = new TotalAssets(1000, 10, new Map([...INGREDIENTS.keys()].map((i) => [i, 5])));
+      expect(() => {
+        TotalAssetsUpdateService.buyIngredients(ta, ingredient.id, 11);
+      }).toThrow(GameLogicViolated);
+    },
+  );
 
-  it.each(PRODUCTS)("should make and sell products", (product) => {
-    const { newTotalAssets, price } = TotalAssetsUpdateService.makeAndSellProduct(
+  it.each(allPairsOfBaseMetalsAndGems)("should make and sell products", (baseMetal, gem) => {
+    const { newTotalAssets, grade, element, sword } = TotalAssetsUpdateService.forgeAndSellSword(
       initialTotalAssets,
-      product,
+      baseMetal,
+      gem,
     );
-    expect(newTotalAssets.cash).toEqual(100000 + price);
-    for (const [ingredientName, amount] of product.ingredients) {
-      expect(newTotalAssets.ingredientStock.get(ingredientName)).toEqual(10 - amount);
-    }
+    expect(newTotalAssets.cash).toEqual(100000 + sword.price);
+    expect(newTotalAssets.ingredientStock.get(baseMetal.id)).toEqual(10 - 1);
+    expect(newTotalAssets.ingredientStock.get(gem.id)).toEqual(10 - 1);
     expect(newTotalAssets.battery).toEqual(10 - 1);
   });
 
-  it.each(PRODUCTS)("should not manufacture products if not enough ingredients", (product) => {
-    const emptyTotalAssets = new TotalAssets(
-      100000,
-      10,
-      new Map(INGREDIENTS.map((i) => [i.name, 0])),
-    );
-    expect(() => {
-      TotalAssetsUpdateService.makeAndSellProduct(emptyTotalAssets, product);
-    }).toThrow(GameLogicViolated);
-  });
+  it.each(allPairsOfBaseMetalsAndGems)(
+    "should not manufacture products if not enough ingredients",
+    (baseMetal, gem) => {
+      const emptyTotalAssets = new TotalAssets(
+        100000,
+        10,
+        new Map([...INGREDIENTS.keys()].map((i) => [i, 0])),
+      );
+      expect(() => {
+        TotalAssetsUpdateService.forgeAndSellSword(emptyTotalAssets, baseMetal, gem);
+      }).toThrow(GameLogicViolated);
+    },
+  );
 
   it("should charge battery", () => {
     const newTotalAssets = TotalAssetsUpdateService.chargeBattery(initialTotalAssets, 20);
     expect(newTotalAssets.cash).toEqual(100000);
-    for (const ingredientName of INGREDIENTS.map((i) => i.name)) {
-      expect(newTotalAssets.ingredientStock.get(ingredientName)).toEqual(10);
+    for (const ingredientId of INGREDIENTS.keys()) {
+      expect(newTotalAssets.ingredientStock.get(ingredientId)).toEqual(10);
     }
     expect(newTotalAssets.battery).toEqual(20);
   });

@@ -10,14 +10,9 @@ import {
   TurnFactory,
   TurnRepository,
 } from "../lifecycle/game.server.ts";
-import {
-  type IngredientName,
-  type Product,
-  TURNS,
-  TotalAssets,
-  type Turn,
-} from "../models/game.ts";
-import { INGREDIENTS, calcPrice } from "../services/config.ts";
+import { TURNS, TotalAssets, type Turn } from "../models/game.ts";
+import type { BaseMetal, Gem } from "../models/ingredients.ts";
+import { INGREDIENTS, SWORDS, calcSwordElement, calcSwordGrade } from "../services/config.ts";
 import { PROBLEM_DIFFICULTIES } from "./config.ts";
 
 export function getNextTurn(currentTurn: Turn): Turn {
@@ -52,24 +47,17 @@ export async function getOrInitializeTotalAssets(userId: User["id"]) {
 }
 
 export class TotalAssetsUpdateService {
-  static buyIngredients(
-    currentTotalAssets: TotalAssets,
-    ingredientName: IngredientName,
-    quantity: number,
-  ) {
-    const ingredient = INGREDIENTS.find((ingredient) => ingredient.name === ingredientName);
+  static buyIngredients(currentTotalAssets: TotalAssets, ingredientId: string, quantity: number) {
+    const ingredient = INGREDIENTS.get(ingredientId);
     if (!ingredient) {
-      throw new GameLogicViolated("Invalid ingredient name");
+      throw new GameLogicViolated(`Invalid ingredient id: ${ingredientId}`);
     }
     const cost = ingredient.price * quantity;
     if (currentTotalAssets.cash < cost) {
       throw new GameLogicViolated("Not enough money");
     }
     const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
-    newIngredientStock.set(
-      ingredientName,
-      (newIngredientStock.get(ingredientName) || 0) + quantity,
-    );
+    newIngredientStock.set(ingredientId, (newIngredientStock.get(ingredientId) || 0) + quantity);
     return new TotalAssets(
       currentTotalAssets.cash - cost,
       currentTotalAssets.battery,
@@ -77,30 +65,38 @@ export class TotalAssetsUpdateService {
     );
   }
 
-  static makeAndSellProduct(currentTotalAssets: TotalAssets, product: Product) {
+  static forgeAndSellSword(currentTotalAssets: TotalAssets, baseMetal: BaseMetal, gem: Gem) {
     if (currentTotalAssets.battery === 0) {
       throw new GameLogicViolated("Not enough battery");
     }
-    for (const [ingredientName, amount] of product.ingredients) {
-      if ((currentTotalAssets.ingredientStock.get(ingredientName) ?? 0) < amount) {
-        throw new GameLogicViolated("Not enough ingredients");
-      }
+    const bmStock = currentTotalAssets.ingredientStock.get(baseMetal.id);
+    if (bmStock === undefined) throw new GameLogicViolated(`invalid basemetal id: ${baseMetal.id}`);
+    if (bmStock < 1) {
+      throw new GameLogicViolated("Not enough base metals");
     }
+    const gemStock = currentTotalAssets.ingredientStock.get(gem.id);
+    if (gemStock === undefined) throw new GameLogicViolated(`invalid gem id: ${gem.id}`);
+    if (gemStock < 1) {
+      throw new GameLogicViolated("Not enough gems");
+    }
+
+    const grade = calcSwordGrade(baseMetal);
+    const element = calcSwordElement(gem);
+    const sword = SWORDS.get(element)?.[grade.baseGrade + grade.bonusGrade - 1];
+    if (!sword)
+      throw new GameLogicViolated(`Invalid sword element: ${element} and grade: ${grade}`);
     const newIngredientStock = new Map(currentTotalAssets.ingredientStock);
-    for (const [ingredientName, amount] of product.ingredients) {
-      newIngredientStock.set(
-        ingredientName,
-        (newIngredientStock.get(ingredientName) || 0) - amount,
-      );
-    }
-    const price = calcPrice(product.priceAverage, product.priceStd);
+    newIngredientStock.set(baseMetal.id, bmStock - 1);
+    newIngredientStock.set(gem.id, gemStock - 1);
     return {
       newTotalAssets: new TotalAssets(
-        currentTotalAssets.cash + price,
+        currentTotalAssets.cash + sword.price,
         currentTotalAssets.battery - 1,
         newIngredientStock,
       ),
-      price,
+      grade,
+      element,
+      sword,
     };
   }
 

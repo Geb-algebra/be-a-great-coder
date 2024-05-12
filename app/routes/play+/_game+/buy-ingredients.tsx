@@ -5,11 +5,11 @@ import ErrorDisplay from "~/components/ErrorDisplay.tsx";
 import TurnHeader from "~/components/TurnHeader.tsx";
 import { GameLogicViolated } from "~/errors";
 import { TurnRepository } from "~/game/lifecycle/game.server.ts";
-import type { Ingredient, Product } from "~/game/models/game.ts";
-import { INGREDIENTS, PRODUCTS } from "~/game/services/config.ts";
+import type { Ingredient } from "~/game/models";
+import { INGREDIENTS } from "~/game/services/config.ts";
 import { getNextTurn } from "~/game/services/game.server.ts";
 import { authenticator } from "~/services/auth.server.ts";
-import type { action as detailAction } from "./buy-ingredients.$name.tsx";
+import type { action as detailAction } from "./buy-ingredients.$id.tsx";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
@@ -36,8 +36,8 @@ export const meta: MetaFunction = () => {
 function IngredientSeller(props: { ingredient: Ingredient }) {
   return (
     <div className="w-36 bg-factory-card rounded-lg">
-      <div className=" w-full h-24 border border-factory-border rounded-t-lg p-2">
-        <h2 id={`buy-${props.ingredient.name}`} className="font-bold text-center">
+      <div className="w-full h-24 border border-factory-border rounded-t-lg p-2">
+        <h2 id={`buy-${props.ingredient.id}`} className="font-bold text-center">
           {props.ingredient.name}
         </h2>
         <p>$ {props.ingredient.price}</p>
@@ -64,25 +64,6 @@ function IngredientSeller(props: { ingredient: Ingredient }) {
   );
 }
 
-function RecipeDisplayer(props: { product: Product }) {
-  return (
-    <div className="w-36 h-24 bg-factory-base rounded-lg">
-      <div className=" w-full rounded-t-lg p-2">
-        <h2 id={`product-name-${props.product}`} className="font-bold">
-          {props.product.name}
-        </h2>
-      </div>
-      <ul>
-        {Array.from(props.product.ingredients).map((ingredient) => (
-          <li key={ingredient[0]}>
-            {ingredient[1]} {ingredient[0]}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export default function Page() {
   const actionData = useActionData<typeof action>();
   const fetcher = useFetcher<typeof detailAction>();
@@ -95,19 +76,11 @@ export default function Page() {
       />
       <ErrorDisplay message={actionData?.error.message ?? fetcher.data?.error.message ?? ""} />
       <ul aria-labelledby="buy-ingredient-heading" className="flex gap-6">
-        {INGREDIENTS.map((ingredient) => (
-          <li aria-labelledby={`buy-${ingredient.name}`} key={ingredient.name}>
-            <fetcher.Form method="post" action={ingredient.name}>
+        {[...INGREDIENTS.values()].map((ingredient) => (
+          <li aria-labelledby={`buy-${ingredient.id}`} key={ingredient.id}>
+            <fetcher.Form method="post" action={ingredient.id}>
               <IngredientSeller ingredient={ingredient} />
             </fetcher.Form>
-          </li>
-        ))}
-      </ul>
-      <h2 className="font-bold mt-4">Required Ingredients to make items</h2>
-      <ul className="flex gap-6">
-        {PRODUCTS.map((product) => (
-          <li aria-labelledby={`product-name-${product.name}`} key={product.name}>
-            <RecipeDisplayer product={product} />
           </li>
         ))}
       </ul>

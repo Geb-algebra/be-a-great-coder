@@ -71,13 +71,13 @@ model Assets {
 }
 
 model IngredientStock {
-    id             String   @id @default(cuid())
-    ingredientName String
-    amount         Int
-    user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId         String
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @updatedAt
+    id           String   @id @default(cuid())
+    ingredientId String
+    amount       Int
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId       String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 }
 
 model Research {

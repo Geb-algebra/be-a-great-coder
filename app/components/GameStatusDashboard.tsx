@@ -1,4 +1,6 @@
+import type { Ingredient } from "~/game/models";
 import type { LaboratoryValue, TotalAssets, Turn } from "~/game/models/game";
+import { INGREDIENTS } from "~/game/services/config";
 
 function CashBoard(props: { amount: number }) {
   return (
@@ -8,13 +10,13 @@ function CashBoard(props: { amount: number }) {
   );
 }
 
-function IngredientStock(props: { name: string; amount: number }) {
+function IngredientStock(props: { ingredient: Ingredient; amount: number }) {
   return (
     <li
-      aria-labelledby={`stocked-ingredient-${props.name}`}
+      aria-labelledby={`stocked-ingredient-${props.ingredient.id}`}
       className={"w-24 h-16 py-2 text-center align-middle"}
     >
-      <p id={`stocked-ingredient-${props.name}`}>{props.name}</p>
+      <p id={`stocked-ingredient-${props.ingredient.id}`}>{props.ingredient.name}</p>
       <p>{props.amount}</p>
     </li>
   );
@@ -59,9 +61,13 @@ export default function GameStatusDashboard(props: {
           aria-label="ingredient stock"
           className={`flex bg-${props.theme}-card text-${props.theme}-text-dark rounded-lg gap-2`}
         >
-          {Array.from(props.totalAssets.ingredientStock).map(([name, amount]) => (
-            <IngredientStock key={name} name={name} amount={amount} />
-          ))}
+          {Array.from(props.totalAssets.ingredientStock).map(([id, amount]) => {
+            const ingredient = INGREDIENTS.get(id);
+            if (!ingredient) {
+              throw new Error(`Invalid ingredient id: ${id}`);
+            }
+            return <IngredientStock key={id} ingredient={ingredient} amount={amount} />;
+          })}
         </ul>
       </div>
       <div className="flex gap-6">

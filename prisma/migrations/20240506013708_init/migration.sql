@@ -50,7 +50,7 @@ CREATE TABLE "Assets" (
 -- CreateTable
 CREATE TABLE "IngredientStock" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "ingredientName" TEXT NOT NULL,
+    "ingredientId" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
