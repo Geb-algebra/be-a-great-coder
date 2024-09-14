@@ -6,12 +6,12 @@ describe("Laboratory with no research", () => {
     laboratory = new Laboratory();
   });
 
-  it("should calculate batteryCapacity", () => {
-    expect(laboratory.batteryCapacity).toBe(1);
+  it("should calculate batteryCapacityExp", () => {
+    expect(laboratory.batteryCapacityExp).toBe(0);
   });
 
   it("should calculate performance", () => {
-    expect(laboratory.performance).toBe(1);
+    expect(laboratory.performanceExp).toBe(0);
   });
 
   it("should calculate researcherRank", () => {
@@ -23,8 +23,8 @@ describe("Laboratory", async () => {
   let laboratory: Laboratory;
   test("with no researches", async () => {
     laboratory = new Laboratory();
-    expect(laboratory.batteryCapacity).toBe(1);
-    expect(laboratory.performance).toBe(1);
+    expect(laboratory.batteryCapacityExp).toBe(0);
+    expect(laboratory.performanceExp).toBe(0);
     expect(laboratory.researcherRank).toBe(0);
   });
 
@@ -42,8 +42,8 @@ describe("Laboratory", async () => {
         finishedAt: null,
         answerShownAt: null,
         rewardReceivedAt: null,
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
       {
         id: "2",
@@ -57,8 +57,8 @@ describe("Laboratory", async () => {
         finishedAt: null,
         answerShownAt: null,
         rewardReceivedAt: null,
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
       {
         id: "3",
@@ -72,12 +72,12 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
     ]);
-    expect(laboratory.batteryCapacity).toBe(2);
-    expect(laboratory.performance).toBe(3);
+    expect(laboratory.batteryCapacityExp).toBe(1);
+    expect(laboratory.performanceExp).toBe(2);
     expect(laboratory.researcherRank).toBe(1000);
   });
 
@@ -95,8 +95,8 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
       {
         id: "2",
@@ -110,8 +110,8 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
       {
         id: "3",
@@ -125,12 +125,12 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
     ]);
-    expect(laboratory.batteryCapacity).toBe(3); // failed research should be counted
-    expect(laboratory.performance).toBe(7);
+    expect(laboratory.batteryCapacityExp).toBe(2); // failed research should be counted
+    expect(laboratory.performanceExp).toBe(6);
     expect(laboratory.researcherRank).toBe(100); // unsolved problem should not be counted
   });
 
@@ -148,8 +148,8 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
       {
         id: "2",
@@ -163,8 +163,8 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 1,
+        performanceExp: 2,
       },
       {
         id: "3",
@@ -178,12 +178,12 @@ describe("Laboratory", async () => {
         finishedAt: null,
         answerShownAt: null,
         rewardReceivedAt: null,
-        batteryCapacityIncrement: 10,
-        performanceIncrement: 20,
+        batteryCapacityExp: 10,
+        performanceExp: 20,
       },
     ]);
-    expect(laboratory.batteryCapacity).toBe(3);
-    expect(laboratory.performance).toBe(5);
+    expect(laboratory.batteryCapacityExp).toBe(2);
+    expect(laboratory.performanceExp).toBe(4);
     expect(laboratory.researcherRank).toBe(100); // unsolved problem should not be counted
   });
 
@@ -201,8 +201,8 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 10,
+        performanceExp: 20,
       },
       {
         id: "2",
@@ -216,8 +216,8 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 1,
-        performanceIncrement: 2,
+        batteryCapacityExp: 10,
+        performanceExp: 20,
       },
       {
         id: "3",
@@ -231,12 +231,12 @@ describe("Laboratory", async () => {
         finishedAt: new Date(),
         answerShownAt: null,
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: 10,
-        performanceIncrement: 20,
+        batteryCapacityExp: 10,
+        performanceExp: 20,
       },
     ]);
-    expect(laboratory.batteryCapacity).toBe(13);
-    expect(laboratory.performance).toBe(5); // problem whose answer did not shown should not be counted
+    expect(laboratory.batteryCapacityExp).toBe(30);
+    expect(laboratory.performanceExp).toBe(40); // problem whose answer did not shown should not be counted
     expect(laboratory.researcherRank).toBe(400);
   });
 });

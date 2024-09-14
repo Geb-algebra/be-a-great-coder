@@ -7,7 +7,7 @@ import type { User } from "~/accounts/models/account.ts";
 import { GameLogicViolated, ObjectNotFoundError } from "~/errors.ts";
 import { Laboratory, TURNS, TotalAssets } from "../models";
 import type { Problem, Research, Turn } from "../models/game.ts";
-import { INGREDIENTS, calcRobotGrowthRate } from "../services/config.ts";
+import { INGREDIENTS, calcRobotExp } from "../services/config.ts";
 
 function getEmptyIngredientStock() {
   return new Map([...INGREDIENTS.keys()].map((id) => [id, 0]));
@@ -90,8 +90,8 @@ export class ResearchFactory {
       finishedAt: null,
       answerShownAt: null,
       rewardReceivedAt: null,
-      batteryCapacityIncrement: calcRobotGrowthRate(existingProblem.difficulty),
-      performanceIncrement: calcRobotGrowthRate(existingProblem.difficulty),
+      batteryCapacityExp: calcRobotExp(existingProblem.difficulty),
+      performanceExp: calcRobotExp(existingProblem.difficulty),
     };
   }
 }
@@ -159,8 +159,8 @@ export class LaboratoryRepository {
               finishedAt: research.finishedAt,
               answerShownAt: research.answerShownAt,
               rewardReceivedAt: research.rewardReceivedAt,
-              batteryCapacityIncrement: research.batteryCapacityIncrement,
-              performanceIncrement: research.performanceIncrement,
+              batteryCapacityExp: research.batteryCapacityExp,
+              performanceExp: research.performanceExp,
             },
           });
         }
@@ -192,8 +192,8 @@ export class LaboratoryRepository {
             finishedAt: research.finishedAt,
             answerShownAt: research.answerShownAt,
             rewardReceivedAt: research.rewardReceivedAt,
-            batteryCapacityIncrement: research.batteryCapacityIncrement,
-            performanceIncrement: research.performanceIncrement,
+            batteryCapacityExp: research.batteryCapacityExp,
+            performanceExp: research.performanceExp,
           },
         });
       }

@@ -38,8 +38,8 @@ export type ResearchJson = {
   finishedAt: string | null;
   answerShownAt: string | null;
   rewardReceivedAt: string | null;
-  batteryCapacityIncrement: number | null;
-  performanceIncrement: number | null;
+  batteryCapacityExp: number | null;
+  performanceExp: number | null;
 };
 
 export class ResearchJsonifier {
@@ -56,8 +56,8 @@ export class ResearchJsonifier {
       finishedAt: research.finishedAt?.toISOString() ?? null,
       answerShownAt: research.answerShownAt?.toISOString() ?? null,
       rewardReceivedAt: research.rewardReceivedAt?.toISOString() ?? null,
-      batteryCapacityIncrement: research.batteryCapacityIncrement,
-      performanceIncrement: research.performanceIncrement,
+      batteryCapacityExp: research.batteryCapacityExp,
+      performanceExp: research.performanceExp,
     };
   }
 

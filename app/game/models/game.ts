@@ -1,3 +1,5 @@
+import { calcLvAndResidual } from "../services/config";
+
 export const TURNS = [
   "buy-ingredients",
   "forge-swords",
@@ -43,13 +45,13 @@ export type Research = {
   finishedAt: Date | null;
   answerShownAt: Date | null;
   rewardReceivedAt: Date | null;
-  batteryCapacityIncrement: number | null;
-  performanceIncrement: number | null;
+  batteryCapacityExp: number | null;
+  performanceExp: number | null;
 };
 
 export type LaboratoryValue = {
-  batteryCapacity: number;
-  performance: number;
+  batteryCapacityExp: number;
+  performanceExp: number;
   researcherRank: number;
 };
 
@@ -64,16 +66,16 @@ export class Laboratory {
     return this.researches.filter((research) => research.rewardReceivedAt !== null);
   }
 
-  get batteryCapacity() {
+  get batteryCapacityExp() {
     return this.rewardedResearches
       .filter((research) => research.solvedAt !== null)
-      .reduce((acc, research) => acc + (research.batteryCapacityIncrement ?? 0), 1);
+      .reduce((acc, research) => acc + (research.batteryCapacityExp ?? 0), 0);
   }
 
-  get performance() {
+  get performanceExp() {
     return this.rewardedResearches
       .filter((research) => research.answerShownAt !== null && research.submittedAt !== null)
-      .reduce((acc, research) => acc + (research.performanceIncrement ?? 0), 1);
+      .reduce((acc, research) => acc + (research.performanceExp ?? 0), 0);
   }
 
   get researcherRank() {
@@ -88,8 +90,8 @@ export class Laboratory {
 
   get laboratoryValue(): LaboratoryValue {
     return {
-      batteryCapacity: this.batteryCapacity,
-      performance: this.performance,
+      batteryCapacityExp: this.batteryCapacityExp,
+      performanceExp: this.performanceExp,
       researcherRank: this.researcherRank,
     };
   }

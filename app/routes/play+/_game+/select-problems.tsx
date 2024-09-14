@@ -78,8 +78,8 @@ function ResearchSelector(props: { research: Research }) {
     >
       <p className="w-full text-center font-bold mb-8">{props.research.problem.title}</p>
       <p>Difficulty: {props.research.problem.difficulty}</p>
-      <p>battery: +{props.research.batteryCapacityIncrement}</p>
-      <p>performance: +{props.research.performanceIncrement}</p>
+      <p>battery: +{props.research.batteryCapacityExp}</p>
+      <p>performance: +{props.research.performanceExp}</p>
     </button>
   );
 }

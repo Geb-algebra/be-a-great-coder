@@ -25,8 +25,8 @@ export const initialStatus = {
     ingredientStock: new Map([...INGREDIENTS.keys()].map((id) => [id, 0])),
   },
   laboratoryValue: {
-    batteryCapacity: 1,
-    performance: 1,
+    batteryCapacityExp: 0,
+    performanceExp: 0,
     researcherRank: 0,
   },
 };
@@ -76,8 +76,8 @@ export async function setBeginnersStatus(userId: string) {
       finishedAt: new Date(),
       answerShownAt: new Date(),
       rewardReceivedAt: new Date(),
-      batteryCapacityIncrement: 1,
-      performanceIncrement: 1,
+      batteryCapacityExp: 10,
+      performanceExp: 10,
     });
   }
   await LaboratoryRepository.forceSaveAllForTesting(userId, laboratory);
@@ -91,8 +91,8 @@ export const beginnersStatus = {
     ingredientStock: new Map([...INGREDIENTS.keys()].map((id) => [id, 16])),
   },
   laboratoryValue: {
-    batteryCapacity: 4,
-    performance: 4,
+    batteryCapacityExp: 30,
+    performanceExp: 30,
     researcherRank: 100,
   },
 };
@@ -143,8 +143,8 @@ export async function setVeteransStatus(userId: string) {
         finishedAt: new Date(),
         answerShownAt: new Date(),
         rewardReceivedAt: new Date(),
-        batteryCapacityIncrement: i + 1,
-        performanceIncrement: i + 1,
+        batteryCapacityExp: (i + 1) * 10,
+        performanceExp: (i + 1) * 10,
       });
     }
   }
@@ -159,8 +159,8 @@ export const veteransStatus = {
     ingredientStock: new Map([...INGREDIENTS.keys()].map((id) => [id, 128])),
   },
   laboratoryValue: {
-    batteryCapacity: 136,
-    performance: 136,
+    batteryCapacityExp: 1350,
+    performanceExp: 1350,
     researcherRank: (2 * 800 + 3 * 900) / 5,
   },
 };

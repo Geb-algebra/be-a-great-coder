@@ -293,8 +293,8 @@ test.describe("game cycle", () => {
       finishedAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
       answerShownAt: null,
       rewardReceivedAt: null,
-      batteryCapacityIncrement: 1,
-      performanceIncrement: 1,
+      batteryCapacityExp: 10,
+      performanceExp: 10,
     };
     const lab = await LaboratoryRepository.get(user.id);
     lab.researches.push(research);
