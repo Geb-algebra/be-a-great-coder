@@ -3,7 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import type { Account } from "~/accounts/models/account";
 import { TurnRepository } from "~/game/lifecycle/game.server";
 import { TURNS } from "~/game/models/game.ts";
-import { INGREDIENTS } from "~/game/services/config";
+import { INGREDIENTS, calcLvAndResidual } from "~/game/services/config";
 import {
   beginnersStatus,
   initialStatus,
@@ -51,14 +51,19 @@ describe("Page", () => {
     expect(
       await screen.findByText(
         RegExp(
-          `battery: ${expected.totalAssets.battery} / ${expected.laboratoryValue.batteryCapacity}`,
+          `battery: ${expected.totalAssets.battery} / ${
+            calcLvAndResidual(expected.laboratoryValue.batteryCapacityExp).lv
+          }`,
           "i",
         ),
       ),
     );
     expect(
       await screen.findByText(
-        RegExp(`robot performance: ${expected.laboratoryValue.performance}`, "i"),
+        RegExp(
+          `robot performance: ${calcLvAndResidual(expected.laboratoryValue.performanceExp).lv}`,
+          "i",
+        ),
       ),
     );
   });

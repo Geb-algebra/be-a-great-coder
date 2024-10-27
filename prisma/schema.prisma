@@ -81,21 +81,21 @@ model IngredientStock {
 }
 
 model Research {
-    id                       String    @id @default(cuid())
-    problem                  Problem   @relation(fields: [problemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-    problemId                String
-    user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId                   String
-    createdAt                DateTime  @default(now())
-    updatedAt                DateTime  @updatedAt
-    startedAt                DateTime?
-    submittedAt              DateTime?
-    solvedAt                 DateTime?
-    finishedAt               DateTime?
-    answerShownAt            DateTime?
-    rewardReceivedAt         DateTime?
-    batteryCapacityIncrement Int?
-    performanceIncrement     Int?
+    id                 String    @id @default(cuid())
+    problem            Problem   @relation(fields: [problemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    problemId          String
+    user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId             String
+    createdAt          DateTime  @default(now())
+    updatedAt          DateTime  @updatedAt
+    startedAt          DateTime?
+    submittedAt        DateTime?
+    solvedAt           DateTime?
+    finishedAt         DateTime?
+    answerShownAt      DateTime?
+    rewardReceivedAt   DateTime?
+    batteryCapacityExp Int?
+    performanceExp     Int?
 }
 
 model CurrentTurn {

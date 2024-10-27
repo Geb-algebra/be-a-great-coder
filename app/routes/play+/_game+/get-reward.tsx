@@ -12,7 +12,7 @@ import {
   TotalAssetsRepository,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
-import { calcRobotGrowthRate } from "~/game/services/config";
+import { calcLvAndResidual } from "~/game/services/config";
 import { TotalAssetsUpdateService, getNextTurn } from "~/game/services/game.server.ts";
 import { ResearchJsonifier } from "~/game/services/jsonifier";
 import { authenticator } from "~/services/auth.server.ts";
@@ -41,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const totalAssets = await TotalAssetsRepository.getOrThrow(user.id);
     const newAssets = TotalAssetsUpdateService.chargeBattery(
       totalAssets,
-      laboratory.batteryCapacity,
+      calcLvAndResidual(laboratory.batteryCapacityExp).lv,
     );
     await TotalAssetsRepository.save(user.id, newAssets);
     await TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));

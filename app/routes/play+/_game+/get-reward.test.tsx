@@ -10,6 +10,7 @@ import {
   ResearchFactory,
   TurnRepository,
 } from "~/game/lifecycle/game.server.ts";
+import { calcLvAndResidual } from "~/game/services/config.ts";
 import {
   beginnersStatus,
   initialStatus,
@@ -134,21 +135,27 @@ describe.each([
     await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
     await screen.findByText(
       RegExp(
-        `battery: ${status.totalAssets.battery} / ${status.laboratoryValue.batteryCapacity}`,
+        `battery: ${status.totalAssets.battery} / ${
+          calcLvAndResidual(status.laboratoryValue.batteryCapacityExp).lv
+        }`,
         "i",
       ),
     );
     await screen.findByText(
-      RegExp(`robot performance: ${status.laboratoryValue.performance}`, "i"),
+      RegExp(`robot performance: ${calcLvAndResidual(status.laboratoryValue.performanceExp)}`, "i"),
     );
     const getRewardButton = await screen.findByRole("button", { name: /get reward/i });
     const user = userEvent.setup();
     await user.click(getRewardButton);
     await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
-    const newCapa = status.laboratoryValue.batteryCapacity + (isSolved ? 3 : 0); // 3 is difficulty / 100
+    const newCapa =
+      calcLvAndResidual(status.laboratoryValue.batteryCapacityExp).lv + (isSolved ? 3 : 0); // 3 is difficulty / 100
     await screen.findByText(RegExp(`battery: ${newCapa} / ${newCapa}`, "i")); // fully charged
     await screen.findByText(
-      RegExp(`robot performance: ${status.laboratoryValue.performance}`, "i"),
+      RegExp(
+        `robot performance: ${calcLvAndResidual(status.laboratoryValue.performanceExp).lv}`,
+        "i",
+      ),
     ); // no change because the answer is not shown
   });
 
@@ -160,12 +167,17 @@ describe.each([
     await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
     await screen.findByText(
       RegExp(
-        `battery: ${status.totalAssets.battery} / ${status.laboratoryValue.batteryCapacity}`,
+        `battery: ${status.totalAssets.battery} / ${
+          calcLvAndResidual(status.laboratoryValue.batteryCapacityExp).lv
+        }`,
         "i",
       ),
     );
     await screen.findByText(
-      RegExp(`robot performance: ${status.laboratoryValue.performance}`, "i"),
+      RegExp(
+        `robot performance: ${calcLvAndResidual(status.laboratoryValue.performanceExp).lv}`,
+        "i",
+      ),
     );
     const showAnswerbutton = await screen.findByRole("button", { name: /read an answer/i });
     const user = userEvent.setup();
@@ -173,10 +185,15 @@ describe.each([
     const getRewardButton = await screen.findByRole("button", { name: /get reward/i });
     await user.click(getRewardButton);
     await screen.findByText(RegExp(`cash: ${status.totalAssets.cash}`, "i"));
-    const newCapa = status.laboratoryValue.batteryCapacity; // no change because the problem is not solved
+    const newCapa = calcLvAndResidual(status.laboratoryValue.batteryCapacityExp).lv; // no change because the problem is not solved
     await screen.findByText(RegExp(`battery: ${newCapa} / ${newCapa}`, "i")); // fully charged
     await screen.findByText(
-      RegExp(`robot performance: ${status.laboratoryValue.performance + (isShown ? 3 : 0)}`, "i"),
+      RegExp(
+        `robot performance: ${
+          calcLvAndResidual(status.laboratoryValue.performanceExp).lv + (isShown ? 3 : 0)
+        }`,
+        "i",
+      ),
     );
   });
 });
@@ -206,8 +223,8 @@ describe("action", () => {
       finishedAt: new Date(),
       answerShownAt: null,
       rewardReceivedAt: null,
-      batteryCapacityIncrement: 3,
-      performanceIncrement: 3,
+      batteryCapacityExp: 30,
+      performanceExp: 30,
     };
     const lab = await LaboratoryRepository.get(account.id);
     lab.researches.push(newResearch);
@@ -222,7 +239,7 @@ describe("action", () => {
     await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
 
     const oldLab = await LaboratoryRepository.get(account.id);
-    expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
+    expect(oldLab.batteryCapacityExp).toBe(veteransStatus.laboratoryValue.batteryCapacityExp);
 
     const request = new Request("http://localhost:3000/play/get-reward", {
       method: "POST",
@@ -234,10 +251,10 @@ describe("action", () => {
     const latestResearch = updatedLaboratory.researches.find((r) => r.id === unrewardedResearch.id);
     invariant(latestResearch, "solvedResearch should be defined");
     expect(latestResearch.rewardReceivedAt).toBeDefined();
-    expect(updatedLaboratory.batteryCapacity).toBe(
-      veteransStatus.laboratoryValue.batteryCapacity + 3,
+    expect(updatedLaboratory.batteryCapacityExp).toBe(
+      veteransStatus.laboratoryValue.batteryCapacityExp + 30,
     );
-    expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance);
+    expect(updatedLaboratory.performanceExp).toBe(veteransStatus.laboratoryValue.performanceExp);
   });
 
   it("gives performances if submitted and the explanation of the problem has displayed", async () => {
@@ -249,7 +266,7 @@ describe("action", () => {
     await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
 
     const oldLab = await LaboratoryRepository.get(account.id);
-    expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
+    expect(oldLab.batteryCapacityExp).toBe(veteransStatus.laboratoryValue.batteryCapacityExp);
     expect(oldLab.getUnrewardedResearch()?.solvedAt).toBeDefined();
 
     const request = new Request("http://localhost:3000/play/get-reward", {
@@ -262,8 +279,12 @@ describe("action", () => {
     const solvedResearch = updatedLaboratory.researches.find((r) => r.id === unrewardedResearch.id);
     invariant(solvedResearch, "solvedResearch should be defined");
     expect(solvedResearch.rewardReceivedAt).toBeDefined();
-    expect(updatedLaboratory.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
-    expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance + 3);
+    expect(updatedLaboratory.batteryCapacityExp).toBe(
+      veteransStatus.laboratoryValue.batteryCapacityExp,
+    );
+    expect(updatedLaboratory.performanceExp).toBe(
+      veteransStatus.laboratoryValue.performanceExp + 30,
+    );
   });
 
   it("doesnt give performances if not submitted", async () => {
@@ -275,7 +296,7 @@ describe("action", () => {
     await LaboratoryRepository.forceSaveAllForTesting(account.id, laboratory);
 
     const oldLab = await LaboratoryRepository.get(account.id);
-    expect(oldLab.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
+    expect(oldLab.batteryCapacityExp).toBe(veteransStatus.laboratoryValue.batteryCapacityExp);
     expect(oldLab.getUnrewardedResearch()?.solvedAt).toBeDefined();
 
     const request = new Request("http://localhost:3000/play/get-reward", {
@@ -288,7 +309,9 @@ describe("action", () => {
     const solvedResearch = updatedLaboratory.researches.find((r) => r.id === unrewardedResearch.id);
     invariant(solvedResearch, "solvedResearch should be defined");
     expect(solvedResearch.rewardReceivedAt).toBeDefined();
-    expect(updatedLaboratory.batteryCapacity).toBe(veteransStatus.laboratoryValue.batteryCapacity);
-    expect(updatedLaboratory.performance).toBe(veteransStatus.laboratoryValue.performance);
+    expect(updatedLaboratory.batteryCapacityExp).toBe(
+      veteransStatus.laboratoryValue.batteryCapacityExp,
+    );
+    expect(updatedLaboratory.performanceExp).toBe(veteransStatus.laboratoryValue.performanceExp);
   });
 });

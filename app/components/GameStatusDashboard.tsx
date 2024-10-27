@@ -1,6 +1,6 @@
 import type { Ingredient } from "~/game/models";
 import type { LaboratoryValue, TotalAssets } from "~/game/models/game";
-import { INGREDIENTS } from "~/game/services/config";
+import { INGREDIENTS, calcLvAndResidual } from "~/game/services/config";
 
 function CashBoard(props: { amount: number }) {
   return (
@@ -30,20 +30,40 @@ function RankBoard(props: { rank: number }) {
   );
 }
 
+function ExperimentBar(props: { residual: number; nextLvExp: number }) {
+  return (
+    <div className="h-4 bg-accent-1 rounded-lg">
+      <div
+        className="h-full bg-accent-1"
+        style={{ width: `${(props.residual / props.nextLvExp) * 100}%` }}
+      />
+    </div>
+  );
+}
+
 function RobotStatus(props: {
   battery: number;
-  batteryCapacity: number;
-  performance: number;
+  batteryCapacityExp: number;
+  performanceExp: number;
 }) {
+  const batteryState = calcLvAndResidual(props.batteryCapacityExp);
+  const performanceState = calcLvAndResidual(props.performanceExp);
   return (
     <ul
       aria-label="robot-status"
       className="p-4 w-auto h-16 text-center flex gap-6 bg-white bg-opacity-5 rounded-lg"
     >
-      <li>
-        battery: {props.battery} / {props.batteryCapacity}
+      <li className="w-48">
+        battery: {props.battery} / {batteryState.lv}
+        <ExperimentBar residual={batteryState.residual} nextLvExp={batteryState.nextLvExp} />
       </li>
-      <li>robot performance: {props.performance}</li>
+      <li className="w-48">
+        robot performance: {performanceState.lv}
+        <ExperimentBar
+          residual={performanceState.residual}
+          nextLvExp={performanceState.nextLvExp}
+        />
+      </li>
     </ul>
   );
 }
@@ -70,8 +90,8 @@ export default function GameStatusDashboard(props: {
         <RankBoard rank={props.laboratoryValue.researcherRank} />
         <RobotStatus
           battery={props.totalAssets.battery}
-          batteryCapacity={props.laboratoryValue.batteryCapacity}
-          performance={props.laboratoryValue.performance}
+          batteryCapacityExp={props.laboratoryValue.batteryCapacityExp}
+          performanceExp={props.laboratoryValue.performanceExp}
         />
       </div>
     </div>

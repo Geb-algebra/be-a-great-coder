@@ -168,7 +168,7 @@ export const SWORDS: Map<SwordElement, Sword[]> = new Map([
   ],
 ]);
 
-export function calcRobotGrowthRate(difficulty: number) {
+export function calcRobotExp(difficulty: number) {
   const ave = difficulty / 100;
   const std = 1;
   const mu = Math.log(ave) - std ** 2 / 2;
@@ -177,5 +177,12 @@ export function calcRobotGrowthRate(difficulty: number) {
   const lognormalRand = Math.exp(
     mu + std * Math.sqrt(-2 * Math.log(r1)) * Math.cos(2 * Math.PI * r2),
   );
-  return Math.round(lognormalRand);
+  return Math.round(lognormalRand * 100);
+}
+
+export function calcLvAndResidual(exp: number) {
+  const lv = Math.floor(Math.cbrt(exp / 10));
+  const residual = exp - lv ** 3 * 10;
+  const nextLvExp = (lv + 1) ** 3 * 10;
+  return { lv: lv + 1, residual, nextLvExp };
 }
