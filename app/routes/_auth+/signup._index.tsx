@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 
-import { json } from "@remix-run/node";
+import { data } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import AuthFormInput from "~/components/AuthFormInput.tsx";
 
@@ -19,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
   const options = await webAuthnStrategy.generateOptions(request, null);
   session.set("challenge", options.challenge);
-  return json(options, {
+  return data(options, {
     headers: {
       "Cache-Control": "no-store",
       "Set-Cookie": await sessionStorage.commitSession(session),
@@ -38,15 +38,15 @@ export async function action({ request }: ActionFunctionArgs) {
     // caught error is a response and return it or throw it again
     if (error instanceof Response && error.status < 400) throw error;
     if (error instanceof Response) {
-      return json((await error.json()) as { message: string }, {
+      return data((await error.json()) as { message: string }, {
         status: error.status,
       });
     }
     console.error(error);
     if (error instanceof Error) {
-      return json({ message: error.message }, { status: 400 });
+      return data({ message: error.message }, { status: 400 });
     }
-    return json({ message: "unknown error" }, { status: 500 });
+    return data({ message: "unknown error" }, { status: 500 });
   }
 }
 

@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json } from "@remix-run/node";
+import { type ActionFunctionArgs, data } from "@remix-run/node";
 import { GameLogicViolated } from "~/errors";
 import { TotalAssetsRepository } from "~/game/lifecycle/game.server";
 import { BASE_METALS, GEMS } from "~/game/services/config";
@@ -26,7 +26,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       gem,
     );
     await TotalAssetsRepository.save(user.id, newTotalAssets);
-    return json({ grade, element, sword, error: null });
+    return data({ grade, element, sword, error: null });
   } catch (error) {
     if (error instanceof GameLogicViolated) {
       return {

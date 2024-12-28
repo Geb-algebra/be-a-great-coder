@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import { useActionData, useFetcher, useLoaderData } from "@remix-run/react";
 import { getProblemSubmittedAndSolvedTime } from "~/atcoder-info/services/atcoder.server";
 import ErrorDisplay from "~/components/ErrorDisplay";
@@ -37,7 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
     await LaboratoryRepository.save(user.id, laboratory);
   }
-  return json({
+  return data({
     currentResearchJson: ResearchJsonifier.toJson(currentResearch),
     isDev: process.env.NODE_ENV === "development",
   });

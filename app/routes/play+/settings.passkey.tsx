@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { AccountRepository } from "~/accounts/lifecycle/account.server";
 import { ObjectNotFoundError } from "~/errors";
@@ -32,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
   } else if (method === "delete") {
     if (account.authenticators.length === 1) {
       // TODO: consider google auth
-      return json({ errorMessage: "You must have at least one passkey" }, { status: 400 });
+      return data({ errorMessage: "You must have at least one passkey" }, { status: 400 });
     }
     account.authenticators = account.authenticators.filter((a) => a.credentialID !== passkeyId);
     await AccountRepository.save(account);

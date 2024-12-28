@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Form, json, useActionData, useLoaderData } from "@remix-run/react";
+import { Form, data, useActionData, useLoaderData } from "@remix-run/react";
 import { handleFormSubmit } from "remix-auth-webauthn/browser";
 
 import AuthButton from "~/components/AuthButton.tsx";
@@ -14,7 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
   const options = await webAuthnStrategy.generateOptions(request, null);
   session.set("challenge", options.challenge);
-  return json(options, {
+  return data(options, {
     headers: {
       "Cache-Control": "no-store",
       "Set-Cookie": await sessionStorage.commitSession(session),

@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import { Form, useActionData, useFetcher } from "@remix-run/react";
 import ErrorDisplay from "~/components/ErrorDisplay.tsx";
 import TurnHeader from "~/components/TurnHeader.tsx";
@@ -13,7 +13,7 @@ import type { action as detailAction } from "./buy-ingredients.$id.tsx";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
-  return json({});
+  return data({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {

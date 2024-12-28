@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import TurnHeader from "~/components/TurnHeader";
 import {
@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   {
     const candidateResearches = laboratory.getCandidateResearches();
     if (candidateResearches.length > 0) {
-      return json(candidateResearches.map(ResearchJsonifier.toJson));
+      return data(candidateResearches.map(ResearchJsonifier.toJson));
     }
   }
   const problems = await getProblemsMatchUserRank(laboratory.researcherRank);
@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
   await LaboratoryRepository.save(user.id, laboratory);
   const candidateResearches = laboratory.getCandidateResearches();
-  return json(candidateResearches.map(ResearchJsonifier.toJson));
+  return data(candidateResearches.map(ResearchJsonifier.toJson));
 }
 
 export async function action({ request }: ActionFunctionArgs) {

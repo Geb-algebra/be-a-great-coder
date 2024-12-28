@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import type { RegistrationResponseJSON } from "@simplewebauthn/typescript-types";
+import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 import { handleFormSubmit } from "remix-auth-webauthn/browser";
 import { AccountRepository } from "~/accounts/lifecycle/account.server";
 import AuthButton from "~/components/AuthButton.tsx";
@@ -10,12 +10,12 @@ import AuthErrorMessage from "~/components/AuthErrorMessage.tsx";
 import PasskeyHero from "~/components/PasskeyHero.tsx";
 import { ObjectNotFoundError, ValueError } from "~/errors";
 import { authenticator, verifyNewAuthenticator, webAuthnStrategy } from "~/services/auth.server.ts";
-import { getSession, sessionStorage } from "~/services/session.server.ts";
+import { getSession } from "~/services/session.server.ts";
 import { getRequiredStringFromFormData } from "~/utils/utils.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/welcome" });
-  return webAuthnStrategy.generateOptions(request, sessionStorage, user);
+  return webAuthnStrategy.generateOptions(request, user);
 }
 
 export async function action({ request }: ActionFunctionArgs) {

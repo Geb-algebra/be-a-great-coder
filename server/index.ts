@@ -1,13 +1,10 @@
 import { createServer } from "node:http";
 
 import { createRequestHandler } from "@remix-run/express";
-import { installGlobals } from "@remix-run/node";
 import closeWithGrace from "close-with-grace";
 import compression from "compression";
 import express from "express";
 import morgan from "morgan";
-
-installGlobals();
 
 const viteDevServer =
   process.env.NODE_ENV === "production"
