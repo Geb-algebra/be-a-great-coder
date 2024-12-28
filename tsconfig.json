@@ -21,7 +21,7 @@
     },
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "types": ["vitest/globals"],
+    "types": ["@remix-run/node", "vite/client", "vitest/globals"],
 
     // Remix takes care of building everything in `remix build`.
     "noEmit": true
