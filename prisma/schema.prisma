@@ -37,10 +37,9 @@ model Authenticator {
     credentialPublicKey  String
     counter              Int
     credentialDeviceType String
-    // 0: false, 1: true
-    // Dont use Boolean because remix-auth-webauthn uses 0 and 1
-    credentialBackedUp   Int
+    credentialBackedUp   Boolean
     transports           String
+    aaguid               String
     createdAt            DateTime @default(now())
     updatedAt            DateTime @updatedAt
 }

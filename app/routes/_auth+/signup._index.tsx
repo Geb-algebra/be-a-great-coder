@@ -12,11 +12,19 @@ import AuthErrorMessage from "~/components/AuthErrorMessage.tsx";
 import GoogleAuthButton from "~/components/GoogleAuthButton.tsx";
 import PasskeyHero from "~/components/PasskeyHero.tsx";
 import { authenticator, webAuthnStrategy } from "~/services/auth.server.ts";
-import { sessionStorage } from "~/services/session.server.ts";
+import { getSession, sessionStorage } from "~/services/session.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticator.isAuthenticated(request, { successRedirect: "/play" });
-  return webAuthnStrategy.generateOptions(request, sessionStorage, null);
+  await authenticator.isAuthenticated(request, { successRedirect: "/" });
+  const session = await getSession(request);
+  const options = await webAuthnStrategy.generateOptions(request, null);
+  session.set("challenge", options.challenge);
+  return json(options, {
+    headers: {
+      "Cache-Control": "no-store",
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    },
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -24,16 +32,21 @@ export async function action({ request }: ActionFunctionArgs) {
     await authenticator.authenticate("webauthn", request, {
       successRedirect: "/play",
     });
-    return json({ errorMessage: "" });
+    return { message: "" };
   } catch (error) {
     // Because redirects work by throwing a Response, you need to check if the
     // caught error is a response and return it or throw it again
-    if (error instanceof Response) return error;
+    if (error instanceof Response && error.status < 400) throw error;
+    if (error instanceof Response) {
+      return json((await error.json()) as { message: string }, {
+        status: error.status,
+      });
+    }
     console.error(error);
     if (error instanceof Error) {
-      return json({ errorMessage: error.message }, { status: 400 });
+      return json({ message: error.message }, { status: 400 });
     }
-    return json({ errorMessage: "unknown error" }, { status: 500 });
+    return json({ message: "unknown error" }, { status: 500 });
   }
 }
 
@@ -41,7 +54,7 @@ export const meta: MetaFunction = () => {
   return [{ title: "Sign Up" }];
 };
 
-export default function LoginPage() {
+export default function SignupPage() {
   const options = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
@@ -54,7 +67,7 @@ export default function LoginPage() {
       </AuthContainer>
       <AuthErrorMessage
         message={
-          actionData?.errorMessage ??
+          actionData?.message ??
           (options.usernameAvailable === false ? "Username already taken" : "")
         }
       />
