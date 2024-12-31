@@ -1,4 +1,4 @@
-import type { RegistrationResponseJSON } from "@simplewebauthn/typescript-types";
+import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 import { Authenticator } from "remix-auth";
 import invariant from "tiny-invariant";
 import { AccountFactory, AccountRepository } from "~/accounts/lifecycle/account.server";
@@ -105,17 +105,15 @@ const googleStrategy = new GoogleStrategy(
   },
   async ({ accessToken, refreshToken, extraParams, profile }) => {
     // Get the user data from your DB or API using the tokens and profile
-    const account = await AccountRepository.getByGoogleProfileId(profile.id);
-    if (account) {
-      const { authenticators, ...user } = account;
-      return user;
+    let account = await AccountRepository.getByGoogleProfileId(profile.id);
+    if (!account) {
+      account = await AccountFactory.create({
+        name: profile.displayName,
+        googleProfileId: profile.id,
+      });
+      await AccountRepository.save(account);
     }
-    const newAccount = await AccountFactory.create({
-      name: profile.displayName,
-      googleProfileId: profile.id,
-    });
-    await AccountRepository.save(newAccount);
-    const { authenticators, ...user } = newAccount;
+    const { authenticators, ...user } = account;
     return user;
   },
 );
@@ -142,16 +140,17 @@ export async function verifyNewAuthenticator(
   });
 
   if (verification.verified && verification.registrationInfo) {
-    const { credentialPublicKey, credentialID, counter, credentialBackedUp, credentialDeviceType } =
+    const { credential, credentialBackedUp, credentialDeviceType, aaguid } =
       verification.registrationInfo;
 
     const newAuthenticator = {
-      credentialID: Buffer.from(credentialID).toString("base64url"),
-      credentialPublicKey: Buffer.from(credentialPublicKey).toString("base64url"),
-      counter,
-      credentialBackedUp: credentialBackedUp ? 1 : 0,
+      credentialID: Buffer.from(credential.id).toString("base64url"),
+      credentialPublicKey: Buffer.from(credential.publicKey).toString("base64url"),
+      counter: credential.counter,
+      credentialBackedUp,
       credentialDeviceType,
       transports: [""],
+      aaguid,
     };
     const savedAuthenticator = await getAuthenticatorById(newAuthenticator.credentialID);
     if (savedAuthenticator) {

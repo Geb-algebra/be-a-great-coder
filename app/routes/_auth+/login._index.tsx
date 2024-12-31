@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { Form, data, useActionData, useLoaderData } from "@remix-run/react";
 import { handleFormSubmit } from "remix-auth-webauthn/browser";
 
 import AuthButton from "~/components/AuthButton.tsx";
@@ -7,11 +7,19 @@ import AuthContainer from "~/components/AuthContainer.tsx";
 import AuthErrorMessage from "~/components/AuthErrorMessage.tsx";
 import GoogleAuthButton from "~/components/GoogleAuthButton.tsx";
 import { authenticator, webAuthnStrategy } from "~/services/auth.server.ts";
-import { sessionStorage } from "~/services/session.server.ts";
+import { getSession, sessionStorage } from "~/services/session.server.ts";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await authenticator.isAuthenticated(request, { successRedirect: "/" });
-  return webAuthnStrategy.generateOptions(request, sessionStorage, null);
+  const session = await getSession(request);
+  const options = await webAuthnStrategy.generateOptions(request, null);
+  session.set("challenge", options.challenge);
+  return data(options, {
+    headers: {
+      "Cache-Control": "no-store",
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    },
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {

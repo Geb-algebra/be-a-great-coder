@@ -10,8 +10,9 @@ export type Authenticator = {
   credentialPublicKey: string;
   counter: number;
   credentialDeviceType: string;
-  credentialBackedUp: number;
+  credentialBackedUp: boolean;
   transports: string[];
+  aaguid: string;
   createdAt?: Date;
   updatedAt?: Date;
 };

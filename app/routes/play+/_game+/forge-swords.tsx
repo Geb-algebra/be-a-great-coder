@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import { useActionData, useFetcher } from "@remix-run/react";
 import Button from "~/components/Button.tsx";
 import ErrorDisplay from "~/components/ErrorDisplay.tsx";
@@ -14,7 +14,7 @@ import type { action as makeItemsAction } from "./forge-swords.forge.tsx";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticator.isAuthenticated(request, { failureRedirect: "/login" });
-  return json({});
+  return data({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {

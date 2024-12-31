@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
+import { type LoaderFunctionArgs, data, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import GameStatusDashboard from "~/components/GameStatusDashboard";
 import { LaboratoryRepository } from "~/game/lifecycle/game.server";
@@ -24,7 +24,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
   const totalAssets = await getOrInitializeTotalAssets(user.id);
   const laboratory = await LaboratoryRepository.get(user.id);
-  return json({
+  return data({
     totalAssetsJson: TotalAssetsJsonifier.toJson(totalAssets),
     laboratoryValue: laboratory.laboratoryValue,
   });
@@ -36,13 +36,12 @@ export default function Page() {
   return (
     <div className="h-full flex flex-col">
       <GameStatusDashboard totalAssets={totalAssets} laboratoryValue={laboratoryValue} />
-      <div
+      <main
         className="bg-base rounded-t-[24px_12px] py-4 px-6 grow overflow-auto"
         aria-label="game controller"
-        role="main"
       >
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }

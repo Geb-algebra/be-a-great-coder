@@ -16,5 +16,5 @@ export async function action({ request }: ActionFunctionArgs) {
     currentResearch.answerShownAt = new Date();
     await LaboratoryRepository.save(user.id, laboratory);
   }
-  return redirect("/play/router");
+  return null;
 }

@@ -15,8 +15,9 @@ CREATE TABLE "Authenticator" (
     "credentialPublicKey" TEXT NOT NULL,
     "counter" INTEGER NOT NULL,
     "credentialDeviceType" TEXT NOT NULL,
-    "credentialBackedUp" INTEGER NOT NULL,
+    "credentialBackedUp" BOOLEAN NOT NULL,
     "transports" TEXT NOT NULL,
+    "aaguid" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "Authenticator_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE

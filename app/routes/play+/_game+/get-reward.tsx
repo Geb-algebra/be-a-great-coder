@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { data, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import Button from "~/components/Button";
 import ErrorDisplay from "~/components/ErrorDisplay";
@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     TurnRepository.save(user.id, getNextTurn(await TurnRepository.getOrThrow(user.id)));
     return redirect("/play/router");
   }
-  return json({ unrewardedResearchJson: ResearchJsonifier.toJson(unrewardedResearch) });
+  return data({ unrewardedResearchJson: ResearchJsonifier.toJson(unrewardedResearch) });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
